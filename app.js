@@ -35,7 +35,14 @@ function sendOrder() {
 
   // 👇 यहाँ अपना WhatsApp नंबर डालना
   let whatsapp = "918453270362
+<br><br>
+<h3>💳 Pay with UPI</h3>
 
+<p>UPI ID: 6000026478@okbizaxis</p>
+
+<button onclick="alert('Payment complete? Then click Order on WhatsApp.')">
+I Have Paid
+</button>
   window.open(
     "https://wa.me/" + whatsapp + "?text=" + encodeURIComponent(message),
     "_blank"
