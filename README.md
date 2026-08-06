@@ -46,4 +46,32 @@
 <script src="app.js"></script>
 
 </body>
-</html>
+</html>body{
+    font-family: Arial, sans-serif;
+    margin:0;
+    background:#f5f5f5;
+}
+
+header{
+    background:#ff5722;
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+
+.food-card{
+    background:white;
+    margin:15px;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+
+button{
+    background:#28a745;
+    color:white;
+    border:none;
+    padding:10px 20px;
+    border-radius:5px;
+    cursor:pointer;
+}
