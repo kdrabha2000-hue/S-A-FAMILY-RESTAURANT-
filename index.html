@@ -9,18 +9,25 @@
 
 <body>
 
-<header>
-<h1>🍽️ S&A Family Restaurant</h1>
-<p>Fresh & Delicious Food</p>
+<header class="header">
+  <h1>🍽️ S&A Family Restaurant</h1>
+  <p>Fresh Food • Fast Delivery • Order Online</p>
 
-<input
-type="text"
-id="search"
-placeholder="🔍 Search food..."
-onkeyup="searchFood()">
+  <input
+    type="text"
+    id="search"
+    placeholder="🔍 Search Food..."
+    onkeyup="searchFood()">
 </header>
 
-<main>
+<section class="category">
+  <button>Biryani</button>
+  <button>Rolls</button>
+  <button>Momos</button>
+  <button>Drinks</button>
+</section>
+
+<main id="menu">
 
 <div class="food-card">
 <h2>Chicken Biryani</h2>
@@ -53,20 +60,10 @@ onkeyup="searchFood()">
 </div>
 
 <div id="cart">
-<h2>🛒 Cart</h2>
+<h2>🛒 Your Cart</h2>
 <p>No items added.</p>
-</div><h2>Customer Details</h2>
+</div>
 
-<input type="text" id="name" placeholder="Your Name"><br><br>
-
-<input type="text" id="phone" placeholder="Mobile Number"><br><br>
-
-<textarea id="address" placeholder="Delivery Address"></textarea><br><br>
-
-<button onclick="sendWhatsAppOrder()">📱 Order on WhatsApp</button>
-💳 Payment
-UPI ID: 6000026478@okbizaxis
-Pay Now
 <script src="app.js"></script>
 
 </main>
