@@ -42,3 +42,26 @@ function searchFood() {
     }
   }
 }
+function sendWhatsAppOrder() {
+let name = document.getElementById("name").value;
+let phone = document.getElementById("phone").value;
+let address = document.getElementById("address").value;
+
+let message =
+"🍽️ S&A Family Restaurant\n\n" +
+"Name: " + name + "\n" +
+"Phone: " + phone + "\n" +
+"Address: " + address + "\n\n" +
+"Order:\n" + cart.join("\n") +
+"\n\nTotal: ₹" + total;
+
+// यहाँ अपना WhatsApp नंबर डालो
+let whatsappNumber = "98453270362
+
+window.open(
+"
+https://wa.me/
+" + whatsappNumber + "?text=" + encodeURIComponent(message),
+"_blank"
+);
+}
