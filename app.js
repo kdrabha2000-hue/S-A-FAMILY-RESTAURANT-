@@ -1,70 +1,74 @@
-let cart = [];
-let total = 0;
-
-const prices = {
-  "Chicken Biryani": 180,
-  "Veg Thali": 120,
-  "Fried Rice": 100,
-  "Chicken Roll": 90,
-  "Veg Roll": 50
-};
-
-function addToCart(item) {
-  cart.push(item);
-  total += prices[item];
-  updateCart();
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f4f4;
 }
 
-function updateCart() {
-  let html = "<h2>🛒 Cart</h2>";
-
-  cart.forEach(function(item) {
-    html += "<p>" + item + "</p>";
-  });
-
-  html += "<hr>";
-  html += "<h3>Total: ₹" + total + "</h3>";
-
-  document.getElementById("cart").innerHTML = html;
+.header{
+    background:#ff5722;
+    color:white;
+    padding:20px;
+    text-align:center;
 }
 
-function searchFood() {
-  let input = document.getElementById("search").value.toLowerCase();
-  let cards = document.getElementsByClassName("food-card");
-
-  for (let i = 0; i < cards.length; i++) {
-    let name = cards[i].getElementsByTagName("h2")[0].innerText.toLowerCase();
-
-    if (name.indexOf(input) > -1) {
-      cards[i].style.display = "";
-    } else {
-      cards[i].style.display = "none";
-    }
-  }
+#search{
+    width:90%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:8px;
 }
-function sendWhatsAppOrder() {
-let name = document.getElementById("name").value;
-let phone = document.getElementById("phone").value;
-let address = document.getElementById("address").value;
 
-let message =
-"🍽️ S&A Family Restaurant\n\n" +
-"Name: " + name + "\n" +
-"Phone: " + phone + "\n" +
-"Address: " + address + "\n\n" +
-"Order:\n" + cart.join("\n") +
-"\n\nTotal: ₹" + total;
-
-// यहाँ अपना WhatsApp नंबर डालो
-let whatsappNumber = "98453270362
-
-window.open(
-"
-https://wa.me/
-" + whatsappNumber + "?text=" + encodeURIComponent(message),
-"_blank"
-);
+.category{
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    padding:10px;
+    background:white;
 }
-function payNow() {
-    alert("Please complete the payment and then click 'Order on WhatsApp'.");
+
+.category button{
+    background:#ff5722;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    border-radius:20px;
+}
+
+#menu{
+    padding:15px;
+}
+
+.food-card{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    margin-bottom:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+
+.food-card h2{
+    margin:0;
+}
+
+.food-card p{
+    color:#666;
+}
+
+.food-card button{
+    width:100%;
+    padding:12px;
+    background:#28a745;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+}
+
+#cart{
+    background:white;
+    border-radius:12px;
+    padding:15px;
+    margin-top:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
