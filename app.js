@@ -1,3 +1,15 @@
+
+
+let cart = [];
+
 function addToCart(itemName) {
-    alert(itemName + " added to cart!");
+    cart.push(itemName);
+
+    let cartBox = document.getElementById("cart");
+
+    if (cartBox) {
+        cartBox.innerHTML =
+            "<h2>🛒 Cart</h2>" +
+            cart.map(item => "<p>" + item + "</p>").join("");
+    }
 }
