@@ -65,3 +65,6 @@ https://wa.me/
 "_blank"
 );
 }
+function payNow() {
+    alert("Please complete the payment and then click 'Order on WhatsApp'.");
+}
