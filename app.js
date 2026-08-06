@@ -1,7 +1,14 @@
 
 
 let cart = [];
-let total = 0;
+let total = 0;let deliveryCharge = 30;
+
+document.getElementById("cart").innerHTML =
+"<h2>🛒 Cart</h2>" +
+cart.map(item => "<p>" + item + "</p>").join("") +
+"<hr><h3>Food Total: ₹" + total + "</h3>" +
+"<h3>Delivery Charge: ₹" + deliveryCharge + "</h3>" +
+"<h2>Grand Total: ₹" + (total + deliveryCharge) + "</h2>";
 
 const prices = {
   "Chicken Biryani": 180,
