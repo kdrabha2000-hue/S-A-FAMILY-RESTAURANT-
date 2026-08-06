@@ -47,4 +47,17 @@ I Have Paid
     "https://wa.me/" + whatsapp + "?text=" + encodeURIComponent(message),
     "_blank"
   );
+}function searchFood() {
+  let input = document.getElementById("search").value.toLowerCase();
+  let cards = document.getElementsByClassName("food-card");
+
+  for (let i = 0; i < cards.length; i++) {
+    let name = cards[i].getElementsByTagName("h2")[0].innerText.toLowerCase();
+
+    if (name.includes(input)) {
+      cards[i].style.display = "block";
+    } else {
+      cards[i].style.display = "none";
+    }
+  }
 }
