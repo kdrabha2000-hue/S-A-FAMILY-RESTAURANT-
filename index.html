@@ -9,18 +9,16 @@
 
 <body>
 
-<header> <input
-type="text"
-id="search"
-placeholder="🔍 Search food..."
-onkeyup="searchFood()">
+<header>
 <h1>🍽️ S&A Family Restaurant</h1>
-<p>Welcome! Order your favourite food online.</p>
-</header> <input
+<p>Fresh & Delicious Food</p>
+
+<input
 type="text"
 id="search"
 placeholder="🔍 Search food..."
 onkeyup="searchFood()">
+</header>
 
 <main>
 
@@ -54,20 +52,13 @@ onkeyup="searchFood()">
 <button onclick="addToCart('Veg Roll')">Add to Cart</button>
 </div>
 
-<script src="app.js"></script>
 <div id="cart">
 <h2>🛒 Cart</h2>
 <p>No items added.</p>
 </div>
-<br>
 
-<input type="text" id="customerName" placeholder="Your Name"><br><br>
+<script src="app.js"></script>
 
-<input type="text" id="customerPhone" placeholder="Mobile Number"><br><br>
-
-<textarea id="customerAddress" placeholder="Delivery Address"></textarea><br><br>
-
-<button onclick="sendOrder()">Order on WhatsApp</button>
 </main>
 
 </body>
