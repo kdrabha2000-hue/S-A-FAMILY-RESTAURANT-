@@ -34,7 +34,7 @@ function sendOrder() {
     "\n\nTotal: ₹" + total;
 
   // 👇 यहाँ अपना WhatsApp नंबर डालना
-  let whatsapp = "91XXXXXXXXXX";
+  let whatsapp = "918453270362
 
   window.open(
     "https://wa.me/" + whatsapp + "?text=" + encodeURIComponent(message),
