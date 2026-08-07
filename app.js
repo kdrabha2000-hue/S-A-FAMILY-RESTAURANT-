@@ -1,9 +1,9 @@
 const restaurantMenu = [
     { id: 1, name: "Roti Veg", price: 40, category: "Breakfast", img: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300" },
-    { id: 2, name: "Aloo Paratha", price: 50, category: "Breakfast", img: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300" },
-    { id: 3, name: "Paneer Paratha", price: 100, category: "Breakfast", img: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300" },
-    { id: 4, name: "Veg Chow Full", price: 50, category: "Noodles & Rolls", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300" },
-    { id: 5, name: "Egg Chow Full", price: 70, category: "Noodles & Rolls", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300" },
+    { id: 2, name: "Puri Veg", price: 40, category: "Breakfast", img: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=300" },
+    { id: 3, name: "Aloo Paratha", price: 50, category: "Breakfast", img: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300" },
+    { id: 4, name: "Paneer Paratha", price: 100, category: "Breakfast", img: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=300" },
+    { id: 5, name: "Veg Chow Full", price: 50, category: "Noodles & Rolls", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300" },
     { id: 6, name: "Chicken Roll", price: 80, category: "Noodles & Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300" },
     { id: 7, name: "Veg Momo Full", price: 50, category: "Momos & Starters", img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=300", popular: true },
     { id: 8, name: "Chicken Momo Full", price: 70, category: "Momos & Starters", img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=300", popular: true },
@@ -26,17 +26,28 @@ function switchTab(tabName) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     
-    document.getElementById(`screen-${tabName}`).classList.add('active');
+    const targetScreen = document.getElementById(`screen-${tabName}`);
+    if(targetScreen) targetScreen.classList.add('active');
     
     const btns = document.querySelectorAll('.nav-btn');
-    if(tabName === 'home') btns[0].classList.add('active');
-    if(tabName === 'menu') btns[1].classList.add('active');
-    if(tabName === 'cart') { btns[2].classList.add('active'); renderCartScreen(); }
-    if(tabName === 'tracking') { btns[3].classList.add('active'); renderTrackerScreen(); }
+    if(tabName === 'home' && btns[0]) btns[0].classList.add('active');
+    if(tabName === 'menu' && btns[1]) btns[1].classList.add('active');
+    if(tabName === 'cart') { 
+        if(btns[2]) btns[2].classList.add('active'); 
+        renderCartScreen(); 
+    }
+    if(tabName === 'checkout') {
+        if(btns[2]) btns[2].classList.add('active');
+    }
+    if(tabName === 'tracking') { 
+        if(btns[3]) btns[3].classList.add('active'); 
+        renderTrackerScreen(); 
+    }
 }
 
 function loadPopularItems() {
     const popularBox = document.getElementById('popular-items');
+    if(!popularBox) return;
     const populars = restaurantMenu.filter(i => i.popular);
     popularBox.innerHTML = populars.map(item => `
         <div class="popular-card">
@@ -50,12 +61,13 @@ function loadPopularItems() {
 
 function filterCategory(cat, btn) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if(btn) btn.classList.add('active');
     renderMenuList(cat);
 }
 
 function renderMenuList(category) {
     const list = document.getElementById('menu-items-list');
+    if(!list) return;
     const items = category === 'All' ? restaurantMenu : restaurantMenu.filter(i => i.category === category);
     
     list.innerHTML = items.map(item => `
@@ -85,18 +97,22 @@ function quickAdd(name, price) {
 
 function updateCartBadge() {
     const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-    document.getElementById('cart-count-badge').innerText = totalQty;
+    const badge = document.getElementById('cart-count-badge');
+    if(badge) badge.innerText = totalQty;
 }
 
 function renderCartScreen() {
     const container = document.getElementById('cart-items-container');
+    const summaryBox = document.getElementById('cart-summary-box');
+    if(!container) return;
+
     if(cart.length === 0) {
         container.innerHTML = `<p style="text-align:center; padding:30px; color:#aaa;">Aapka cart khali hai.</p>`;
-        document.getElementById('cart-summary-box').style.display = 'none';
+        if(summaryBox) summaryBox.style.display = 'none';
         return;
     }
 
-    document.getElementById('cart-summary-box').style.display = 'block';
+    if(summaryBox) summaryBox.style.display = 'block';
     container.innerHTML = cart.map((item, index) => `
         <div class="cart-item">
             <div>
@@ -112,8 +128,10 @@ function renderCartScreen() {
     `).join('');
 
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    document.getElementById('subtotal-val').innerText = `₹${subtotal}`;
-    document.getElementById('total-val').innerText = `₹${subtotal + 40}`;
+    const subVal = document.getElementById('subtotal-val');
+    const totVal = document.getElementById('total-val');
+    if(subVal) subVal.innerText = `₹${subtotal}`;
+    if(totVal) totVal.innerText = `₹${subtotal + 40}`;
 }
 
 function changeQty(index, delta) {
@@ -131,10 +149,12 @@ function goToCheckout() {
     switchTab('checkout');
 }
 
-// Unique Random OTP Generator
 function sendOTP() {
-    const name = document.getElementById('cust-name').value;
-    const phone = document.getElementById('cust-phone').value;
+    const nameInput = document.getElementById('cust-name');
+    const phoneInput = document.getElementById('cust-phone');
+    
+    const name = nameInput ? nameInput.value : '';
+    const phone = phoneInput ? phoneInput.value : '';
 
     if(!name || phone.length !== 10) {
         alert("Kripya apna naam aur 10-digit mobile number bharein!");
@@ -142,21 +162,24 @@ function sendOTP() {
     }
 
     generatedOTP = Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('otp-field-box').classList.remove('hidden');
+    const otpBox = document.getElementById('otp-field-box');
+    if(otpBox) otpBox.classList.remove('hidden');
     alert(`Aapka Verification OTP hai: ${generatedOTP}`);
 }
 
 function verifyOTP() {
-    const enteredOTP = document.getElementById('cust-otp').value;
-    if(enteredOTP == generatedOTP) {
+    const otpInput = document.getElementById('cust-otp');
+    const enteredOTP = otpInput ? otpInput.value : '';
+    
+    if(enteredOTP == generatedOTP && generatedOTP !== null) {
         alert("Mobile Number Verified Successfully!");
-        document.getElementById('checkout-details-step').classList.remove('hidden');
+        const checkoutStep = document.getElementById('checkout-details-step');
+        if(checkoutStep) checkoutStep.classList.remove('hidden');
     } else {
         alert("Galat OTP! Kripya sahi OTP enter karein.");
     }
 }
 
-// Order Placement & Live Tracking Simulation
 function placeOrderWhatsApp() {
     const name = document.getElementById('cust-name').value;
     const phone = document.getElementById('cust-phone').value;
@@ -197,6 +220,8 @@ function placeOrderWhatsApp() {
 
 function renderTrackerScreen() {
     const container = document.getElementById('active-tracker-container');
+    if(!container) return;
+    
     if(!activeOrder) {
         container.innerHTML = `<p style="text-align:center; color:#aaa; margin-top:30px;">Abhi koi active order nahi hai.</p>`;
         return;
