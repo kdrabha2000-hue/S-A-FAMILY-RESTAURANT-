@@ -1,14 +1,14 @@
 const restaurantMenu = [
-  // SPECIAL FAST FOODS (Chowmein, Momos, Rolls & Chicken Pakora)
+   SPECIAL FAST FOODS (Chowmein, Momos, Rolls & Chicken Pakora)
   { id: 1, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
   { id: 2, name: "Chicken Pakora (Half)", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
   
-  // 3 Types of Chowmein
+  3 Types of Chowmein
   { id: 3, name: "Veg Chowmein", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
   { id: 4, name: "Chicken Chowmein", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
   { id: 5, name: "Pork Chowmein", price: 120, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
 
-  // 3 Types of Momos
+  3 Types of Momos
   { id: 6, name: "Veg Momos", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
   { id: 7, name: "Chicken Momos", price: 70, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
   { id: 8, name: "Pork Momos", price: 80, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
@@ -18,7 +18,7 @@ const restaurantMenu = [
   { id: 10, name: "Chicken Roll", price: 80, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
   { id: 11, name: "Pork Roll", price: 100, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
 
-  // Other Specials & Drinks
+  Other Specials & Drinks
   { id: 12, name: "Chicken Biryani", price: 180, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
   { id: 13, name: "Butter Chicken", price: 200, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=200" },
   { id: 14, name: "Cold Coffee", price: 70, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" }
@@ -316,15 +316,8 @@ function renderProfileScreen(container) {
     </div>
   `;
 }
-// 1. Firebase Config (Firebase Console से अपना Config Details पेस्ट करें)
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+1. Firebase Config (Firebase Console से अपना Config Details पेस्ट करें)
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyA9rXmSvtDVg2pfne8Xxik_l7TOGrhMWGM",
   authDomain: "fir-a-familyrestaurant.firebaseapp.com",
@@ -335,15 +328,15 @@ const firebaseConfig = {
   measurementId: "G-KH3HE2ZZGZ"
 };
 
-// Initialize Firebase
+Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 
-// Initialize Firebase
+ Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
-// 2. Sign Up Function
+2. Sign Up Function
 function signUp() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -352,7 +345,7 @@ function signUp() {
     .catch(error => alert(error.message));
 }
 
-// 3. Login Function
+3. Login Function
 function login() {
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
@@ -361,14 +354,14 @@ function login() {
     .catch(error => alert(error.message));
 }
 
-// 4. Google Sign-In Function
+ 4. Google Sign-In Function
 function googleLogin() {
   const provider = new firebase.auth.GoogleAuthProvider();
   auth.signInWithPopup(provider)
     .catch(error => alert(error.message));
 }
 
-// 5. Auth State Listener (Profile Display Logic)
+ 5. Auth State Listener (Profile Display Logic)
 auth.onAuthStateChanged(user => {
   if (user) {
     document.getElementById('auth-container').style.display = 'none';
@@ -381,7 +374,7 @@ auth.onAuthStateChanged(user => {
   }
 });
 
-// 6. Logout Function
+ 6. Logout Function
 function logout() {
   auth.signOut();
 }
