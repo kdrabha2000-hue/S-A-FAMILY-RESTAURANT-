@@ -9,7 +9,7 @@
 </head>
 <body>
 
-  <!-- Header Section -->
+  <!-- Header -->
   <header class="header">
     <h1>S&A FAMILY RESTAURANT</h1>
     <p>Freshly Made, Especially for You</p>
@@ -30,18 +30,8 @@
     </div>
   </div>
 
-  <!-- Category Filter -->
-  <section class="category">
-    <button class="cat-btn active">All</button>
-    <button class="cat-btn">Biryani</button>
-    <button class="cat-btn">Rolls</button>
-    <button class="cat-btn">Fast Food</button>
-    <button class="cat-btn">Drinks</button>
-  </section>
-
-  <!-- Food Menu List -->
+  <!-- Food Menu -->
   <main id="menu">
-    
     <div class="food-card">
       <div class="food-info">
         <h2>Chicken Biryani</h2>
@@ -81,10 +71,9 @@
       </div>
       <button class="add-btn" onclick="addToCart('Veg Roll')">ADD +</button>
     </div>
-
   </main>
 
-  <!-- Cart & WhatsApp Order Section -->
+  <!-- Cart Section -->
   <div id="cart" class="cart-section">
     <div class="cart-header">
       <h2>Your Cart</h2>
@@ -93,9 +82,43 @@
     <ul id="cart-items">
       <li>No items added.</li>
     </ul>
+    
+    <div class="delivery-info">
+      <span>🚚 Delivery Charge (5-12 km):</span>
+      <span id="delivery-charge">₹50</span>
+    </div>
+
     <div class="cart-footer">
       <h3 id="cart-total">Total: ₹0</h3>
-      <button class="whatsapp-btn" onclick="orderOnWhatsApp()">Order on WhatsApp 📲</button>
+      <button class="whatsapp-btn" onclick="openOrderModal()">Order on WhatsApp 📲</button>
+    </div>
+  </div>
+
+  <!-- Customer Address Popup Modal -->
+  <div id="orderModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeOrderModal()">&times;</span>
+      <h2>Delivery Details</h2>
+      <p class="sub-text">कॉल और डिलीवरी के लिए अपना पता भरें</p>
+      
+      <form id="addressForm" onsubmit="sendWhatsAppOrder(event)">
+        <label>आपका नाम (Full Name)*</label>
+        <input type="text" id="custName" placeholder="उदा. राहुल शर्मा" required>
+
+        <label>मोबाइल नंबर (Mobile Number)*</label>
+        <input type="tel" id="custPhone" placeholder="उदा. 9876543210" pattern="[0-9]{10}" required>
+
+        <label>पूरा पता (Full Address)*</label>
+        <textarea id="custAddress" rows="3" placeholder="घर/दुकान नंबर, गली, लैंडमार्क..." required></textarea>
+
+        <label>दूरी चुनिए (Distance)*</label>
+        <select id="custDistance" required>
+          <option value="5-12 km">5 - 12 km (Delivery ₹50)</option>
+          <option value="Below 5 km">Below 5 km (Delivery ₹50)</option>
+        </select>
+
+        <button type="submit" class="submit-order-btn">कंफर्म करें और WhatsApp पर भेजें</button>
+      </form>
     </div>
   </div>
 
