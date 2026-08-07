@@ -119,7 +119,7 @@ function renderMenuScreen(container) {
 
     <div id="full-menu-list"></div>
   `;
-  renderItemsList(restaurantMenu, 'full-menu-list');
+  renderItemsList(restaurantMenu, restaurantMenu.filter(...)
 }
 
 function filterCategory(cat, btn) {
