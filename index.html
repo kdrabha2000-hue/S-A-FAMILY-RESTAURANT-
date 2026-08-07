@@ -3,33 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>S&A Family Restaurant App</title>
+    <title>S&A Family Restaurant</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <!-- Header -->
     <header class="app-header">
         <div class="brand-title">
-            <i class="fa-solid fa-utensils logo-icon"></i>
-            <div>
-                <h1>S&A <span>FAMILY RESTAURANT</span></h1>
-                <p class="tagline">Freshly Made, Especially for You</p>
-            </div>
-        </div>
-        <div class="top-info-bar">
-            <span><i class="fa-solid fa-location-dot"></i> U.T. Road, Bengbari, Udalguri</span>
-            <span><i class="fa-solid fa-clock"></i> 8:00 AM - 9:30 PM</span>
+            <h1>S&A <span>FAMILY RESTAURANT</span></h1>
         </div>
     </header>
 
-    <!-- Main Screens View -->
+    <!-- Main Container -->
     <main id="app-container" class="container">
-        <!-- Screens render here dynamically -->
+        <!-- JS se screens yahan render hongi -->
     </main>
 
-    <!-- Bottom App Navigation Bar -->
+    <!-- Bottom Navigation Bar -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchTab('home', this)">
             <i class="fa-solid fa-house"></i>
@@ -40,10 +32,7 @@
             <span>Menu</span>
         </button>
         <button class="nav-item" onclick="switchTab('cart', this)">
-            <div class="icon-wrap">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span id="cart-badge" class="badge">0</span>
-            </div>
+            <i class="fa-solid fa-cart-shopping"></i>
             <span>Cart</span>
         </button>
         <button class="nav-item" onclick="switchTab('orders', this)">
