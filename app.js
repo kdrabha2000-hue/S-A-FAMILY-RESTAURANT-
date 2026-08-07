@@ -317,14 +317,27 @@ function renderProfileScreen(container) {
   `;
 }
 // 1. Firebase Config (Firebase Console से अपना Config Details पेस्ट करें)
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyA9rXmSvtDVg2pfne8Xxik_l7TOGrhMWGM",
+  authDomain: "fir-a-familyrestaurant.firebaseapp.com",
+  projectId: "fir-a-familyrestaurant",
+  storageBucket: "fir-a-familyrestaurant.firebasestorage.app",
+  messagingSenderId: "631976985851",
+  appId: "1:631976985851:web:9044bf9d216260f7b61c5e",
+  measurementId: "G-KH3HE2ZZGZ"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
