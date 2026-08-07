@@ -13,7 +13,7 @@ const restaurantMenu = [
   { id: 7, name: "Chicken Momos", price: 70, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
   { id: 8, name: "Pork Momos", price: 80, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
 
-  // 3 Types of Rolls
+  3 Types of Rolls
   { id: 9, name: "Veg Roll", price: 40, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
   { id: 10, name: "Chicken Roll", price: 80, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
   { id: 11, name: "Pork Roll", price: 100, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
