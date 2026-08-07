@@ -1,108 +1,101 @@
 let cart = [];
-let itemsTotal = 0;
-const deliveryCharge = 50; // 5 से 12 km के लिए डिलीवरी चार्ज
+let total = 0;
 
 const prices = {
-  'Chicken Biryani': 180,
-  'Veg Thali': 120,
-  'Fried Rice': 100,
-  'Chicken Roll': 90,
-  'Veg Roll': 50
+  "Chicken Biryani": 180,
+  "Veg Thali": 120,
+  "Fried Rice": 100
 };
 
 function addToCart(item) {
   cart.push(item);
-  itemsTotal += prices[item];
-  updateCart();
-}
-
-function clearCart() {
-  cart = [];
-  itemsTotal = 0;
+  total += prices[item];
   updateCart();
 }
 
 function updateCart() {
-  const cartList = document.getElementById("cart-items");
-  const totalElement = document.getElementById("cart-total");
+  let cartDiv = document.getElementById("cart");
 
   if (cart.length === 0) {
-    cartList.innerHTML = "<li>No items added.</li>";
-    if (totalElement) totalElement.innerText = "Total: ₹0";
-  } else {
-    let itemsHTML = "";
-    let itemCounts = {};
-    
-    cart.forEach(item => {
-      itemCounts[item] = (itemCounts[item] || 0) + 1;
-    });
-
-    for (let item in itemCounts) {
-      let qty = itemCounts[item];
-      let itemTotal = prices[item] * qty;
-      itemsHTML += `<li>${item} x ${qty} - ₹${itemTotal}</li>`;
-    }
-    
-    cartList.innerHTML = itemsHTML;
-    
-    let grandTotal = itemsTotal + deliveryCharge;
-    if (totalElement) totalElement.innerText = `Total: ₹${grandTotal} (Inc. ₹50 Delivery)`;
-  }
-}
-
-function openOrderModal() {
-  if (cart.length === 0) {
-    alert("आपका कार्ट खाली है! कृपया पहले मेनू से आइटम जोड़ें।");
+    cartDiv.innerHTML = `
+      <h2>🛒 Your Cart</h2>
+      <p>No items added.</p>
+    `;
     return;
   }
-  document.getElementById("orderModal").style.display = "flex";
-}
 
-function closeOrderModal() {
-  document.getElementById("orderModal").style.display = "none";
-}
+  let html = "<h2>🛒 Your Cart</h2>";
 
-function sendWhatsAppOrder(event) {
-  event.preventDefault();
-
-  let name = document.getElementById("custName").value;
-  let phone = document.getElementById("custPhone").value;
-  let address = document.getElementById("custAddress").value;
-  let distance = document.getElementById("custDistance").value;
-
-  let phoneNumber = "918453270362"; // आपका व्हाट्सएप नंबर
-  let grandTotal = itemsTotal + deliveryCharge;
-
-  let message = "🍔 *S&A Family Restaurant - नया ऑर्डर*\n\n";
-  message += "*ऑर्डर की जानकारी:*\n";
-
-  let itemCounts = {};
-  cart.forEach(item => {
-    itemCounts[item] = (itemCounts[item] || 0) + 1;
+  cart.forEach((item, index) => {
+    html += `
+      <p>${index + 1}. ${item}</p>
+    `;
   });
 
-  let index = 1;
-  for (let item in itemCounts) {
-    let qty = itemCounts[item];
-    let itemTotal = prices[item] * qty;
-    message += `${index}. ${item} x ${qty} = ₹${itemTotal}\n`;
-    index++;
-  }
+  html += `
+    <hr>
+    <h3>Total: ₹${total}</h3>
 
-  message += `\n📦 आइटम्स कुल: ₹${itemsTotal}`;
-  message += `\n🚚 डिलीवरी चार्ज (${distance}): ₹${deliveryCharge}`;
-  message += `\n💵 *कुल राशि (Total): ₹${grandTotal}*\n`;
-  message += `\n------------------------`;
-  message += `\n👤 *ग्राहक विवरण (Customer Details):*`;
-  message += `\n• नाम: ${name}`;
-  message += `\n• कॉल नंबर: ${phone}`;
-  message += `\n• पता: ${address}`;
-  message += `\n• दूरी: ${distance}`;
-  message += `\n------------------------`;
-  message += `\nकृपया ऑर्डर डिलीवर करने के लिए कॉल करें!`;
+    <input id="customerName" type="text"
+    placeholder="Your Name"
+    style="width:100%;padding:10px;margin-top:10px;">
 
-  let whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-  
-  closeOrderModal();
-  window.open(whatsappURL, '_blank');
+    <input id="customerPhone" type="text"
+    placeholder="Mobile Number"
+    style="width:100%;padding:10px;margin-top:10px;">
+
+    <textarea id="customerAddress"
+    placeholder="Delivery Address"
+    style="width:100%;padding:10px;margin-top:10px;"></textarea>
+
+    <button onclick="sendWhatsAppOrder()"
+    style="margin-top:15px;background:green;color:white;padding:15px;width:100%;border:none;border-radius:8px;">
+      📱 Order on WhatsApp
+    </button>
+  `;
+
+  cartDiv.innerHTML = html;
+}
+
+function searchFood() {
+  let input = document
+    .getElementById("search")
+    .value
+    .toLowerCase();
+
+  let cards = document.querySelectorAll(".food-card");
+
+  cards.forEach(card => {
+    let name = card.querySelector("h2").innerText.toLowerCase();
+
+    if (name.includes(input)) {
+      card.style.display = "block";
+    } else {
+      card.style.display = "none";
+    }
+  });
+}
+
+function sendWhatsAppOrder() {
+
+  let name = document.getElementById("customerName").value;
+  let phone = document.getElementById("customerPhone").value;
+  let address = document.getElementById("customerAddress").value;
+
+  let message =
+`🍽️ S&A Family Restaurant
+
+Customer: ${name}
+Phone: ${phone}
+Address: ${address}
+
+Order:
+${cart.join("\n")}
+
+Total: ₹${total}`;
+
+  let whatsapp =
+"https://wa.me/918453270362?text=" + encodeURIComponent(message);
+
+  window.open(whatsapp, "_blank");
 }
