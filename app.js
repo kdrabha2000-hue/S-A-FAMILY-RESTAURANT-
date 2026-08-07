@@ -316,3 +316,59 @@ function renderProfileScreen(container) {
     </div>
   `;
 }
+// 1. Firebase Config (Firebase Console से अपना Config Details पेस्ट करें)
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// 2. Sign Up Function
+function signUp() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  auth.createUserWithEmailAndPassword(email, password)
+    .then(userCredential => alert("Account Created Successfully!"))
+    .catch(error => alert(error.message));
+}
+
+// 3. Login Function
+function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  auth.signInWithEmailAndPassword(email, password)
+    .then(userCredential => alert("Logged In Successfully!"))
+    .catch(error => alert(error.message));
+}
+
+// 4. Google Sign-In Function
+function googleLogin() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .catch(error => alert(error.message));
+}
+
+// 5. Auth State Listener (Profile Display Logic)
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('auth-container').style.display = 'none';
+    document.getElementById('profile-container').style.display = 'block';
+    document.getElementById('user-email').innerText = user.email;
+    document.getElementById('user-name').innerText = user.displayName || "Customer";
+  } else {
+    document.getElementById('auth-container').style.display = 'block';
+    document.getElementById('profile-container').style.display = 'none';
+  }
+});
+
+// 6. Logout Function
+function logout() {
+  auth.signOut();
+}
