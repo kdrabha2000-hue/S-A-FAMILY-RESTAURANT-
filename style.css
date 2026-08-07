@@ -1,230 +1,124 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
 }
 
-body {
-  background-color: #0f0f0f;
-  color: #ffffff;
-  padding-bottom: 260px;
+body{
+    background:#f5f5f5;
 }
 
-/* Header */
-.header {
-  background-color: #d32f2f;
-  padding: 18px 15px;
-  text-align: center;
+.header{
+    background:#ff6b00;
+    color:#fff;
+    padding:20px;
+    text-align:center;
+    border-bottom-left-radius:20px;
+    border-bottom-right-radius:20px;
 }
 
-.header h1 {
-  font-size: 22px;
-  font-weight: 700;
+.logo h1{
+    font-size:28px;
 }
 
-.header p {
-  font-size: 12px;
-  opacity: 0.9;
+.logo p{
+    margin-top:5px;
+    font-size:15px;
 }
 
-.location-bar {
-  background-color: #1a1a1a;
-  color: #aaa;
-  font-size: 11px;
-  padding: 8px 12px;
-  text-align: center;
+#search{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:12px;
+    margin-top:15px;
+    font-size:16px;
 }
 
-/* Special Banner */
-.special-banner {
-  background: linear-gradient(135deg, #b71c1c 0%, #4a0000 100%);
-  margin: 15px;
-  padding: 18px;
-  border-radius: 12px;
+.banner{
+    margin:15px;
+    background:linear-gradient(45deg,#ff6b00,#ff9800);
+    color:white;
+    border-radius:15px;
+    text-align:center;
+    padding:20px;
 }
 
-.badge {
-  background-color: #d32f2f;
-  font-size: 10px;
-  padding: 4px 8px;
-  border-radius: 4px;
+.banner h2{
+    font-size:24px;
 }
 
-.special-banner h2 {
-  font-size: 20px;
-  margin: 6px 0;
+.banner p{
+    margin-top:8px;
+    font-size:16px;
 }
 
-.special-banner .price {
-  font-size: 18px;
-  color: #ffc107;
-  margin-bottom: 10px;
+.category{
+    display:flex;
+    overflow-x:auto;
+    gap:10px;
+    padding:15px;
 }
 
-/* Food Menu */
-#menu {
-  padding: 15px;
+.category button{
+    border:none;
+    background:#fff;
+    padding:12px 18px;
+    border-radius:25px;
+    font-size:15px;
+    box-shadow:0 2px 8px rgba(0,0,0,.15);
+    white-space:nowrap;
 }
 
-.food-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #1a1a1a;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 10px;
+#menu{
+    padding:15px;
 }
 
-.food-info h2 {
-  font-size: 15px;
+.food-card{
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    margin-bottom:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,.12);
 }
 
-.food-price {
-  color: #d32f2f;
-  font-weight: 700;
+.food-card img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
 }
 
-.add-btn {
-  background-color: #d32f2f;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
+.food-card h2{
+    padding:10px;
 }
 
-/* Cart Section */
-.cart-section {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: #141414;
-  border-top: 2px solid #d32f2f;
-  padding: 15px;
+.food-card p{
+    padding:0 10px 10px;
+    color:#666;
+    font-size:18px;
 }
 
-.cart-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
+.food-card button{
+    width:90%;
+    margin:10px 5%;
+    padding:14px;
+    background:#ff6b00;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:17px;
+    cursor:pointer;
 }
 
-.clear-btn {
-  background: none;
-  border: none;
-  color: #888;
+.food-card button:hover{
+    background:#e65c00;
 }
 
-#cart-items {
-  list-style: none;
-  max-height: 70px;
-  overflow-y: auto;
-}
-
-#cart-items li {
-  font-size: 13px;
-  color: #bbb;
-  padding: 2px 0;
-}
-
-.delivery-info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #aaa;
-  margin: 8px 0;
-  border-top: 1px solid #222;
-  padding-top: 6px;
-}
-
-.cart-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.whatsapp-btn {
-  background-color: #25d366;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-/* Modal Popup */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.8);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background-color: #1a1a1a;
-  padding: 20px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 400px;
-  border: 1px solid #333;
-  position: relative;
-}
-
-.close-btn {
-  position: absolute;
-  right: 15px;
-  top: 10px;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.modal h2 {
-  font-size: 18px;
-  margin-bottom: 4px;
-}
-
-.sub-text {
-  font-size: 12px;
-  color: #aaa;
-  margin-bottom: 15px;
-}
-
-#addressForm label {
-  display: block;
-  font-size: 12px;
-  margin-top: 10px;
-  color: #ccc;
-}
-
-#addressForm input, #addressForm textarea, #addressForm select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 4px;
-  background-color: #262626;
-  border: 1px solid #444;
-  color: white;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.submit-order-btn {
-  width: 100%;
-  background-color: #d32f2f;
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 18px;
-  font-weight: bold;
-  cursor: pointer;
+#cart{
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    margin-top:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
 }
