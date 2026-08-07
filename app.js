@@ -275,3 +275,14 @@ function renderProfileScreen(container) {
         `;
     }
 }
+const restaurantMenu = [
+    { id: 1, name: "Chicken Biryani", price: 180, category: "Main Course", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200", customizable: true },
+    { id: 2, name: "Veg Thali", price: 120, category: "Main Course", img: "https://images.unsplash.com/photo-1613378026884-6faf87337f6d?w=200" },
+    { id: 3, name: "Fried Rice", price: 100, category: "Main Course", img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=200" },
+    { id: 4, name: "Butter Chicken", price: 150, category: "Main Course", img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=200", customizable: true },
+    { id: 5, name: "Chilli Chicken", price: 120, category: "Main Course", img: "https://images.unsplash.com/photo-1525607551316-4a8e16d1f960?w=200" },
+    { id: 6, name: "Chicken Roll", price: 90, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200", customizable: true },
+    { id: 7, name: "Veg Roll", price: 50, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+    { id: 8, name: "Chicken Momos", price: 60, category: "Fast Food", img: "https://images.unsplash.com/photo-1625220194771-7eb5a3a670b2?w=200" },
+    { id: 9, name: "Cold Coffee", price: 80, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" }
+];
