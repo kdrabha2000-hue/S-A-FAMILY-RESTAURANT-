@@ -1,254 +1,41 @@
-:root {
-  --primary-red: #D32F2F;
-  --bg-black: #0F0F0F;
-  --card-bg: #1A1A1A;
-  --text-white: #FFFFFF;
-  --text-gray: #AAAAAA;
-  --border-color: #2A2A2A;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S&A FAMILY RESTAURANT</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container" id="app-container">
+    <!-- Screens will render dynamically -->
+  </div>
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchTab('home')">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('menu')">
+      <i class="fa-solid fa-utensils"></i>
+      <span>Menu</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('cart')">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span class="cart-badge" id="cart-badge">0</span>
+      <span>Cart</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('orders')">
+      <i class="fa-solid fa-clipboard-list"></i>
+      <span>Orders</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('profile')">
+      <i class="fa-solid fa-user"></i>
+      <span>Profile</span>
+    </button>
+  </nav>
 
-body {
-  background-color: var(--bg-black);
-  color: var(--text-white);
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
-}
-
-.app-container {
-  width: 100%;
-  max-width: 480px;
-  background-color: var(--bg-black);
-  padding-bottom: 70px;
-  min-height: 100vh;
-}
-
-/* Header Styles */
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-}
-
-.brand-title {
-  color: var(--primary-red);
-  font-weight: bold;
-  font-size: 20px;
-}
-
-.tagline {
-  font-size: 11px;
-  color: var(--text-gray);
-  font-style: italic;
-}
-
-.location-card, .info-card {
-  background: var(--card-bg);
-  margin: 10px 15px;
-  padding: 12px;
-  border-radius: 10px;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.location-card i, .info-card i {
-  color: var(--primary-red);
-}
-
-/* Banner */
-.banner {
-  background: linear-gradient(135deg, #b71c1c, #880e4f);
-  margin: 15px;
-  padding: 15px;
-  border-radius: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.banner img {
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.btn-primary {
-  background-color: var(--primary-red);
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 5px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-/* Horizontal Cards */
-.horizontal-scroll {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 10px 15px;
-}
-
-.mini-card {
-  background: var(--card-bg);
-  min-width: 100px;
-  padding: 8px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.mini-card img {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-/* Category Pills */
-.category-pills {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding: 10px 15px;
-}
-
-.pill {
-  background: var(--card-bg);
-  color: white;
-  border: 1px solid var(--border-color);
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.pill.active {
-  background: var(--primary-red);
-  border-color: var(--primary-red);
-}
-
-/* Food List Item */
-.item-card {
-  background: var(--card-bg);
-  margin: 10px 15px;
-  padding: 10px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.item-card img {
-  width: 75px;
-  height: 75px;
-  border-radius: 8px;
-  object-fit: cover;
-}
-
-.item-info {
-  flex-grow: 1;
-}
-
-.item-info h4 {
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.price {
-  color: var(--text-white);
-  font-weight: bold;
-}
-
-.btn-add {
-  background: var(--primary-red);
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-weight: bold;
-}
-
-.qty-ctrl {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #252525;
-  padding: 2px 6px;
-  border-radius: 4px;
-}
-
-.qty-ctrl button {
-  background: var(--primary-red);
-  color: white;
-  border: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 4px;
-}
-
-/* Input Fields */
-.input-box {
-  width: 100%;
-  padding: 10px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  color: white;
-  border-radius: 6px;
-  margin-top: 5px;
-}
-
-/* Bottom Nav */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  max-width: 480px;
-  background: var(--card-bg);
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0;
-  border-top: 1px solid var(--border-color);
-}
-
-.nav-item {
-  background: none;
-  border: none;
-  color: var(--text-gray);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 10px;
-  gap: 4px;
-  position: relative;
-}
-
-.nav-item.active {
-  color: var(--primary-red);
-}
-
-.nav-item i {
-  font-size: 18px;
-}
-
-.cart-badge {
-  position: absolute;
-  top: -4px;
-  right: 8px;
-  background: var(--primary-red);
-  color: white;
-  font-size: 10px;
-  padding: 2px 5px;
-  border-radius: 10px;
-}
+  <script src="app.js"></script>
+</body>
+</html>
