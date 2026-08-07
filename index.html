@@ -2,30 +2,24 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S&A Family Restaurant</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="app-header">
+    <header>
         <h1>S&A FAMILY RESTAURANT</h1>
-        <button id="user-btn" onclick="checkAuth()">Login</button>
     </header>
 
-    <div id="screen-home" class="screen active">
-        <h2>Popular Items</h2>
-        <div id="menu-items"></div>
-    </div>
-
-    <div id="screen-cart" class="screen">
-        <h2>Your Cart</h2>
-        <div id="cart-list"></div>
-        <button onclick="handleCheckout()">PROCEED TO CHECKOUT</button>
+    <div id="main-content">
+        <!-- Content will be injected by JS -->
     </div>
 
     <nav class="bottom-nav">
-        <button onclick="switchTab('home')">Home</button>
-        <button onclick="switchTab('cart')">Cart</button>
-        <button onclick="switchTab('tracking')">Track Order</button>
+        <button onclick="renderApp('home')">Home</button>
+        <button onclick="renderApp('menu')">Menu</button>
+        <button onclick="renderApp('cart')">Cart</button>
+        <button onclick="renderApp('track')">Tracking</button>
     </nav>
     <script src="app.js"></script>
 </body>
