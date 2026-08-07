@@ -1,24 +1,30 @@
 const restaurantMenu = [
-  // Main Course / Specials
-  { id: 1, name: "Chicken Biryani", price: 180, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
-  { id: 2, name: "Veg Thali", price: 120, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1613378026884-6faf73376d7e?w=200" },
-  { id: 3, name: "Fried Rice", price: 100, category: "Main Course", img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=200" },
-  { id: 4, name: "Butter Chicken", price: 150, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=200" },
-  { id: 5, name: "Chilli Chicken", price: 120, category: "Main Course", img: "https://images.unsplash.com/photo-1525607551316-4a8e16d1f968?w=200" },
+  // SPECIAL FAST FOODS (Chowmein, Momos, Rolls & Chicken Pakora)
+  { id: 1, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
+  { id: 2, name: "Chicken Pakora (Half)", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
   
-  // Rolls & Fast Food
-  { id: 6, name: "Chicken Roll", price: 90, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 7, name: "Veg Roll", price: 50, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 8, name: "Chicken Momos", price: 60, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 9, name: "French Fries", price: 70, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=200" },
-  
-  // Drinks
-  { id: 10, name: "Cold Coffee", price: 80, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" },
-  { id: 11, name: "Black Tea", price: 10, category: "Drinks", img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=200" }
+  // 3 Types of Chowmein
+  { id: 3, name: "Veg Chowmein", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+  { id: 4, name: "Chicken Chowmein", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+  { id: 5, name: "Pork Chowmein", price: 120, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+
+  // 3 Types of Momos
+  { id: 6, name: "Veg Momos", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
+  { id: 7, name: "Chicken Momos", price: 70, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
+  { id: 8, name: "Pork Momos", price: 80, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
+
+  // 3 Types of Rolls
+  { id: 9, name: "Veg Roll", price: 40, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+  { id: 10, name: "Chicken Roll", price: 80, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+  { id: 11, name: "Pork Roll", price: 100, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+
+  // Other Specials & Drinks
+  { id: 12, name: "Chicken Biryani", price: 180, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
+  { id: 13, name: "Butter Chicken", price: 200, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=200" },
+  { id: 14, name: "Cold Coffee", price: 70, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" }
 ];
 
 let cart = [];
-let activeOrdersList = [];
 
 document.addEventListener('DOMContentLoaded', () => {
   switchTab('home');
@@ -42,9 +48,13 @@ function renderHomeScreen(container) {
     <div class="screen-header">
       <div class="brand-main">
         <div class="brand-title">S&A</div>
-        <div style="font-weight: bold; font-size: 14px; letter-spacing: 1px;">FAMILY RESTAURANT</div>
-        <div class="tagline">Freshly Made, Especially for You</div>
+        <div style="font-weight: bold; font-size: 13px; letter-spacing: 1px;">FAMILY RESTAURANT</div>
+        <div class="tagline">Fast Food & Fresh Meals</div>
       </div>
+    </div>
+
+    <div class="offer-strip">
+      ⚡ SPECIAL OFFER: Apply Code <b>WELCOME50</b> & Get Flat ₹50 OFF!
     </div>
 
     <div class="location-box">
@@ -57,48 +67,53 @@ function renderHomeScreen(container) {
 
     <div class="info-row">
       <div><i class="fa-solid fa-clock"></i> Open 8:00 AM - 9:00 PM</div>
-      <div style="margin-left:auto;"><i class="fa-solid fa-motorcycle"></i> Delivery 5-12 km</div>
+      <div style="margin-left:auto;"><i class="fa-solid fa-motorcycle"></i> Fast Delivery 5-12 km</div>
     </div>
 
+    <!-- MAIN BANNER FOR FAST FOOD -->
     <div class="special-banner">
       <div>
-        <small style="color: #ffcdd2; font-weight: bold;">TODAY'S SPECIAL</small>
-        <h3 style="font-size: 18px; margin-top:2px;">Chicken Biryani</h3>
-        <p class="price" style="margin-top: 4px;">₹180</p>
-        <button class="btn-order-now" onclick="addToCart(1)">ORDER NOW</button>
+        <small style="color: #ffcdd2; font-weight: bold;">SPECIAL FAST FOOD</small>
+        <h3 style="font-size: 17px; margin-top:2px;">Chicken Pakora</h3>
+        <p class="price" style="margin-top: 4px;">Just ₹50</p>
+        <button class="btn-order-now" onclick="addToCart(2)">ORDER NOW</button>
       </div>
-      <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" alt="Biryani">
+      <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=200" alt="Pakora">
     </div>
 
-    <div style="display:flex; justify-content:space-between; padding:0 15px; align-items:center;">
-      <h4 style="font-size: 13px; color: var(--primary-red); font-weight: bold;">POPULAR ITEMS</h4>
-      <span style="font-size: 11px; color: var(--text-gray);" onclick="switchTab('menu')">View All ></span>
+    <div style="display:flex; justify-content:space-between; padding:5px 15px; align-items:center;">
+      <h4 style="font-size: 13px; color: var(--primary-red); font-weight: bold;">🔥 TOP SPECIAL ITEMS</h4>
+      <span style="font-size: 11px; color: var(--text-gray); cursor:pointer;" onclick="switchTab('menu')">View All ></span>
     </div>
 
     <div class="horizontal-scroll">
       ${specials.map(i => `
-        <div class="pop-card">
+        <div class="pop-card" onclick="addToCart(${i.id})">
           <img src="${i.img}">
           <div style="font-size:11px; font-weight:bold;">${i.name}</div>
           <div style="font-size:11px; color:var(--primary-red); font-weight:bold;">₹${i.price}</div>
         </div>
       `).join('')}
     </div>
+
+    <h4 style="padding: 10px 15px 0 15px; font-size:13px; color: var(--primary-red);">FAST FOODS & ROLLS</h4>
+    <div id="home-fastfood-list"></div>
   `;
+  renderItemsList(specials, 'home-fastfood-list');
 }
 
 function renderMenuScreen(container) {
   container.innerHTML = `
     <div class="red-top-bar">
-      <span>MENU</span>
+      <span>MENU CARD</span>
       <i class="fa-solid fa-magnifying-glass"></i>
     </div>
 
     <div class="category-pills">
-      <button class="pill active" onclick="filterCategory('All', this)">All</button>
-      <button class="pill" onclick="filterCategory('Main Course', this)">Main Course</button>
+      <button class="pill active" onclick="filterCategory('All', this)">All Specials</button>
+      <button class="pill" onclick="filterCategory('Fast Food', this)">Fast Food & Momos</button>
       <button class="pill" onclick="filterCategory('Rolls', this)">Rolls</button>
-      <button class="pill" onclick="filterCategory('Fast Food', this)">Fast Food</button>
+      <button class="pill" onclick="filterCategory('Main Course', this)">Main Course</button>
       <button class="pill" onclick="filterCategory('Drinks', this)">Drinks</button>
     </div>
 
@@ -150,7 +165,8 @@ function addToCart(id) {
     cart.push({ ...item, qty: 1 });
   }
   updateBadge();
-  switchTab('menu');
+  const activeNav = document.querySelector('.nav-item.active span');
+  if (activeNav) switchTab(activeNav.innerText.toLowerCase());
 }
 
 function updateBadge() {
@@ -166,14 +182,15 @@ function changeQty(id, delta) {
     if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
   }
   updateBadge();
-  const activeBtn = document.querySelector('.nav-item.active span');
-  if (activeBtn) switchTab(activeBtn.innerText.toLowerCase());
+  const activeNav = document.querySelector('.nav-item.active span');
+  if (activeNav) switchTab(activeNav.innerText.toLowerCase());
 }
 
 function renderCartScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = subtotal > 0 ? 50 : 0;
-  const total = subtotal + delivery;
+  const delivery = subtotal > 0 ? 40 : 0;
+  const discount = subtotal >= 200 ? 50 : 0;
+  const total = Math.max(0, subtotal + delivery - discount);
 
   container.innerHTML = `
     <div class="red-top-bar">
@@ -198,11 +215,12 @@ function renderCartScreen(container) {
     `).join('')}
 
     ${cart.length > 0 ? `
-      <div style="padding: 15px; background: var(--card-bg); margin: 15px; border-radius:12px; border:1px solid var(--border-color);">
+      <div style="padding: 12px; background: var(--card-bg); margin: 15px; border-radius:12px; border:1px solid var(--border-color);">
         <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Subtotal</span> <span>₹${subtotal}</span></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Delivery Charge (5-10 km)</span> <span>₹${delivery}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Delivery Charge</span> <span>₹${delivery}</span></div>
+        ${discount > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:#4CAF50;"><span>Offer Discount (WELCOME50)</span> <span>-₹${discount}</span></div>` : ''}
         <hr style="border-color:var(--border-color); margin:10px 0;">
-        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15px;"><span>TOTAL AMOUNT</span> <span class="price" style="color:var(--primary-red);">₹${total}</span></div>
+        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15px;"><span>TOTAL PAYABLE</span> <span class="price" style="color:var(--primary-red);">₹${total}</span></div>
       </div>
       <button class="btn-large-red" onclick="switchTab('checkout')">PROCEED TO CHECKOUT ></button>
     ` : '<p style="padding:30px; text-align:center; color:var(--text-gray);">Your Cart is Empty</p>'}
@@ -211,7 +229,8 @@ function renderCartScreen(container) {
 
 function renderCheckoutScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const total = subtotal + 50;
+  const discount = subtotal >= 200 ? 50 : 0;
+  const total = Math.max(0, subtotal + 40 - discount);
 
   container.innerHTML = `
     <div class="red-top-bar">
@@ -228,22 +247,22 @@ function renderCheckoutScreen(container) {
     </div>
 
     <div class="input-group">
-      <textarea id="cust-address" class="input-box" rows="3" placeholder="Complete Address (Village/Town/Landmark)"></textarea>
+      <textarea id="cust-address" class="input-box" rows="3" placeholder="Complete Delivery Address"></textarea>
     </div>
 
     <div class="input-group">
       <label>PAYMENT METHOD</label>
       <div style="background:var(--card-bg); padding:12px; border-radius:8px; border:1px solid var(--border-color); font-size:13px;">
-        <i class="fa-solid fa-circle-check" style="color:var(--primary-red);"></i> UPI / Online Payment (6000026478@okbizaxis)
+        <i class="fa-solid fa-circle-check" style="color:var(--primary-red);"></i> UPI ID: <b>6000026478@okbizaxis</b> / Cash on Delivery
       </div>
     </div>
 
     <div style="display:flex; justify-content:space-between; padding: 10px 15px; font-weight:bold;">
-      <span>Total Payable</span>
+      <span>Total Amount</span>
       <span class="price" style="font-size:18px;">₹${total}</span>
     </div>
 
-    <button class="btn-large-red" onclick="placeFinalOrder(${total})">PLACE ORDER ></button>
+    <button class="btn-large-red" onclick="placeFinalOrder(${total})">SEND ORDER ON WHATSAPP ></button>
   `;
 }
 
@@ -253,7 +272,7 @@ function placeFinalOrder(total) {
   const address = document.getElementById('cust-address').value.trim();
 
   if (!name || !phone || !address) {
-    alert('Please enter Name, Mobile Number and Address!');
+    alert('Please fill Name, Mobile Number and Address!');
     return;
   }
 
