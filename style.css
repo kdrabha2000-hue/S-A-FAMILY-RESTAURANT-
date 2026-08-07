@@ -1,78 +1,49 @@
 :root {
-    --bg-black: #0b0b0b;
-    --card-dark: #161616;
-    --card-border: #262626;
+    --bg-black: #080808;
+    --card-dark: #121212;
+    --card-border: #222222;
     --primary-red: #e50914;
     --text-white: #ffffff;
-    --text-gray: #aaaaaa;
+    --text-muted: #888888;
 }
 
 body {
     background-color: var(--bg-black);
     color: var(--text-white);
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     margin: 0;
-    padding-bottom: 75px;
+    padding-bottom: 80px;
 }
 
-/* Header */
 .app-header {
-    background: #000;
-    padding: 15px;
+    background: #000000;
+    padding: 12px 15px;
     text-align: center;
     border-bottom: 1px solid var(--card-border);
 }
 
-.brand-title {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-}
-
-.logo-icon {
-    font-size: 1.8rem;
-    color: var(--primary-red);
-}
-
 .brand-title h1 {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 900;
     margin: 0;
-    letter-spacing: 1px;
+    color: #fff;
 }
 
 .brand-title h1 span {
     color: var(--primary-red);
     display: block;
-    font-size: 0.8rem;
-}
-
-.tagline {
-    font-size: 0.75rem;
-    color: var(--text-gray);
-    font-style: italic;
-    margin: 3px 0 0 0;
-}
-
-.top-info-bar {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
     font-size: 0.7rem;
-    color: var(--text-gray);
-    margin-top: 10px;
+    font-weight: 700;
 }
 
-/* Container */
 .container {
-    padding: 15px;
+    padding: 12px;
 }
 
-/* Banner / Special Card */
 .hero-banner {
-    background: linear-gradient(135deg, #2c0305 0%, #161616 100%);
-    border: 1px solid var(--primary-red);
-    border-radius: 15px;
+    background: linear-gradient(135deg, #3d0205 0%, #121212 100%);
+    border: 1px solid rgba(229, 9, 20, 0.4);
+    border-radius: 16px;
     padding: 15px;
     display: flex;
     justify-content: space-between;
@@ -80,127 +51,46 @@ body {
     margin-bottom: 20px;
 }
 
-.hero-text span {
-    background: var(--primary-red);
-    font-size: 0.6rem;
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-weight: bold;
+.hero-img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-red);
 }
 
-.hero-text h2 {
-    margin: 8px 0 4px 0;
-    font-size: 1.2rem;
-}
-
-.hero-price {
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: var(--primary-red);
-}
-
-.btn-red {
-    background: var(--primary-red);
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 8px;
-}
-
-/* Category Pills */
-.category-pills {
-    display: flex;
-    gap: 10px;
-    overflow-x: auto;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.pill-btn {
-    background: var(--card-dark);
-    border: 1px solid var(--card-border);
-    color: var(--text-white);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    white-space: nowrap;
-    cursor: pointer;
-}
-
-.pill-btn.active {
-    background: var(--primary-red);
-    border-color: var(--primary-red);
-}
-
-/* Menu Items List */
 .item-card {
     background: var(--card-dark);
     border: 1px solid var(--card-border);
     border-radius: 12px;
-    padding: 10px;
-    margin-bottom: 12px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
 .item-img {
-    width: 65px;
-    height: 65px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     object-fit: cover;
 }
 
-.item-details {
+.item-info {
     flex-grow: 1;
 }
 
-.item-details h4 {
-    margin: 0 0 5px 0;
-    font-size: 0.95rem;
-}
-
-.item-details p {
-    margin: 0;
-    color: var(--primary-red);
-    font-weight: bold;
-}
-
-/* Add Button */
 .btn-add {
     background: var(--primary-red);
     color: white;
     border: none;
-    padding: 6px 12px;
+    padding: 6px 14px;
     border-radius: 6px;
-    font-weight: bold;
-    font-size: 0.8rem;
+    font-weight: 800;
     cursor: pointer;
 }
 
-/* Qty Controls in Cart */
-.qty-ctrl {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-qty {
-    background: var(--primary-red);
-    color: white;
-    border: none;
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* Bottom Nav */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -208,73 +98,20 @@ body {
     background: #000;
     display: flex;
     justify-content: space-around;
-    padding: 10px 0;
+    padding: 8px 0;
     border-top: 1px solid var(--card-border);
 }
 
 .nav-item {
     background: none;
     border: none;
-    color: var(--text-gray);
+    color: var(--text-muted);
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.7rem;
-    cursor: pointer;
-}
-
-.nav-item i {
-    font-size: 1.1rem;
-    margin-bottom: 3px;
+    font-size: 0.65rem;
 }
 
 .nav-item.active {
     color: var(--primary-red);
-}
-
-.icon-wrap {
-    position: relative;
-}
-
-.badge {
-    position: absolute;
-    top: -6px;
-    right: -10px;
-    background: var(--primary-red);
-    color: white;
-    border-radius: 50%;
-    font-size: 0.6rem;
-    padding: 2px 5px;
-}
-
-/* Form Styling */
-.form-card {
-    background: var(--card-dark);
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid var(--card-border);
-    margin-bottom: 15px;
-}
-
-.input-box {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0 15px 0;
-    background: #000;
-    border: 1px solid var(--card-border);
-    color: white;
-    border-radius: 6px;
-    box-sizing: border-box;
-}
-
-.btn-full {
-    width: 100%;
-    padding: 12px;
-    background: var(--primary-red);
-    color: white;
-    border: none;
-    border-radius: 25px;
-    font-weight: bold;
-    font-size: 0.95rem;
-    cursor: pointer;
 }
