@@ -16,35 +16,15 @@ function addToCart(item) {
 }
 
 function updateCart() {
-  let cartDiv = document.getElementById("cart");
-
-  let html = "<h2>🛒 Your Cart</h2>";
-
-  if (cart.length === 0) {
-    html += "<p>No items added.</p>";
-  } else {
-    cart.forEach(function(item) {
-      html += "<p>" + item + "</p>";
-    });
-
-    html += "<hr>";
-    html += "<h3>Total: ₹" + total + "</h3>";
-  }
-
-  cartDiv.innerHTML = html;
-}
-
-function searchFood() {
-  let input = document.getElementById("search").value.toLowerCase();
-  let cards = document.getElementsByClassName("food-card");
-
-  for (let i = 0; i < cards.length; i++) {
-    let name = cards[i].getElementsByTagName("h2")[0].innerText.toLowerCase();
-
-    if (name.includes(input)) {
-      cards[i].style.display = "block";
+    let cartList = document.getElementById("cart-items");
+    
+    if (cart.length === 0) {
+        cartList.innerHTML = "<li>No items added.</li>";
     } else {
-      cards[i].style.display = "none";
+        let itemsHtml = "";
+        cart.forEach(function(item) {
+            itemsHtml += "<li>" + item + "</li>";
+        });
+        cartList.innerHTML = itemsHtml;
     }
-  }
 }
