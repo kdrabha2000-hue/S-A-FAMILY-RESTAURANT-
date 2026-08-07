@@ -1,71 +1,115 @@
-const menuData = [
-    { id: 1, name: "Roti Veg", price: 40 },
-    { id: 2, name: "Puri Veg", price: 40 },
-    { id: 3, name: "Aloo Paratha", price: 50 },
-    { id: 4, name: "Paneer Paratha", price: 100 },
-    { id: 5, name: "Veg Chow Full", price: 50 },
-    { id: 6, name: "Chicken Roll", price: 80 },
-    { id: 7, name: "Veg Momo Full", price: 50 },
-    { id: 8, name: "Chicken Momo Full", price: 70 },
-    { id: 9, name: "Chicken Biryani", price: 180 },
-    { id: 10, name: "Butter Chicken Full", price: 380 }
+// Complete Restaurant Menu Data
+const restaurantMenu = [
+    { id: 1, name: "Chicken Biryani", price: 180, category: "Main Course", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
+    { id: 2, name: "Veg Thali", price: 120, category: "Main Course", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+    { id: 3, name: "Fried Rice", price: 100, category: "Main Course", img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=200" },
+    { id: 4, name: "Butter Chicken", price: 150, category: "Main Course", img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=200" },
+    { id: 5, name: "Chilli Chicken", price: 120, category: "Main Course", img: "https://images.unsplash.com/photo-1525607551316-4a8e16d18816?w=200" },
+    { id: 6, name: "Chicken Roll", price: 90, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+    { id: 7, name: "Veg Roll", price: 50, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+    { id: 8, name: "Chicken Momos", price: 60, category: "Fast Food", img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=200" },
+    { id: 9, name: "Cold Coffee", price: 80, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" }
 ];
 
 let cart = [];
-let currentUser = null;
-let activeOrder = null;
+let user = null;
+let activeOrdersList = [];
 
 document.addEventListener("DOMContentLoaded", () => {
-    renderApp('home');
+    switchTab('home');
 });
 
-function renderApp(screen) {
-    const container = document.getElementById('main-content');
-    
-    if (screen === 'home') {
-        container.innerHTML = `
-            <h2>Popular Items</h2>
-            <div id="menu-list"></div>
-        `;
-        renderMenuList();
-    } else if (screen === 'menu') {
-        container.innerHTML = `
-            <h2>Full Menu</h2>
-            <div id="menu-list"></div>
-        `;
-        renderMenuList();
-    } else if (screen === 'cart') {
-        renderCartScreen(container);
-    } else if (screen === 'track') {
-        renderTrackScreen(container);
+function switchTab(screenName, btnElement) {
+    if(btnElement) {
+        document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+        btnElement.classList.add('active');
     }
+
+    const container = document.getElementById('app-container');
+
+    if (screenName === 'home') renderHomeScreen(container);
+    if (screenName === 'menu') renderMenuScreen(container);
+    if (screenName === 'cart') renderCartScreen(container);
+    if (screenName === 'orders') renderOrdersScreen(container);
+    if (screenName === 'profile') renderProfileScreen(container);
 }
 
-function renderMenuList() {
-    const list = document.getElementById('menu-list');
-    list.innerHTML = menuData.map(item => `
-        <div class="card">
-            <div class="item-info">
+// 1. HOME SCREEN
+function renderHomeScreen(container) {
+    container.innerHTML = `
+        <div class="hero-banner">
+            <div class="hero-text">
+                <span>TODAY'S SPECIAL</span>
+                <h2>Chicken Biryani</h2>
+                <div class="hero-price">₹180</div>
+                <button class="btn-red" onclick="addToCart(1)">ORDER NOW</button>
+            </div>
+            <img src="https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" style="width:100px; height:100px; border-radius:50%; object-fit:cover;">
+        </div>
+
+        <h3 style="margin-bottom:10px;">POPULAR ITEMS</h3>
+        <div id="home-menu-list"></div>
+    `;
+    renderItemsList(restaurantMenu.slice(0, 5), 'home-menu-list');
+}
+
+// 2. MENU SCREEN
+function renderMenuScreen(container) {
+    container.innerHTML = `
+        <div class="category-pills">
+            <button class="pill-btn active" onclick="filterCategory('All', this)">All</button>
+            <button class="pill-btn" onclick="filterCategory('Main Course', this)">Main Course</button>
+            <button class="pill-btn" onclick="filterCategory('Rolls', this)">Rolls</button>
+            <button class="pill-btn" onclick="filterCategory('Fast Food', this)">Fast Food</button>
+            <button class="pill-btn" onclick="filterCategory('Drinks', this)">Drinks</button>
+        </div>
+        <div id="full-menu-list"></div>
+    `;
+    renderItemsList(restaurantMenu, 'full-menu-list');
+}
+
+function filterCategory(cat, btn) {
+    document.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = cat === 'All' ? restaurantMenu : restaurantMenu.filter(i => i.category === cat);
+    renderItemsList(filtered, 'full-menu-list');
+}
+
+function renderItemsList(items, targetId) {
+    const list = document.getElementById(targetId);
+    list.innerHTML = items.map(item => `
+        <div class="item-card">
+            <img src="${item.img}" class="item-img">
+            <div class="item-details">
                 <h4>${item.name}</h4>
-                <p class="price">₹${item.price}</p>
+                <p>₹${item.price}</p>
             </div>
             <button class="btn-add" onclick="addToCart(${item.id})">ADD +</button>
         </div>
     `).join('');
 }
 
+// CART SYSTEM
 function addToCart(id) {
-    const item = menuData.find(i => i.id === id);
+    const item = restaurantMenu.find(i => i.id === id);
     const existing = cart.find(i => i.id === id);
-    
-    if (existing) {
+    if(existing) {
         existing.qty += 1;
     } else {
         cart.push({ ...item, qty: 1 });
     }
-    
     updateBadge();
-    alert(`${item.name} Cart me add ho gaya!`);
+    alert(`${item.name} Added to Cart!`);
+}
+
+function changeQty(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if(item) {
+        item.qty += delta;
+        if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    }
+    updateBadge();
+    renderCartScreen(document.getElementById('app-container'));
 }
 
 function updateBadge() {
@@ -73,134 +117,187 @@ function updateBadge() {
     document.getElementById('cart-badge').innerText = totalQty;
 }
 
+// 3. CART & CHECKOUT SCREEN
 function renderCartScreen(container) {
     if (cart.length === 0) {
-        container.innerHTML = `<h2>Your Cart</h2><p style="text-align:center; color:#aaa; margin-top:30px;">Cart khali hai.</p>`;
+        container.innerHTML = `<h3>YOUR CART</h3><p style="text-align:center; color:#aaa; margin-top:40px;">Your Cart is Empty</p>`;
         return;
     }
 
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const total = subtotal + 40;
+    const delivery = 50;
+    const total = subtotal + delivery;
 
     container.innerHTML = `
-        <h2>Your Cart</h2>
+        <h3>YOUR CART</h3>
         ${cart.map(item => `
-            <div class="card">
-                <div>
+            <div class="item-card">
+                <img src="${item.img}" class="item-img">
+                <div class="item-details">
                     <h4>${item.name}</h4>
-                    <p class="price">₹${item.price} x ${item.qty} = ₹${item.price * item.qty}</p>
+                    <p>₹${item.price * item.qty}</p>
+                </div>
+                <div class="qty-ctrl">
+                    <button class="btn-qty" onclick="changeQty(${item.id}, -1)">-</button>
+                    <span>${item.qty}</span>
+                    <button class="btn-qty" onclick="changeQty(${item.id}, 1)">+</button>
                 </div>
             </div>
         `).join('')}
-        
-        <div style="margin-top:20px; background:#1e1e1e; padding:15px; border-radius:10px;">
-            <p>Subtotal: ₹${subtotal}</p>
-            <p>Delivery Charge: ₹40</p>
-            <hr style="border-color:#333;">
-            <p style="font-size:1.2rem; font-weight:bold; color:var(--primary-red);">Total: ₹${total}</p>
-            <button class="btn-block" onclick="startCheckout()">PROCEED TO CHECKOUT</button>
+
+        <div class="form-card" style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Subtotal</span><span>₹${subtotal}</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                <span>Delivery Charge</span><span>₹${delivery}</span>
+            </div>
+            <hr style="border-color:var(--card-border);">
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.1rem; color:var(--primary-red); margin-bottom:15px;">
+                <span>TOTAL AMOUNT</span><span>₹${total}</span>
+            </div>
+            <button class="btn-full" onclick="startCheckout()">PROCEED TO CHECKOUT ></button>
         </div>
     `;
 }
 
+// CHECKOUT & REGISTER FLOW
 function startCheckout() {
-    if (!currentUser) {
+    if(!user) {
         showRegisterScreen();
     } else {
-        showPlaceOrderScreen();
+        showCheckoutDetailsScreen();
     }
 }
 
 function showRegisterScreen() {
-    const container = document.getElementById('main-content');
+    const container = document.getElementById('app-container');
     container.innerHTML = `
-        <h2>Register / Login</h2>
-        <div class="form-group">
+        <h3>CHECKOUT / REGISTER</h3>
+        <div class="form-card">
             <label>Name</label>
-            <input type="text" id="reg-name" placeholder="Apna Name Likhein">
-        </div>
-        <div class="form-group">
+            <input type="text" id="reg-name" class="input-box" placeholder="Enter Full Name">
+            
             <label>Mobile Number</label>
-            <input type="tel" id="reg-phone" placeholder="10-digit Mobile Number" maxlength="10">
+            <input type="tel" id="reg-phone" class="input-box" placeholder="10-digit Mobile Number" maxlength="10">
+            
+            <button class="btn-full" onclick="saveUser()">REGISTER & CONTINUE</button>
         </div>
-        <button class="btn-block" onclick="handleRegistration()">Submit & Continue</button>
     `;
 }
 
-function handleRegistration() {
+function saveUser() {
     const name = document.getElementById('reg-name').value;
     const phone = document.getElementById('reg-phone').value;
 
-    if (!name || phone.length !== 10) {
-        alert("Sahi Name aur 10-digit Mobile Number bharein!");
+    if(!name || phone.length !== 10) {
+        alert("Please enter a valid Name & 10-digit Phone Number!");
         return;
     }
 
-    currentUser = { name, phone };
-    alert("Registration Successful!");
-    showPlaceOrderScreen();
+    user = { name, phone };
+    showCheckoutDetailsScreen();
 }
 
-function showPlaceOrderScreen() {
-    const container = document.getElementById('main-content');
+function showCheckoutDetailsScreen() {
+    const container = document.getElementById('app-container');
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const total = subtotal + 50;
+
     container.innerHTML = `
-        <h2>Delivery Address</h2>
-        <p>Logged in as: <b>${currentUser.name} (${currentUser.phone})</b></p>
-        <div class="form-group">
-            <label>Full Address</label>
-            <input type="text" id="del-address" placeholder="House No, Landmark, Area">
+        <h3>CHECKOUT DETAILS</h3>
+        <div class="form-card">
+            <p><b>Name:</b> ${user.name}</p>
+            <p><b>Phone:</b> ${user.phone}</p>
+            
+            <label>Delivery Address</label>
+            <input type="text" id="del-address" class="input-box" placeholder="House No, Landmark, Area">
+
+            <label>Payment Method</label>
+            <div style="margin:10px 0;">
+                <input type="radio" name="pay" id="upi" checked> <label for="upi">UPI / Online Payment</label><br>
+                <input type="radio" name="pay" id="cod"> <label for="cod">Cash on Delivery</label>
+            </div>
+
+            <button class="btn-full" onclick="placeFinalOrder(${total})">PLACE ORDER NOW</button>
         </div>
-        <button class="btn-block" onclick="confirmOrder()">Confirm & Place Order</button>
     `;
 }
 
-function confirmOrder() {
+function placeFinalOrder(total) {
     const address = document.getElementById('del-address').value;
-    if (!address) {
-        alert("Address bharna zaroori hai!");
+    if(!address) {
+        alert("Please enter delivery address!");
         return;
     }
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const total = subtotal + 40;
-
-    activeOrder = {
-        id: Math.floor(100000 + Math.random() * 900000),
+    const orderId = Math.floor(100000 + Math.random() * 900000);
+    const newOrder = {
+        id: orderId,
         items: [...cart],
         total: total,
-        status: "Order Placed - Preparing...",
-        address: address
+        address: address,
+        status: "Order Placed"
     };
 
-    let orderList = cart.map(i => `• ${i.name} (x${i.qty}) - ₹${i.price * i.qty}`).join('%0A');
-    let message = `*NEW ORDER - S%26A RESTAURANT*%0A%0A` +
-        `Order ID: #${activeOrder.id}%0A` +
-        `Customer: ${currentUser.name}%0A` +
-        `Phone: ${currentUser.phone}%0A` +
-        `Address: ${address}%0A%0A` +
-        `*Items:*%0A${orderList}%0A%0A` +
-        `*Total Amount: ₹${total}*`;
+    activeOrdersList.push(newOrder);
 
-    window.open(`https://wa.me/918453270362?text=${message}`, '_blank');
+    // Send WhatsApp Message
+    let itemListStr = cart.map(i => `• ${i.name} (x${i.qty}) - ₹${i.price * i.qty}`).join('%0A');
+    let msg = `*NEW ORDER - S%26A RESTAURANT*%0A%0A` +
+        `Order ID: #${orderId}%0A` +
+        `Customer: ${user.name}%0A` +
+        `Phone: ${user.phone}%0A` +
+        `Address: ${address}%0A%0A` +
+        `*Items:*%0A${itemListStr}%0A%0A` +
+        `*Total Payable: ₹${total}*`;
+
+    window.open(`https://wa.me/918453270362?text=${msg}`, '_blank');
 
     cart = [];
     updateBadge();
-    renderApp('track');
+    switchTab('orders');
 }
 
-function renderTrackScreen(container) {
-    if (!activeOrder) {
-        container.innerHTML = `<h2>Order Tracking</h2><p style="text-align:center; color:#aaa; margin-top:30px;">Abhi koi active order nahi hai.</p>`;
+// 4. ORDERS TRACKING SCREEN
+function renderOrdersScreen(container) {
+    if(activeOrdersList.length === 0) {
+        container.innerHTML = `<h3>YOUR ORDERS</h3><p style="text-align:center; color:#aaa; margin-top:40px;">No Active Orders Found</p>`;
         return;
     }
 
     container.innerHTML = `
-        <h2>Order Tracking</h2>
-        <div class="status-box">
-            <h3>Order #${activeOrder.id}</h3>
-            <p>Total: <b>₹${activeOrder.total}</b></p>
-            <hr style="border-color:#333;">
-            <p style="color:var(--primary-red); font-size:1.1rem; font-weight:bold;">Status: ${activeOrder.status}</p>
-        </div>
+        <h3>YOUR LIVE ORDERS</h3>
+        ${activeOrdersList.map(ord => `
+            <div class="form-card">
+                <h4>Order #${ord.id}</h4>
+                <p>Total: <b>₹${ord.total}</b></p>
+                <p style="color:var(--text-gray); font-size:0.85rem;">Address: ${ord.address}</p>
+                <hr style="border-color:var(--card-border);">
+                <p style="color:var(--primary-red); font-weight:bold;">Status: ${ord.status}</p>
+            </div>
+        `).join('')}
     `;
+}
+
+// 5. PROFILE SCREEN
+function renderProfileScreen(container) {
+    if(!user) {
+        container.innerHTML = `
+            <h3>PROFILE</h3>
+            <div class="form-card">
+                <p>You are not logged in.</p>
+                <button class="btn-full" onclick="showRegisterScreen()">LOGIN / REGISTER</button>
+            </div>
+        `;
+    } else {
+        container.innerHTML = `
+            <h3>PROFILE</h3>
+            <div class="form-card">
+                <p><b>Name:</b> ${user.name}</p>
+                <p><b>Phone:</b> ${user.phone}</p>
+                <button class="btn-full" onclick="user=null; switchTab('profile');">LOGOUT</button>
+            </div>
+        `;
+    }
 }
