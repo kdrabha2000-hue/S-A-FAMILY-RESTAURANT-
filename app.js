@@ -1,5 +1,6 @@
 let cart = [];
-let total = 0;
+let itemsTotal = 0;
+const deliveryCharge = 50; // 5 से 12 km के लिए डिलीवरी चार्ज
 
 const prices = {
   'Chicken Biryani': 180,
@@ -11,13 +12,13 @@ const prices = {
 
 function addToCart(item) {
   cart.push(item);
-  total += prices[item];
+  itemsTotal += prices[item];
   updateCart();
 }
 
 function clearCart() {
   cart = [];
-  total = 0;
+  itemsTotal = 0;
   updateCart();
 }
 
@@ -27,11 +28,11 @@ function updateCart() {
 
   if (cart.length === 0) {
     cartList.innerHTML = "<li>No items added.</li>";
+    if (totalElement) totalElement.innerText = "Total: ₹0";
   } else {
     let itemsHTML = "";
-    
-    // Count item quantities
     let itemCounts = {};
+    
     cart.forEach(item => {
       itemCounts[item] = (itemCounts[item] || 0) + 1;
     });
@@ -43,22 +44,37 @@ function updateCart() {
     }
     
     cartList.innerHTML = itemsHTML;
-  }
-  
-  if (totalElement) {
-    totalElement.innerText = "Total: ₹" + total;
+    
+    let grandTotal = itemsTotal + deliveryCharge;
+    if (totalElement) totalElement.innerText = `Total: ₹${grandTotal} (Inc. ₹50 Delivery)`;
   }
 }
 
-function orderOnWhatsApp() {
+function openOrderModal() {
   if (cart.length === 0) {
     alert("आपका कार्ट खाली है! कृपया पहले मेनू से आइटम जोड़ें।");
     return;
   }
+  document.getElementById("orderModal").style.display = "flex";
+}
 
-  // अपना व्हाट्सएप नंबर यहाँ डालें (91 देश कोड के साथ)
-  let phoneNumber = "8453270362"; 
+function closeOrderModal() {
+  document.getElementById("orderModal").style.display = "none";
+}
+
+function sendWhatsAppOrder(event) {
+  event.preventDefault();
+
+  let name = document.getElementById("custName").value;
+  let phone = document.getElementById("custPhone").value;
+  let address = document.getElementById("custAddress").value;
+  let distance = document.getElementById("custDistance").value;
+
+  let phoneNumber = "918453270362"; // आपका व्हाट्सएप नंबर
+  let grandTotal = itemsTotal + deliveryCharge;
+
   let message = "🍔 *S&A Family Restaurant - नया ऑर्डर*\n\n";
+  message += "*ऑर्डर की जानकारी:*\n";
 
   let itemCounts = {};
   cart.forEach(item => {
@@ -73,9 +89,20 @@ function orderOnWhatsApp() {
     index++;
   }
 
-  message += `\n💵 *कुल राशि: ₹${total}*\n`;
-  message += `📍 *पता:* U.T. Road, Bengbari, Udalguri, Assam\n\nकृपया इस ऑर्डर की पुष्टि करें!`;
+  message += `\n📦 आइटम्स कुल: ₹${itemsTotal}`;
+  message += `\n🚚 डिलीवरी चार्ज (${distance}): ₹${deliveryCharge}`;
+  message += `\n💵 *कुल राशि (Total): ₹${grandTotal}*\n`;
+  message += `\n------------------------`;
+  message += `\n👤 *ग्राहक विवरण (Customer Details):*`;
+  message += `\n• नाम: ${name}`;
+  message += `\n• कॉल नंबर: ${phone}`;
+  message += `\n• पता: ${address}`;
+  message += `\n• दूरी: ${distance}`;
+  message += `\n------------------------`;
+  message += `\nकृपया ऑर्डर डिलीवर करने के लिए कॉल करें!`;
 
   let whatsappURL = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+  
+  closeOrderModal();
   window.open(whatsappURL, '_blank');
 }
