@@ -329,11 +329,11 @@ const firebaseConfig = {
 };
 
 Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+//const app = initializeApp(firebaseConfig);
+//const analytics = getAnalytics(app);
 
  Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+firebase.initiAlizeapp(firebaseConfig);
 const auth = firebase.auth();
 
 2. Sign Up Function
