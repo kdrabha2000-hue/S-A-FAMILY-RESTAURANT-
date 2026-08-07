@@ -88,17 +88,87 @@ function renderItemsList(items, targetId) {
     `).join('');
 }
 
+let currentCustomItem = null;
+
 function addToCart(id) {
     const item = restaurantMenu.find(i => i.id === id);
-    const existing = cart.find(i => i.id === id);
+    if (item.customizable) {
+        openCustomModal(item);
+    } else {
+        addItemToCartList(item, item.price, "");
+    }
+}
+
+function openCustomModal(item) {
+    currentCustomItem = item;
+    const modal = document.createElement('div');
+    modal.id = 'custom-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3 style="margin-top:0;">Customize ${item.name}</h3>
+            <div class="modal-option">
+                <label><input type="checkbox" id="opt-extra"> Extra Cheese / Gravy</label>
+                <span>+₹30</span>
+            </div>
+            <div class="modal-option">
+                <label>Spicy Level:</label>
+                <select id="opt-spice" style="background:#000; color:#fff; border:1px solid #333; padding:4px;">
+                    <option value="Normal">Normal</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Extra Spicy">Extra Spicy</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-full" style="background:#444;" onclick="closeModal()">Cancel</button>
+                <button class="btn-full" onclick="confirmCustomization()">Add to Cart</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeModal() {
+    const modal = document.getElementById('custom-modal');
+    if (modal) modal.remove();
+}
+
+function confirmCustomization() {
+    const extra = document.getElementById('opt-extra').checked;
+    const spice = document.getElementById('opt-spice').value;
+    
+    let extraPrice = extra ? 30 : 0;
+    let customNote = [];
+    if (extra) customNote.push("Extra Cheese/Gravy");
+    if (spice) customNote.push(`Spicy: ${spice}`);
+
+    const finalPrice = currentCustomItem.price + extraPrice;
+    const noteText = customNote.join(", ");
+
+    addItemToCartList(currentCustomItem, finalPrice, noteText);
+    closeModal();
+}
+
+function addItemToCartList(item, price, note) {
+    const cartItemId = item.id + (note ? '-' + note : '');
+    const existing = cart.find(i => i.cartItemId === cartItemId);
+    
     if (existing) {
         existing.qty += 1;
     } else {
-        cart.push({ ...item, qty: 1 });
+        cart.push({
+            cartItemId: cartItemId,
+            id: item.id,
+            name: item.name + (note ? ` (${note})` : ''),
+            price: price,
+            img: item.img,
+            qty: 1
+        });
     }
     updateBadge();
-    alert(`${item.name} Added to Cart!`);
+    alert(`${item.name} Cart me add ho gaya!`);
 }
+
 
 function updateBadge() {
     const count = cart.reduce((sum, item) => sum + item.qty, 0);
