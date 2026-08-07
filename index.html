@@ -1,127 +1,70 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S&A Family Restaurant</title>
-  <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S&A Family Restaurant</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <!-- Header -->
-  <header class="header">
-    <h1>S&A FAMILY RESTAURANT</h1>
-    <p>Freshly Made, Especially for You</p>
-  </header>
-
-  <!-- Location Banner -->
-  <div class="location-bar">
-    📍 U.T. Road, Bengbari, Udalguri, Assam - 784523 | 🕒 8:00 AM - 9:30 PM
-  </div>
-
-  <!-- Today's Special Banner -->
-  <div class="special-banner">
-    <div class="banner-content">
-      <span class="badge">TODAY'S SPECIAL</span>
-      <h2>Chicken Biryani</h2>
-      <p class="price">₹180</p>
-      <button class="add-btn" onclick="addToCart('Chicken Biryani')">ORDER NOW</button>
-    </div>
-  </div>
-
-  <!-- Food Menu -->
-  <main id="menu">
-    <div class="food-card">
-      <div class="food-info">
-        <h2>Chicken Biryani</h2>
-        <p class="food-price">₹180</p>
-      </div>
-      <button class="add-btn" onclick="addToCart('Chicken Biryani')">ADD +</button>
+<header class="header">
+    <div class="logo">
+        <h1>🍽️ S&A Family Restaurant</h1>
+        <p>Fresh Food • Fast Delivery</p>
     </div>
 
-    <div class="food-card">
-      <div class="food-info">
-        <h2>Veg Thali</h2>
-        <p class="food-price">₹120</p>
-      </div>
-      <button class="add-btn" onclick="addToCart('Veg Thali')">ADD +</button>
-    </div>
+    <input
+        type="text"
+        id="search"
+        placeholder="🔍 Search your favourite food..."
+        onkeyup="searchFood()">
+</header>
 
-    <div class="food-card">
-      <div class="food-info">
-        <h2>Fried Rice</h2>
-        <p class="food-price">₹100</p>
-      </div>
-      <button class="add-btn" onclick="addToCart('Fried Rice')">ADD +</button>
-    </div>
+<section class="banner">
+    <h2>Delicious Food Delivered Fast 🚀</h2>
+    <p>Flat 10% OFF on First Order</p>
+</section>
 
-    <div class="food-card">
-      <div class="food-info">
-        <h2>Chicken Roll</h2>
-        <p class="food-price">₹90</p>
-      </div>
-      <button class="add-btn" onclick="addToCart('Chicken Roll')">ADD +</button>
-    </div>
+<section class="category">
+    <button>🍗 Biryani</button>
+    <button>🥗 Veg</button>
+    <button>🍜 Chinese</button>
+    <button>🥤 Drinks</button>
+</section>
 
-    <div class="food-card">
-      <div class="food-info">
-        <h2>Veg Roll</h2>
-        <p class="food-price">₹50</p>
-      </div>
-      <button class="add-btn" onclick="addToCart('Veg Roll')">ADD +</button>
-    </div>
-  </main>
+<main id="menu">
 
-  <!-- Cart Section -->
-  <div id="cart" class="cart-section">
-    <div class="cart-header">
-      <h2>Your Cart</h2>
-      <button class="clear-btn" onclick="clearCart()">Clear</button>
-    </div>
-    <ul id="cart-items">
-      <li>No items added.</li>
-    </ul>
-    
-    <div class="delivery-info">
-      <span>🚚 Delivery Charge (5-12 km):</span>
-      <span id="delivery-charge">₹50</span>
-    </div>
+<div class="food-card">
+    <img src="https://images.unsplash.com/photo-1563379091339-03246963d29a?w=500" alt="Chicken Biryani">
+    <h2>Chicken Biryani</h2>
+    <p>₹180</p>
+    <button onclick="addToCart('Chicken Biryani')">Add to Cart</button>
+</div>
 
-    <div class="cart-footer">
-      <h3 id="cart-total">Total: ₹0</h3>
-      <button class="whatsapp-btn" onclick="openOrderModal()">Order on WhatsApp 📲</button>
-    </div>
-  </div>
+<div class="food-card">
+    <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500" alt="Veg Thali">
+    <h2>Veg Thali</h2>
+    <p>₹120</p>
+    <button onclick="addToCart('Veg Thali')">Add to Cart</button>
+</div>
 
-  <!-- Customer Address Popup Modal -->
-  <div id="orderModal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeOrderModal()">&times;</span>
-      <h2>Delivery Details</h2>
-      <p class="sub-text">कॉल और डिलीवरी के लिए अपना पता भरें</p>
-      
-      <form id="addressForm" onsubmit="sendWhatsAppOrder(event)">
-        <label>आपका नाम (Full Name)*</label>
-        <input type="text" id="custName" placeholder="उदा. राहुल शर्मा" required>
+<div class="food-card">
+    <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500" alt="Fried Rice">
+    <h2>Fried Rice</h2>
+    <p>₹100</p>
+    <button onclick="addToCart('Fried Rice')">Add to Cart</button>
+</div>
 
-        <label>मोबाइल नंबर (Mobile Number)*</label>
-        <input type="tel" id="custPhone" placeholder="उदा. 8453××××××" pattern="[0-9]{10}" required>
+<div id="cart">
+    <h2>🛒 Your Cart</h2>
+    <p>No items added.</p>
+</div>
 
-        <label>पूरा पता (Full Address)*</label>
-        <textarea id="custAddress" rows="3" placeholder="घर/दुकान नंबर, गली, लैंडमार्क..." required></textarea>
+</main>
 
-        <label>दूरी चुनिए (Distance)*</label>
-        <select id="custDistance" required>
-          <option value="5-12 km">5 - 12 km (Delivery ₹50)</option>
-          <option value="Below 5 km">Below 5 km (Delivery ₹50)</option>
-        </select>
+<script src="app.js"></script>
 
-        <button type="submit" class="submit-order-btn">कंफर्म करें और WhatsApp पर भेजें</button>
-      </form>
-    </div>
-  </div>
-
-  <script src="app.js"></script>
 </body>
 </html>
