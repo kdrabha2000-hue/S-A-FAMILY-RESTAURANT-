@@ -5,22 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S&A Family Restaurant</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <h1>S&A FAMILY RESTAURANT</h1>
+
+    <header class="app-header">
+        <div class="logo-area">
+            <h1>S&A <span>FAMILY RESTAURANT</span></h1>
+            <p class="tagline">Udalguri, Tamulpur Road, Opp-Bengbari High School</p>
+        </div>
     </header>
 
-    <div id="main-content">
-        <!-- Content will be injected by JS -->
+    <div id="main-content" class="container">
+        <!-- Views will render dynamically via app.js -->
     </div>
 
     <nav class="bottom-nav">
-        <button onclick="renderApp('home')">Home</button>
-        <button onclick="renderApp('menu')">Menu</button>
-        <button onclick="renderApp('cart')">Cart</button>
-        <button onclick="renderApp('track')">Tracking</button>
+        <button class="nav-btn" onclick="renderApp('home')"><i class="fa-solid fa-house"></i><span>Home</span></button>
+        <button class="nav-btn" onclick="renderApp('menu')"><i class="fa-solid fa-utensils"></i><span>Menu</span></button>
+        <button class="nav-btn" onclick="renderApp('cart')"><i class="fa-solid fa-cart-shopping"></i><span id="cart-badge">0</span><span>Cart</span></button>
+        <button class="nav-btn" onclick="renderApp('track')"><i class="fa-solid fa-truck-fast"></i><span>Track Order</span></button>
     </nav>
+
     <script src="app.js"></script>
 </body>
 </html>
