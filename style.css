@@ -1,65 +1,208 @@
-body{
-    margin:0;
-    font-family:Arial,sans-serif;
-    background:#f4f4f4;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
 
-.header{
-    background:#ff5722;
-    color:white;
-    text-align:center;
-    padding:20px;
+body {
+  background-color: #0f0f0f;
+  color: #ffffff;
+  padding-bottom: 220px;
 }
 
-#search{
-    width:90%;
-    padding:12px;
-    border:none;
-    border-radius:8px;
-    margin-top:10px;
+/* Header */
+.header {
+  background-color: #d32f2f;
+  padding: 18px 15px;
+  text-align: center;
+  border-bottom: 2px solid #b71c1c;
 }
 
-.category{
-    display:flex;
-    gap:10px;
-    overflow-x:auto;
-    padding:10px;
-    background:white;
+.header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
-.category button{
-    background:#ff5722;
-    color:white;
-    border:none;
-    padding:10px 16px;
-    border-radius:20px;
-    width:auto;
+.header p {
+  font-size: 12px;
+  opacity: 0.9;
+  font-style: italic;
 }
 
-#menu{
-    padding:15px;
+/* Location Bar */
+.location-bar {
+  background-color: #1a1a1a;
+  color: #aaa;
+  font-size: 11px;
+  padding: 8px 12px;
+  text-align: center;
+  border-bottom: 1px solid #2a2a2a;
 }
 
-.food-card{
-    background:white;
-    border-radius:12px;
-    padding:15px;
-    margin-bottom:15px;
-    box-shadow:0 2px 8px rgba(0,0,0,.15);
+/* Special Banner */
+.special-banner {
+  background: linear-gradient(135deg, #b71c1c 0%, #4a0000 100%);
+  margin: 15px;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #d32f2f;
 }
 
-.food-card button{
-    background:#28a745;
-    color:white;
-    border:none;
-    padding:12px;
-    width:100%;
-    border-radius:8px;
+.badge {
+  background-color: #d32f2f;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
 }
 
-#cart{
-    background:white;
-    padding:15px;
-    margin-top:20px;
-    border-radius:12px;
+.special-banner h2 {
+  font-size: 20px;
+  margin: 8px 0 4px 0;
+}
+
+.special-banner .price {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffc107;
+  margin-bottom: 10px;
+}
+
+/* Categories */
+.category {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding: 10px 15px;
+  background-color: #141414;
+}
+
+.cat-btn {
+  background-color: #222;
+  color: #ccc;
+  border: 1px solid #333;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.cat-btn.active {
+  background-color: #d32f2f;
+  color: white;
+  border-color: #d32f2f;
+}
+
+/* Food Menu */
+#menu {
+  padding: 15px;
+}
+
+.food-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.food-info h2 {
+  font-size: 15px;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.food-price {
+  color: #d32f2f;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.add-btn {
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.add-btn:active {
+  transform: scale(0.95);
+}
+
+/* Cart Section */
+.cart-section {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #141414;
+  border-top: 2px solid #d32f2f;
+  padding: 15px;
+  box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.7);
+}
+
+.cart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cart-header h2 {
+  font-size: 16px;
+  color: #fff;
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#cart-items {
+  list-style: none;
+  max-height: 80px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+#cart-items li {
+  font-size: 13px;
+  color: #bbb;
+  padding: 3px 0;
+  border-bottom: 1px dashed #222;
+}
+
+.cart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+#cart-total {
+  font-size: 16px;
+  color: #fff;
+}
+
+.whatsapp-btn {
+  background-color: #25d366;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
 }
