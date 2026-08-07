@@ -1,72 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>S&A Family Restaurant</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S&A Family Restaurant</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
-<header class="header">
-  <h1>🍽️ S&A Family Restaurant</h1>
-  <p>Fresh Food • Fast Delivery • Order Online</p>
+  <!-- Header Section -->
+  <header class="header">
+    <h1>S&A FAMILY RESTAURANT</h1>
+    <p>Freshly Made, Especially for You</p>
+  </header>
 
-  <input
-    type="text"
-    id="search"
-    placeholder="🔍 Search Food..."
-    onkeyup="searchFood()">
-</header>
+  <!-- Location Banner -->
+  <div class="location-bar">
+    📍 U.T. Road, Bengbari, Udalguri, Assam - 784523 | 🕒 8:00 AM - 9:30 PM
+  </div>
 
-<section class="category">
-  <button>Biryani</button>
-  <button>Rolls</button>
-  <button>Momos</button>
-  <button>Drinks</button>
-</section>
+  <!-- Today's Special Banner -->
+  <div class="special-banner">
+    <div class="banner-content">
+      <span class="badge">TODAY'S SPECIAL</span>
+      <h2>Chicken Biryani</h2>
+      <p class="price">₹180</p>
+      <button class="add-btn" onclick="addToCart('Chicken Biryani')">ORDER NOW</button>
+    </div>
+  </div>
 
-<main id="menu">
+  <!-- Category Filter -->
+  <section class="category">
+    <button class="cat-btn active">All</button>
+    <button class="cat-btn">Biryani</button>
+    <button class="cat-btn">Rolls</button>
+    <button class="cat-btn">Fast Food</button>
+    <button class="cat-btn">Drinks</button>
+  </section>
 
-<div class="food-card">
-<h2>Chicken Biryani</h2>
-<p>₹180</p>
-<button onclick="addToCart('Chicken Biryani')">Add to Cart</button>
-</div>
+  <!-- Food Menu List -->
+  <main id="menu">
+    
+    <div class="food-card">
+      <div class="food-info">
+        <h2>Chicken Biryani</h2>
+        <p class="food-price">₹180</p>
+      </div>
+      <button class="add-btn" onclick="addToCart('Chicken Biryani')">ADD +</button>
+    </div>
 
-<div class="food-card">
-<h2>Veg Thali</h2>
-<p>₹120</p>
-<button onclick="addToCart('Veg Thali')">Add to Cart</button>
-</div>
+    <div class="food-card">
+      <div class="food-info">
+        <h2>Veg Thali</h2>
+        <p class="food-price">₹120</p>
+      </div>
+      <button class="add-btn" onclick="addToCart('Veg Thali')">ADD +</button>
+    </div>
 
-<div class="food-card">
-<h2>Fried Rice</h2>
-<p>₹100</p>
-<button onclick="addToCart('Fried Rice')">Add to Cart</button>
-</div>
+    <div class="food-card">
+      <div class="food-info">
+        <h2>Fried Rice</h2>
+        <p class="food-price">₹100</p>
+      </div>
+      <button class="add-btn" onclick="addToCart('Fried Rice')">ADD +</button>
+    </div>
 
-<div class="food-card">
-<h2>Chicken Roll</h2>
-<p>₹90</p>
-<button onclick="addToCart('Chicken Roll')">Add to Cart</button>
-</div>
+    <div class="food-card">
+      <div class="food-info">
+        <h2>Chicken Roll</h2>
+        <p class="food-price">₹90</p>
+      </div>
+      <button class="add-btn" onclick="addToCart('Chicken Roll')">ADD +</button>
+    </div>
 
-<div class="food-card">
-<h2>Veg Roll</h2>
-<p>₹50</p>
-<button onclick="addToCart('Veg Roll')">Add to Cart</button>
-</div>
+    <div class="food-card">
+      <div class="food-info">
+        <h2>Veg Roll</h2>
+        <p class="food-price">₹50</p>
+      </div>
+      <button class="add-btn" onclick="addToCart('Veg Roll')">ADD +</button>
+    </div>
 
-<div id="cart">
-<h2>🛒 Your Cart</h2>
-<p><ul id="cart-items"></ul>.</p>
-</div><button onclick="orderOnWhatsApp()">Order on WhatsApp</button>
+  </main>
 
-<script src="app.js"></script>
+  <!-- Cart & WhatsApp Order Section -->
+  <div id="cart" class="cart-section">
+    <div class="cart-header">
+      <h2>Your Cart</h2>
+      <button class="clear-btn" onclick="clearCart()">Clear</button>
+    </div>
+    <ul id="cart-items">
+      <li>No items added.</li>
+    </ul>
+    <div class="cart-footer">
+      <h3 id="cart-total">Total: ₹0</h3>
+      <button class="whatsapp-btn" onclick="orderOnWhatsApp()">Order on WhatsApp 📲</button>
+    </div>
+  </div>
 
-</main>
-
+  <script src="app.js"></script>
 </body>
 </html>
