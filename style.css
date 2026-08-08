@@ -1,0 +1,337 @@
+:root {
+  --primary-red: #D32F2F;
+  --bg-black: #080808;
+  --card-bg: #151515;
+  --input-bg: #1F1F1F;
+  --text-white: #FFFFFF;
+  --text-gray: #AAAAAA;
+  --border-color: #262626;
+  --gold-accent: #FFD700;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  background-color: #000;
+  color: var(--text-white);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 420px;
+  background-color: var(--bg-black);
+  padding-bottom: 75px;
+  min-height: 100vh;
+}
+
+/* Header UI */
+.screen-header {
+  background-color: var(--bg-black);
+  padding: 15px;
+  position: relative;
+}
+
+.red-top-bar {
+  background: var(--primary-red);
+  color: white;
+  text-align: center;
+  padding: 12px;
+  font-weight: bold;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-transform: uppercase;
+}
+
+.brand-main {
+  text-align: center;
+  margin-top: 5px;
+}
+
+.brand-title {
+  color: var(--primary-red);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.tagline {
+  font-size: 11px;
+  color: var(--text-gray);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+/* Live Offer Strip */
+.offer-strip {
+  background: #2a0808;
+  border: 1px dashed var(--primary-red);
+  color: var(--gold-accent);
+  padding: 8px 12px;
+  margin: 10px 15px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Info Cards */
+.location-box, .info-row {
+  background: var(--card-bg);
+  margin: 8px 15px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border-color);
+}
+
+.location-box i, .info-row i {
+  color: var(--primary-red);
+}
+
+/* Banner UI */
+.special-banner {
+  background: linear-gradient(135deg, #b71c1c 0%, #680000 100%);
+  margin: 12px 15px;
+  padding: 15px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 15px rgba(211, 47, 47, 0.3);
+}
+
+.special-banner img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.btn-order-now {
+  background-color: var(--primary-red);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 12px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+/* Horizontal Scroll */
+.horizontal-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 15px;
+  scrollbar-width: none;
+}
+
+.pop-card {
+  background: var(--card-bg);
+  min-width: 105px;
+  padding: 10px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+}
+
+.pop-card img {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 6px;
+}
+
+/* Category Pills */
+.category-pills {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 15px;
+  scrollbar-width: none;
+}
+
+.pill {
+  background: var(--card-bg);
+  color: white;
+  border: 1px solid var(--border-color);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pill.active {
+  background: var(--primary-red);
+  border-color: var(--primary-red);
+  font-weight: bold;
+}
+
+/* Food List Cards */
+.item-card {
+  background: var(--card-bg);
+  margin: 10px 15px;
+  padding: 12px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.item-card img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.item-info {
+  flex-grow: 1;
+}
+
+.item-info h4 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.price {
+  color: var(--text-white);
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.btn-add-red {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.qty-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #222;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.qty-ctrl button {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Forms & Inputs */
+.input-group {
+  margin: 10px 15px;
+}
+
+.input-group label {
+  font-size: 11px;
+  color: var(--primary-red);
+  font-weight: bold;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input-box {
+  width: 100%;
+  padding: 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.btn-large-red {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+  width: calc(100% - 30px);
+  margin: 15px;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+/* Bottom Nav */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  background: var(--card-bg);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px 0;
+  border-top: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+.nav-item {
+  background: none;
+  border: none;
+  color: var(--text-gray);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 10px;
+  gap: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.nav-item.active {
+  color: var(--primary-red);
+}
+
+.nav-item i {
+  font-size: 18px;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -4px;
+  right: 6px;
+  background: var(--primary-red);
+  color: white;
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 10px;
+}
