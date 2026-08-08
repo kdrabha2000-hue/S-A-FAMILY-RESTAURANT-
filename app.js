@@ -13,7 +13,7 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
 // 2. Restaurant Data & Menu
-const myWhatsAppNumber = "918453272449";
+const myWhatsAppNumber = "918453270362";
 
 const restaurantMenu = [
   { id: 1, name: "Chicken Biryani", price: 180, category: "Special", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300", isSpec: true },
@@ -35,9 +35,11 @@ const restaurantMenu = [
 ];
 
 let cart = [];
+let bannerTimer = null;
 
 // 3. Navigation Switcher
 function switchTab(tabName) {
+  if (bannerTimer) clearInterval(bannerTimer);
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
   
   const container = document.getElementById('app-container');
@@ -52,9 +54,8 @@ function switchTab(tabName) {
   }
 }
 
-// 4. Render Home Screen
+// 4. Render Home Screen with Sliding Banner & Coupon
 function renderHomeScreen(container) {
-  const specials = restaurantMenu.find(item => item.isSpec) || restaurantMenu[0];
   const populars = restaurantMenu.slice(0, 5);
 
   container.innerHTML = `
@@ -67,11 +68,21 @@ function renderHomeScreen(container) {
       </div>
     </div>
 
-    <div class="banner-special">
+    <!-- Sliding Banner Slider -->
+    <div class="banner-special" id="banner-slider">
       <div class="special-tag">TODAY'S SPECIAL</div>
-      <div class="banner-title">${specials.name}</div>
-      <div class="banner-price">₹${specials.price}</div>
-      <button class="btn-order-now" onclick="addToCart(${specials.id})">ORDER NOW</button>
+      <div class="banner-title" id="banner-title">Chicken Biryani</div>
+      <div class="banner-price" id="banner-price">₹180</div>
+      <button class="btn-order-now" id="banner-btn" onclick="addToCart(1)">ORDER NOW</button>
+    </div>
+
+    <!-- Discount Coupon Section -->
+    <div style="background: #1f1f1f; border: 1px dashed var(--primary-red); border-radius: 10px; padding: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div style="font-weight: bold; color: var(--primary-red); font-size: 0.85rem;">OFFER: WELCOME50</div>
+        <div style="font-size: 0.75rem; color: var(--text-gray);">Get ₹50 OFF on orders above ₹299</div>
+      </div>
+      <button style="background: var(--primary-red); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer;" onclick="alert('कूपन कार्ट पर लागू होगा!')">APPLY</button>
     </div>
 
     <div class="section-title">
@@ -88,6 +99,26 @@ function renderHomeScreen(container) {
       `).join('')}
     </div>
   `;
+
+  startBannerSlider();
+}
+
+// Banner Auto Slider Logic
+let bannerIndex = 0;
+function startBannerSlider() {
+  const specials = restaurantMenu.filter(i => i.isSpec || i.price >= 100);
+  bannerTimer = setInterval(() => {
+    const titleEl = document.getElementById('banner-title');
+    const priceEl = document.getElementById('banner-price');
+    const btnEl = document.getElementById('banner-btn');
+    if (titleEl && priceEl && btnEl) {
+      bannerIndex = (bannerIndex + 1) % specials.length;
+      const curr = specials[bannerIndex];
+      titleEl.innerText = curr.name;
+      priceEl.innerText = `₹${curr.price}`;
+      btnEl.setAttribute('onclick', `addToCart(${curr.id})`);
+    }
+  }, 3000);
 }
 
 // 5. Render Menu Screen
@@ -277,14 +308,34 @@ function renderProfileScreen(container) {
 function handleLogin() {
   const email = document.getElementById('auth-email').value;
   const pass = document.getElementById('auth-pass').value;
-  auth.signInWithEmailURI ? auth.signInWithEmailAndPassword(email, pass) : alert("Firebase Active");
+
+  if (!email || !pass) {
+    alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+      alert("लॉगिन सफल रहा!");
+      switchTab('home');
+    })
+    .catch(err => alert("लॉगिन में त्रुटि: " + err.message));
 }
 
 function handleSignUp() {
   const email = document.getElementById('auth-email').value;
   const pass = document.getElementById('auth-pass').value;
+
+  if (!email || !pass) {
+    alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
+    return;
+  }
+
   auth.createUserWithEmailAndPassword(email, pass)
-    .then(() => alert("Account Created!"))
+    .then(() => {
+      alert("अकाउंट सफलतापूर्वक बन गया!");
+      switchTab('home');
+    })
     .catch(err => alert(err.message));
 }
 
