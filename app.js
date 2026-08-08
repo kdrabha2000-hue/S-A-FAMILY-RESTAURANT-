@@ -15,6 +15,7 @@ const auth = firebase.auth();
 // 2. Restaurant Data & Menu
 const myWhatsAppNumber = "918453270362";
 
+
 const restaurantMenu = [
   { id: 1, name: "Chicken Biryani", price: 180, category: "Special", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300", isSpec: true },
   { id: 2, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=300" },
