@@ -316,3 +316,4 @@ function renderProfileScreen(container) {
     </div>
   `;
 }
+
