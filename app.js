@@ -1,12 +1,12 @@
-// 1. Firebase Config & Initialization (v8)
+// 1. Firebase Config & Initialization
 const firebaseConfig = {
-  apiKey: "AIzaSyA9rXmSvtDg2pfne8Xik_L7T4mE23E1x1w",
+  apiKey: "AIzaSyCASOp4d-HQdEjrxLxV-Bmx3lhhfed0GqE",
   authDomain: "fir-a-familyrestaurant.firebaseapp.com",
   projectId: "fir-a-familyrestaurant",
-  storageBucket: "fir-a-familyrestaurant.appspot.com",
+  storageBucket: "fir-a-familyrestaurant.firebasestorage.app",
   messagingSenderId: "631976985851",
-  appId: "1:631976985851:web:9044bf9d2162607bfbc22c",
-  measurementId: "G-KH3HE2ZZGZ"
+  appId: "1:631976985851:web:9fb349b7f832dad5b61c5e",
+  measurementId: "G-19X7WCXX8L"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -14,7 +14,6 @@ const auth = firebase.auth();
 
 // 2. Restaurant Data & Menu
 const myWhatsAppNumber = "918453270362";
-
 
 const restaurantMenu = [
   { id: 1, name: "Chicken Biryani", price: 180, category: "Special", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300", isSpec: true },
@@ -55,7 +54,7 @@ function switchTab(tabName) {
   }
 }
 
-// 4. Render Home Screen with Sliding Banner & Coupon
+// 4. Render Home Screen
 function renderHomeScreen(container) {
   const populars = restaurantMenu.slice(0, 5);
 
@@ -69,7 +68,7 @@ function renderHomeScreen(container) {
       </div>
     </div>
 
-    <!-- Sliding Banner Slider -->
+    <!-- Sliding Banner -->
     <div class="banner-special" id="banner-slider">
       <div class="special-tag">TODAY'S SPECIAL</div>
       <div class="banner-title" id="banner-title">Chicken Biryani</div>
@@ -77,13 +76,13 @@ function renderHomeScreen(container) {
       <button class="btn-order-now" id="banner-btn" onclick="addToCart(1)">ORDER NOW</button>
     </div>
 
-    <!-- Discount Coupon Section -->
+    <!-- Discount Coupon -->
     <div style="background: #1f1f1f; border: 1px dashed var(--primary-red); border-radius: 10px; padding: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div>
         <div style="font-weight: bold; color: var(--primary-red); font-size: 0.85rem;">OFFER: WELCOME50</div>
         <div style="font-size: 0.75rem; color: var(--text-gray);">Get ₹50 OFF on orders above ₹299</div>
       </div>
-      <button style="background: var(--primary-red); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer;" onclick="alert('कूपन कार्ट पर लागू होगा!')">APPLY</button>
+      <button style="background: var(--primary-red); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer;" onclick="alert('कूपन लागू हो गया है!')">APPLY</button>
     </div>
 
     <div class="section-title">
@@ -104,7 +103,7 @@ function renderHomeScreen(container) {
   startBannerSlider();
 }
 
-// Banner Auto Slider Logic
+// Banner Auto Slider
 let bannerIndex = 0;
 function startBannerSlider() {
   const specials = restaurantMenu.filter(i => i.isSpec || i.price >= 100);
@@ -156,7 +155,7 @@ function filterCategory(cat) {
   renderMenuScreen(container, cat);
 }
 
-// 6. Cart Logic & Screen
+// 6. Cart Logic
 function addToCart(id) {
   const item = restaurantMenu.find(i => i.id === id);
   const existing = cart.find(i => i.id === id);
