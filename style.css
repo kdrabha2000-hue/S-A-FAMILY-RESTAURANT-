@@ -337,7 +337,7 @@ body {
   max-width: 480px;
   background: #000;
   display: flex;
-  justify-content: space-around;
+  justify-around: space-around;
   padding: 8px 0;
   border-top: 1px solid var(--card-border);
   z-index: 1000;
