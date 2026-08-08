@@ -1,4 +1,5 @@
-// Firebase Configuration
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyCASOp4d-HQdEjrxLxV-Bmx3lhhfed0GqE",
   authDomain: "fir-a-familyrestaurant.firebaseapp.com",
@@ -12,7 +13,9 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
+// 2. Restaurant Data & Menu
 const myWhatsAppNumber = "918453270362";
+
 
 const restaurantMenu = [
   { id: 1, name: "Chicken Biryani", price: 180, category: "Special", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300", isSpec: true },
@@ -36,17 +39,24 @@ const restaurantMenu = [
 let cart = [];
 let bannerTimer = null;
 
+// 3. Navigation Switcher
 function switchTab(tabName) {
   if (bannerTimer) clearInterval(bannerTimer);
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
   
   const container = document.getElementById('app-container');
-  if(tabName === 'home') renderHomeScreen(container);
-  else if(tabName === 'menu') renderMenuScreen(container, 'All');
-  else if(tabName === 'cart') renderCartScreen(container);
-  else if(tabName === 'profile') renderProfileScreen(container);
+  if(tabName === 'home') {
+    renderHomeScreen(container);
+  } else if(tabName === 'menu') {
+    renderMenuScreen(container, 'All');
+  } else if(tabName === 'cart') {
+    renderCartScreen(container);
+  } else if(tabName === 'profile') {
+    renderProfileScreen(container);
+  }
 }
 
+// 4. Render Home Screen with Sliding Banner & Coupon
 function renderHomeScreen(container) {
   const populars = restaurantMenu.slice(0, 5);
 
@@ -60,22 +70,26 @@ function renderHomeScreen(container) {
       </div>
     </div>
 
-    <div class="banner-special">
+    <!-- Sliding Banner Slider -->
+    <div class="banner-special" id="banner-slider">
       <div class="special-tag">TODAY'S SPECIAL</div>
       <div class="banner-title" id="banner-title">Chicken Biryani</div>
       <div class="banner-price" id="banner-price">₹180</div>
       <button class="btn-order-now" id="banner-btn" onclick="addToCart(1)">ORDER NOW</button>
     </div>
 
+    <!-- Discount Coupon Section -->
     <div style="background: #1f1f1f; border: 1px dashed var(--primary-red); border-radius: 10px; padding: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
       <div>
         <div style="font-weight: bold; color: var(--primary-red); font-size: 0.85rem;">OFFER: WELCOME50</div>
         <div style="font-size: 0.75rem; color: var(--text-gray);">Get ₹50 OFF on orders above ₹299</div>
       </div>
-      <button style="background: var(--primary-red); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold;" onclick="alert('कूपन लागू हो गया है!')">APPLY</button>
+      <button style="background: var(--primary-red); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 0.75rem; font-weight: bold; cursor: pointer;" onclick="alert('कूपन कार्ट पर लागू होगा!')">APPLY</button>
     </div>
 
-    <div class="section-title">POPULAR ITEMS</div>
+    <div class="section-title">
+      <span>POPULAR ITEMS</span>
+    </div>
     <div class="horizontal-scroll">
       ${populars.map(item => `
         <div class="pop-card">
@@ -91,6 +105,7 @@ function renderHomeScreen(container) {
   startBannerSlider();
 }
 
+// Banner Auto Slider Logic
 let bannerIndex = 0;
 function startBannerSlider() {
   const specials = restaurantMenu.filter(i => i.isSpec || i.price >= 100);
@@ -108,9 +123,13 @@ function startBannerSlider() {
   }, 3000);
 }
 
+// 5. Render Menu Screen
 function renderMenuScreen(container, activeCat) {
   const categories = ['All', 'Fast Food', 'Rolls', 'Main Course', 'Drinks'];
-  const filtered = (activeCat === 'All') ? restaurantMenu : restaurantMenu.filter(item => item.category === activeCat);
+  
+  const filtered = (activeCat === 'All') 
+    ? restaurantMenu 
+    : restaurantMenu.filter(item => item.category === activeCat);
 
   container.innerHTML = `
     <div class="category-pills">
@@ -124,7 +143,7 @@ function renderMenuScreen(container, activeCat) {
           <img src="${item.img}" alt="${item.name}">
           <div class="item-info">
             <h4>${item.name}</h4>
-            <p style="color:var(--primary-red); font-weight:bold;">₹${item.price}</p>
+            <p>₹${item.price}</p>
           </div>
           <button class="btn-add" onclick="addToCart(${item.id})">ADD +</button>
         </div>
@@ -134,14 +153,19 @@ function renderMenuScreen(container, activeCat) {
 }
 
 function filterCategory(cat) {
-  renderMenuScreen(document.getElementById('app-container'), cat);
+  const container = document.getElementById('app-container');
+  renderMenuScreen(container, cat);
 }
 
+// 6. Cart Logic & Screen
 function addToCart(id) {
   const item = restaurantMenu.find(i => i.id === id);
   const existing = cart.find(i => i.id === id);
-  if(existing) existing.qty += 1;
-  else cart.push({ ...item, qty: 1 });
+  if(existing) {
+    existing.qty += 1;
+  } else {
+    cart.push({ ...item, qty: 1 });
+  }
   updateBadge();
 }
 
@@ -154,7 +178,9 @@ function changeQty(id, delta) {
   const item = cart.find(i => i.id === id);
   if(item) {
     item.qty += delta;
-    if(item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    if(item.qty <= 0) {
+      cart = cart.filter(i => i.id !== id);
+    }
   }
   updateBadge();
   renderCartScreen(document.getElementById('app-container'));
@@ -167,7 +193,8 @@ function renderCartScreen(container) {
   }
 
   const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
-  const total = subtotal + 30;
+  const delivery = 30;
+  const total = subtotal + delivery;
 
   container.innerHTML = `
     <div class="menu-list">
@@ -176,7 +203,7 @@ function renderCartScreen(container) {
           <img src="${item.img}" alt="${item.name}">
           <div class="item-info">
             <h4>${item.name}</h4>
-            <p style="color:var(--primary-red); font-weight:bold;">₹${item.price * item.qty}</p>
+            <p>₹${item.price * item.qty}</p>
           </div>
           <div class="qty-ctrl">
             <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
@@ -189,7 +216,7 @@ function renderCartScreen(container) {
 
     <div class="price-summary">
       <div class="summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
-      <div class="summary-row"><span>Delivery Charge</span><span>₹30</span></div>
+      <div class="summary-row"><span>Delivery Charge</span><span>₹${delivery}</span></div>
       <div class="summary-row total"><span>Total Amount</span><span>₹${total}</span></div>
     </div>
 
@@ -197,6 +224,7 @@ function renderCartScreen(container) {
   `;
 }
 
+// 7. Checkout Screen
 function renderCheckoutScreen() {
   const container = document.getElementById('app-container');
   const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
@@ -204,21 +232,26 @@ function renderCheckoutScreen() {
 
   container.innerHTML = `
     <h3 style="margin-bottom:15px; color:var(--primary-red);">DELIVERY DETAILS</h3>
+    
     <div class="input-group">
       <label>Full Name</label>
       <input type="text" id="cust-name" placeholder="Enter Name">
     </div>
+    
     <div class="input-group">
       <label>Mobile Number</label>
       <input type="tel" id="cust-phone" placeholder="Enter Mobile Number">
     </div>
+
     <div class="input-group">
       <label>Full Delivery Address</label>
       <textarea id="cust-address" rows="3" placeholder="Street, Landmark, House No."></textarea>
     </div>
+
     <div class="price-summary">
       <div class="summary-row total"><span>Total Payable</span><span>₹${total}</span></div>
     </div>
+
     <button class="btn-red-large" onclick="processOrder(${total})">PLACE ORDER ON WHATSAPP</button>
   `;
 }
@@ -241,11 +274,14 @@ function processOrder(total) {
   });
   msg += `\n*TOTAL PAYABLE:* ₹${total}`;
 
-  window.open(`https://wa.me/${myWhatsAppNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+  const url = `https://wa.me/${myWhatsAppNumber}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
 }
 
+// 8. Auth / Profile Screen
 function renderProfileScreen(container) {
   const user = auth.currentUser;
+  
   if(user) {
     container.innerHTML = `
       <div style="text-align:center; padding:20px;">
@@ -274,16 +310,40 @@ function renderProfileScreen(container) {
 function handleLogin() {
   const email = document.getElementById('auth-email').value;
   const pass = document.getElementById('auth-pass').value;
-  if (!email || !pass) return alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
-  auth.signInWithEmailAndPassword(email, pass).then(() => switchTab('home')).catch(err => alert(err.message));
+
+  if (!email || !pass) {
+    alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
+    return;
+  }
+
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(() => {
+      alert("लॉगिन सफल रहा!");
+      switchTab('home');
+    })
+    .catch(err => alert("लॉगिन में त्रुटि: " + err.message));
 }
 
 function handleSignUp() {
   const email = document.getElementById('auth-email').value;
   const pass = document.getElementById('auth-pass').value;
-  if (!email || !pass) return alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
-  auth.createUserWithEmailAndPassword(email, pass).then(() => switchTab('home')).catch(err => alert(err.message));
+
+  if (!email || !pass) {
+    alert("कृपया ईमेल और पासवर्ड दर्ज करें!");
+    return;
+  }
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(() => {
+      alert("अकाउंट सफलतापूर्वक बन गया!");
+      switchTab('home');
+    })
+    .catch(err => alert(err.message));
 }
 
-auth.onAuthStateChanged(() => switchTab('home'));
+auth.onAuthStateChanged(() => {
+  switchTab('home');
+});
+
+// App Start
 switchTab('home');
