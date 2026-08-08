@@ -1,328 +1,296 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// 1. Firebase Config & Initialization (v8)
 const firebaseConfig = {
-  apiKey: "AIzaSyCASOp4d-HQdEjrxLxV-Bmx3lhhfed0GqE",
+  apiKey: "AIzaSyA9rXmSvtDg2pfne8Xik_L7T4mE23E1x1w",
   authDomain: "fir-a-familyrestaurant.firebaseapp.com",
   projectId: "fir-a-familyrestaurant",
-  storageBucket: "fir-a-familyrestaurant.firebasestorage.app",
+  storageBucket: "fir-a-familyrestaurant.appspot.com",
   messagingSenderId: "631976985851",
-  appId: "1:631976985851:web:9044bf9d216260f7b61c5e",
+  appId: "1:631976985851:web:9044bf9d2162607bfbc22c",
   measurementId: "G-KH3HE2ZZGZ"
 };
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+// 2. Restaurant Data & Menu
+const myWhatsAppNumber = "918453272449";
+
 const restaurantMenu = [
-  // SPECIAL FAST FOODS (Chowmein, Momos, Rolls & Chicken Pakora)
-  { id: 1, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
-  { id: 2, name: "Chicken Pakora (Half)", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
-  
-  // 3 Types of Chowmein
-  { id: 3, name: "Veg Chowmein", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 4, name: "Chicken Chowmein", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 5, name: "Pork Chowmein", price: 120, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-
-  // 3 Types of Momos
-  { id: 6, name: "Veg Momos", price: 50, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 7, name: "Chicken Momos", price: 70, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 8, name: "Pork Momos", price: 80, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-
-  // 3 Types of Rolls
-  { id: 9, name: "Veg Roll", price: 40, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 10, name: "Chicken Roll", price: 80, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 11, name: "Pork Roll", price: 100, category: "Rolls", isSpecial: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-
-  // Other Specials & Drinks
-  { id: 12, name: "Chicken Biryani", price: 180, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
-  { id: 13, name: "Butter Chicken", price: 200, category: "Main Course", isSpecial: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=200" },
-  { id: 14, name: "Cold Coffee", price: 70, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" }
+  { id: 1, name: "Chicken Biryani", price: 180, category: "Special", img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=300", isSpec: true },
+  { id: 2, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=300" },
+  { id: 3, name: "Chicken Pakora (Half)", price: 50, category: "Fast Food", img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=300" },
+  { id: 4, name: "Chowmein", price: 50, category: "Fast Food", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300" },
+  { id: 5, name: "Egg Chowmein", price: 100, category: "Fast Food", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300" },
+  { id: 6, name: "Pork Chowmein", price: 120, category: "Fast Food", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=300" },
+  { id: 7, name: "Momos", price: 50, category: "Fast Food", img: "https://images.unsplash.com/photo-1625220194771-7eb5a3a69395?w=300" },
+  { id: 8, name: "Chicken Momos", price: 80, category: "Fast Food", img: "https://images.unsplash.com/photo-1625220194771-7eb5a3a69395?w=300" },
+  { id: 9, name: "Pork Momos", price: 80, category: "Fast Food", img: "https://images.unsplash.com/photo-1625220194771-7eb5a3a69395?w=300" },
+  { id: 10, name: "Chicken Roll", price: 60, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300" },
+  { id: 11, name: "Pork Roll", price: 100, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300" },
+  { id: 12, name: "Egg Roll", price: 50, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300" },
+  { id: 13, name: "Single Roll", price: 40, category: "Rolls", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=300" },
+  { id: 14, name: "Veg Thali", price: 120, category: "Main Course", img: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=300" },
+  { id: 15, name: "Butter Chicken", price: 150, category: "Main Course", img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=300" },
+  { id: 16, name: "Cold Coffee", price: 80, category: "Drinks", img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=300" }
 ];
 
 let cart = [];
 
-document.addEventListener('DOMContentLoaded', () => {
-  switchTab('home');
-});
-
-function switchTab(screenName) {
-  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+// 3. Navigation Switcher
+function switchTab(tabName) {
+  document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
   
   const container = document.getElementById('app-container');
-  if (screenName === 'home') renderHomeScreen(container);
-  if (screenName === 'menu') renderMenuScreen(container);
-  if (screenName === 'cart') renderCartScreen(container);
-  if (screenName === 'checkout') renderCheckoutScreen(container);
-  if (screenName === 'orders') renderOrdersScreen(container);
-  if (screenName === 'profile') renderProfileScreen(container);
+  if(tabName === 'home') {
+    renderHomeScreen(container);
+  } else if(tabName === 'menu') {
+    renderMenuScreen(container, 'All');
+  } else if(tabName === 'cart') {
+    renderCartScreen(container);
+  } else if(tabName === 'profile') {
+    renderProfileScreen(container);
+  }
 }
 
+// 4. Render Home Screen
 function renderHomeScreen(container) {
-  const specials = restaurantMenu.filter(i => i.isSpecial);
+  const specials = restaurantMenu.find(item => item.isSpec) || restaurantMenu[0];
+  const populars = restaurantMenu.slice(0, 5);
+
   container.innerHTML = `
-    <div class="screen-header">
-      <div class="brand-main">
-        <div class="brand-title">S&A</div>
-        <div style="font-weight: bold; font-size: 13px; letter-spacing: 1px;">FAMILY RESTAURANT</div>
-        <div class="tagline">Fast Food & Fresh Meals</div>
+    <div class="location-card">
+      <div class="loc-header"><i class="fa-solid fa-location-dot"></i> U.T. Road, Bengbari</div>
+      <div class="loc-address">Udalguri, Assam - 784523</div>
+      <div class="loc-info-row">
+        <span><i class="fa-solid fa-clock"></i> Open: 8:00 AM - 9:30 PM</span>
+        <span><i class="fa-solid fa-motorcycle"></i> Fast Delivery 5-10 km</span>
       </div>
     </div>
 
-    <div class="offer-strip">
-      ⚡ SPECIAL OFFER: Apply Code <b>WELCOME50</b> & Get Flat ₹50 OFF!
+    <div class="banner-special">
+      <div class="special-tag">TODAY'S SPECIAL</div>
+      <div class="banner-title">${specials.name}</div>
+      <div class="banner-price">₹${specials.price}</div>
+      <button class="btn-order-now" onclick="addToCart(${specials.id})">ORDER NOW</button>
     </div>
 
-    <div class="location-box">
-      <i class="fa-solid fa-location-dot"></i>
-      <div>
-        <strong>U.T. Road, Bengbari</strong><br>
-        <span style="color:var(--text-gray);">Udalguri, Assam - 784523</span>
-      </div>
+    <div class="section-title">
+      <span>POPULAR ITEMS</span>
     </div>
-
-    <div class="info-row">
-      <div><i class="fa-solid fa-clock"></i> Open 8:00 AM - 9:00 PM</div>
-      <div style="margin-left:auto;"><i class="fa-solid fa-motorcycle"></i> Fast Delivery 5-12 km</div>
-    </div>
-
-    <!-- MAIN BANNER FOR FAST FOOD -->
-    <div class="special-banner">
-      <div>
-        <small style="color: #ffcdd2; font-weight: bold;">SPECIAL FAST FOOD</small>
-        <h3 style="font-size: 17px; margin-top:2px;">Chicken Pakora</h3>
-        <p class="price" style="margin-top: 4px;">Just ₹50</p>
-        <button class="btn-order-now" onclick="addToCart(2)">ORDER NOW</button>
-      </div>
-      <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=200" alt="Pakora">
-    </div>
-
-    <div style="display:flex; justify-content:space-between; padding:5px 15px; align-items:center;">
-      <h4 style="font-size: 13px; color: var(--primary-red); font-weight: bold;">🔥 TOP SPECIAL ITEMS</h4>
-      <span style="font-size: 11px; color: var(--text-gray); cursor:pointer;" onclick="switchTab('menu')">View All ></span>
-    </div>
-
     <div class="horizontal-scroll">
-      ${specials.map(i => `
-        <div class="pop-card" onclick="addToCart(${i.id})">
-          <img src="${i.img}">
-          <div style="font-size:11px; font-weight:bold;">${i.name}</div>
-          <div style="font-size:11px; color:var(--primary-red); font-weight:bold;">₹${i.price}</div>
+      ${populars.map(item => `
+        <div class="pop-card">
+          <img src="${item.img}" alt="${item.name}">
+          <div class="pop-title">${item.name}</div>
+          <div class="pop-price">₹${item.price}</div>
+          <button class="btn-add" style="margin-top:6px; padding:3px 8px; font-size:0.7rem;" onclick="addToCart(${item.id})">ADD +</button>
         </div>
       `).join('')}
     </div>
-
-    <h4 style="padding: 10px 15px 0 15px; font-size:13px; color: var(--primary-red);">FAST FOODS & ROLLS</h4>
-    <div id="home-fastfood-list"></div>
   `;
-  renderItemsList(specials, 'home-fastfood-list');
 }
 
-function renderMenuScreen(container) {
+// 5. Render Menu Screen
+function renderMenuScreen(container, activeCat) {
+  const categories = ['All', 'Fast Food', 'Rolls', 'Main Course', 'Drinks'];
+  
+  const filtered = (activeCat === 'All') 
+    ? restaurantMenu 
+    : restaurantMenu.filter(item => item.category === activeCat);
+
   container.innerHTML = `
-    <div class="red-top-bar">
-      <span>MENU CARD</span>
-      <i class="fa-solid fa-magnifying-glass"></i>
-    </div>
-
     <div class="category-pills">
-      <button class="pill active" onclick="filterCategory('All', this)">All Specials</button>
-      <button class="pill" onclick="filterCategory('Fast Food', this)">Fast Food & Momos</button>
-      <button class="pill" onclick="filterCategory('Rolls', this)">Rolls</button>
-      <button class="pill" onclick="filterCategory('Main Course', this)">Main Course</button>
-      <button class="pill" onclick="filterCategory('Drinks', this)">Drinks</button>
+      ${categories.map(cat => `
+        <button class="pill ${cat === activeCat ? 'active' : ''}" onclick="filterCategory('${cat}')">${cat}</button>
+      `).join('')}
     </div>
-
-    <div id="full-menu-list"></div>
-  `;
-  renderItemsList(restaurantMenu, 'full-menu-list');
-}
-
-function filterCategory(cat, btn) {
-  document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  const filtered = cat === 'All' ? restaurantMenu : restaurantMenu.filter(i => i.category === cat);
-  renderItemsList(filtered, 'full-menu-list');
-}
-
-function renderItemsList(items, targetId) {
-  const list = document.getElementById(targetId);
-  if (!list) return;
-
-  list.innerHTML = items.map(item => {
-    const cartItem = cart.find(c => c.id === item.id);
-    return `
-      <div class="item-card">
-        <img src="${item.img}">
-        <div class="item-info">
-          <h4>${item.name}</h4>
-          <p class="price">₹${item.price}</p>
-        </div>
-        ${cartItem ? `
-          <div class="qty-ctrl">
-            <button onclick="changeQty(${item.id}, -1)">-</button>
-            <span>${cartItem.qty}</span>
-            <button onclick="changeQty(${item.id}, 1)">+</button>
+    <div class="menu-list">
+      ${filtered.map(item => `
+        <div class="item-card">
+          <img src="${item.img}" alt="${item.name}">
+          <div class="item-info">
+            <h4>${item.name}</h4>
+            <p>₹${item.price}</p>
           </div>
-        ` : `
-          <button class="btn-add-red" onclick="addToCart(${item.id})">ADD +</button>
-        `}
-      </div>
-    `;
-  }).join('');
+          <button class="btn-add" onclick="addToCart(${item.id})">ADD +</button>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
+function filterCategory(cat) {
+  const container = document.getElementById('app-container');
+  renderMenuScreen(container, cat);
+}
+
+// 6. Cart Logic & Screen
 function addToCart(id) {
   const item = restaurantMenu.find(i => i.id === id);
   const existing = cart.find(i => i.id === id);
-  if (existing) {
+  if(existing) {
     existing.qty += 1;
   } else {
     cart.push({ ...item, qty: 1 });
   }
   updateBadge();
-  const activeNav = document.querySelector('.nav-item.active span');
-  if (activeNav) switchTab(activeNav.innerText.toLowerCase());
 }
 
 function updateBadge() {
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
-  const badge = document.getElementById('cart-badge');
-  if (badge) badge.innerText = count;
+  document.getElementById('cart-badge').innerText = count;
 }
 
 function changeQty(id, delta) {
   const item = cart.find(i => i.id === id);
-  if (item) {
+  if(item) {
     item.qty += delta;
-    if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    if(item.qty <= 0) {
+      cart = cart.filter(i => i.id !== id);
+    }
   }
   updateBadge();
-  const activeNav = document.querySelector('.nav-item.active span');
-  if (activeNav) switchTab(activeNav.innerText.toLowerCase());
+  renderCartScreen(document.getElementById('app-container'));
 }
 
 function renderCartScreen(container) {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = subtotal > 0 ? 40 : 0;
-  const discount = subtotal >= 200 ? 50 : 0;
-  const total = Math.max(0, subtotal + delivery - discount);
-
-  container.innerHTML = `
-    <div class="red-top-bar">
-      <span>YOUR CART</span>
-      <i class="fa-solid fa-trash" onclick="cart=[]; updateBadge(); renderCartScreen(document.getElementById('app-container'));"></i>
-    </div>
-
-    ${cart.map(item => `
-      <div class="item-card">
-        <img src="${item.img}">
-        <div class="item-info">
-          <h4>${item.name}</h4>
-          <p class="price">₹${item.price}</p>
-        </div>
-        <div class="qty-ctrl">
-          <button onclick="changeQty(${item.id}, -1)">-</button>
-          <span>${item.qty}</span>
-          <button onclick="changeQty(${item.id}, 1)">+</button>
-        </div>
-        <div style="font-weight:bold; width: 45px; text-align:right;">₹${item.price * item.qty}</div>
-      </div>
-    `).join('')}
-
-    ${cart.length > 0 ? `
-      <div style="padding: 12px; background: var(--card-bg); margin: 15px; border-radius:12px; border:1px solid var(--border-color);">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Subtotal</span> <span>₹${subtotal}</span></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Delivery Charge</span> <span>₹${delivery}</span></div>
-        ${discount > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:#4CAF50;"><span>Offer Discount (WELCOME50)</span> <span>-₹${discount}</span></div>` : ''}
-        <hr style="border-color:var(--border-color); margin:10px 0;">
-        <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15px;"><span>TOTAL PAYABLE</span> <span class="price" style="color:var(--primary-red);">₹${total}</span></div>
-      </div>
-      <button class="btn-large-red" onclick="switchTab('checkout')">PROCEED TO CHECKOUT ></button>
-    ` : '<p style="padding:30px; text-align:center; color:var(--text-gray);">Your Cart is Empty</p>'}
-  `;
-}
-
-function renderCheckoutScreen(container) {
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const discount = subtotal >= 200 ? 50 : 0;
-  const total = Math.max(0, subtotal + 40 - discount);
-
-  container.innerHTML = `
-    <div class="red-top-bar">
-      <span>CHECKOUT</span>
-    </div>
-
-    <div class="input-group" style="margin-top:15px;">
-      <label>DELIVERY DETAILS</label>
-      <input type="text" id="cust-name" class="input-box" placeholder="Your Name">
-    </div>
-
-    <div class="input-group">
-      <input type="tel" id="cust-phone" class="input-box" placeholder="Mobile Number">
-    </div>
-
-    <div class="input-group">
-      <textarea id="cust-address" class="input-box" rows="3" placeholder="Complete Delivery Address"></textarea>
-    </div>
-
-    <div class="input-group">
-      <label>PAYMENT METHOD</label>
-      <div style="background:var(--card-bg); padding:12px; border-radius:8px; border:1px solid var(--border-color); font-size:13px;">
-        <i class="fa-solid fa-circle-check" style="color:var(--primary-red);"></i> UPI ID: <b>6000026478@okbizaxis</b> / Cash on Delivery
-      </div>
-    </div>
-
-    <div style="display:flex; justify-content:space-between; padding: 10px 15px; font-weight:bold;">
-      <span>Total Amount</span>
-      <span class="price" style="font-size:18px;">₹${total}</span>
-    </div>
-
-    <button class="btn-large-red" onclick="placeFinalOrder(${total})">SEND ORDER ON WHATSAPP ></button>
-  `;
-}
-
-function placeFinalOrder(total) {
-  const name = document.getElementById('cust-name').value.trim();
-  const phone = document.getElementById('cust-phone').value.trim();
-  const address = document.getElementById('cust-address').value.trim();
-
-  if (!name || !phone || !address) {
-    alert('Please fill Name, Mobile Number and Address!');
+  if(cart.length === 0) {
+    container.innerHTML = `<p style="text-align:center; padding:40px; color:var(--text-gray);">आपकी कार्ट खाली है!</p>`;
     return;
   }
 
-  const orderId = Math.floor(100000 + Math.random() * 900000);
+  const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  const delivery = 30;
+  const total = subtotal + delivery;
 
-  let message = `*NEW ORDER - S&A FAMILY RESTAURANT*\n`;
-  message += `----------------------------------------\n`;
-  message += `*Order ID:* %23${orderId}\n`;
-  message += `*Customer:* ${name}\n`;
-  message += `*Mobile Number:* ${phone}\n`;
-  message += `*Address:* ${address}\n`;
-  message += `----------------------------------------\n`;
-  message += `*ITEMS:*\n`;
-  cart.forEach(i => {
-    message += `• ${i.name} x ${i.qty} = ₹${i.price * i.qty}\n`;
-  });
-  message += `----------------------------------------\n`;
-  message += `*TOTAL PAYABLE:* ₹${total}\n\n`;
-  message += `Please confirm my order!`;
-
-  cart = [];
-  updateBadge();
-
-  const myWhatsAppNumber = "918453270362";
-  window.location.href = `https://wa.me/${myWhatsAppNumber}?text=${encodeURIComponent(message)}`;
-}
-
-function renderOrdersScreen(container) {
   container.innerHTML = `
-    <div class="red-top-bar"><span>ORDERS</span></div>
-    <p style="padding:20px; text-align:center; color:var(--text-gray);">No active orders.</p>
-  `;
-}
-
-function renderProfileScreen(container) {
-  container.innerHTML = `
-    <div class="red-top-bar"><span>PROFILE</span></div>
-    <div style="padding:20px; text-align:center;">
-      <h3>S&A FAMILY RESTAURANT</h3>
-      <p style="color:var(--text-gray); font-size:12px; margin-top:5px;">U.T. Road, Bengbari, Udalguri, Assam</p>
+    <div class="menu-list">
+      ${cart.map(item => `
+        <div class="item-card">
+          <img src="${item.img}" alt="${item.name}">
+          <div class="item-info">
+            <h4>${item.name}</h4>
+            <p>₹${item.price * item.qty}</p>
+          </div>
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="changeQty(${item.id}, -1)">-</button>
+            <span>${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+          </div>
+        </div>
+      `).join('')}
     </div>
+
+    <div class="price-summary">
+      <div class="summary-row"><span>Subtotal</span><span>₹${subtotal}</span></div>
+      <div class="summary-row"><span>Delivery Charge</span><span>₹${delivery}</span></div>
+      <div class="summary-row total"><span>Total Amount</span><span>₹${total}</span></div>
+    </div>
+
+    <button class="btn-red-large" onclick="renderCheckoutScreen()">PROCEED TO CHECKOUT</button>
   `;
 }
+
+// 7. Checkout Screen
+function renderCheckoutScreen() {
+  const container = document.getElementById('app-container');
+  const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty), 0);
+  const total = subtotal + 30;
+
+  container.innerHTML = `
+    <h3 style="margin-bottom:15px; color:var(--primary-red);">DELIVERY DETAILS</h3>
+    
+    <div class="input-group">
+      <label>Full Name</label>
+      <input type="text" id="cust-name" placeholder="Enter Name">
+    </div>
+    
+    <div class="input-group">
+      <label>Mobile Number</label>
+      <input type="tel" id="cust-phone" placeholder="Enter Mobile Number">
+    </div>
+
+    <div class="input-group">
+      <label>Full Delivery Address</label>
+      <textarea id="cust-address" rows="3" placeholder="Street, Landmark, House No."></textarea>
+    </div>
+
+    <div class="price-summary">
+      <div class="summary-row total"><span>Total Payable</span><span>₹${total}</span></div>
+    </div>
+
+    <button class="btn-red-large" onclick="processOrder(${total})">PLACE ORDER ON WHATSAPP</button>
+  `;
+}
+
+function processOrder(total) {
+  const name = document.getElementById('cust-name').value;
+  const phone = document.getElementById('cust-phone').value;
+  const address = document.getElementById('cust-address').value;
+
+  if(!name || !phone || !address) {
+    alert("कृपया नाम, फ़ोन नंबर और पता भरें!");
+    return;
+  }
+
+  let msg = `*NEW ORDER - S&A FAMILY RESTAURANT*\n\n`;
+  msg += `*Name:* ${name}\n*Phone:* ${phone}\n*Address:* ${address}\n\n`;
+  msg += `*ITEMS:*\n`;
+  cart.forEach(i => {
+    msg += `- ${i.name} x ${i.qty} = ₹${i.price * i.qty}\n`;
+  });
+  msg += `\n*TOTAL PAYABLE:* ₹${total}`;
+
+  const url = `https://wa.me/${myWhatsAppNumber}?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank');
+}
+
+// 8. Auth / Profile Screen
+function renderProfileScreen(container) {
+  const user = auth.currentUser;
+  
+  if(user) {
+    container.innerHTML = `
+      <div style="text-align:center; padding:20px;">
+        <i class="fa-solid fa-circle-user" style="font-size:3rem; color:var(--primary-red);"></i>
+        <h3 style="margin-top:10px;">${user.email}</h3>
+        <button class="btn-red-large" style="margin-top:20px;" onclick="auth.signOut()">LOGOUT</button>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <h3 style="margin-bottom:15px; color:var(--primary-red);">LOGIN / SIGN UP</h3>
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" id="auth-email" placeholder="Email">
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="auth-pass" placeholder="Password">
+      </div>
+      <button class="btn-red-large" onclick="handleLogin()">LOGIN</button>
+      <button class="btn-red-large" style="background:#333; margin-top:10px;" onclick="handleSignUp()">CREATE ACCOUNT</button>
+    `;
+  }
+}
+
+function handleLogin() {
+  const email = document.getElementById('auth-email').value;
+  const pass = document.getElementById('auth-pass').value;
+  auth.signInWithEmailURI ? auth.signInWithEmailAndPassword(email, pass) : alert("Firebase Active");
+}
+
+function handleSignUp() {
+  const email = document.getElementById('auth-email').value;
+  const pass = document.getElementById('auth-pass').value;
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(() => alert("Account Created!"))
+    .catch(err => alert(err.message));
+}
+
+auth.onAuthStateChanged(() => {
+  switchTab('home');
+});
+
+// App Start
+switchTab('home');
