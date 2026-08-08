@@ -1,3 +1,13 @@
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCASOp4d-HQdEjrxLxV-Bmx3lhhfed0GqE",
+  authDomain: "fir-a-familyrestaurant.firebaseapp.com",
+  projectId: "fir-a-familyrestaurant",
+  storageBucket: "fir-a-familyrestaurant.firebasestorage.app",
+  messagingSenderId: "631976985851",
+  appId: "1:631976985851:web:9044bf9d216260f7b61c5e",
+  measurementId: "G-KH3HE2ZZGZ"
+};
 const restaurantMenu = [
   // SPECIAL FAST FOODS (Chowmein, Momos, Rolls & Chicken Pakora)
   { id: 1, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", isSpecial: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
