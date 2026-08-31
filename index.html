@@ -6,31 +6,37 @@
   <title>S&A FAMILY RESTAURANT</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  
+  <!-- Firebase Compat Libraries (CDN) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <!-- Confetti Celebration CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
   <div class="app-container" id="app-container">
-    <!-- Dynamic Screens Render Here -->
+    <!-- Screens dynamically render here -->
   </div>
 
   <nav class="bottom-nav">
-    <button class="nav-item active" onclick="switchTab('home')">
+    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
       <i class="fa-solid fa-house"></i>
       <span>Home</span>
     </button>
-    <button class="nav-item" onclick="switchTab('menu')">
+    <button class="nav-item" id="nav-menu" onclick="switchTab('menu')">
       <i class="fa-solid fa-utensils"></i>
       <span>Menu</span>
     </button>
-    <button class="nav-item" onclick="switchTab('cart')">
+    <button class="nav-item" id="nav-cart" onclick="switchTab('cart')">
       <i class="fa-solid fa-cart-shopping"></i>
       <span class="cart-badge" id="cart-badge">0</span>
       <span>Cart</span>
     </button>
-    <button class="nav-item" onclick="switchTab('orders')">
+    <button class="nav-item" id="nav-orders" onclick="switchTab('orders')">
       <i class="fa-solid fa-clipboard-list"></i>
-      <span>Orders</span>
+      <span>Track</span>
     </button>
-    <button class="nav-item" onclick="switchTab('profile')">
+    <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
       <i class="fa-solid fa-user"></i>
       <span>Profile</span>
     </button>
@@ -39,4 +45,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
