@@ -1,4 +1,6 @@
+// ==========================================
 // FIREBASE CONFIGURATION
+// ==========================================
 const firebaseConfig = {
   apiKey: "AIzaSyDDTFZDBEAXS6hsQ_W5akOMRWiXyZdjkSo",
   authDomain: "kd-ka-khana-ghar-tak.firebaseapp.com",
@@ -33,7 +35,7 @@ let appliedCoupon = null;
 let deliveryMode = 'delivery';
 let userTip = 0;
 
-// SYNC MENU REALTIME
+// REALTIME MENU SYNC FROM FIREBASE
 db.ref('restaurant_menu').on('value', (snap) => {
   const data = snap.val();
   if (data && Object.keys(data).length > 0) {
@@ -74,6 +76,9 @@ function switchTab(screenName) {
   if (screenName === 'profile') renderProfileScreen(container);
 }
 
+// ==========================================
+// HOME TAB
+// ==========================================
 function renderHomeScreen(container) {
   container.innerHTML = `
     <div class="screen-header">
@@ -117,6 +122,9 @@ function renderHomeScreen(container) {
   renderItemsList(restaurantMenu, 'home-list');
 }
 
+// ==========================================
+// MENU TAB
+// ==========================================
 function renderMenuScreen(container) {
   container.innerHTML = `
     <div class="red-top-bar"><span>FULL MENU</span></div>
@@ -250,6 +258,9 @@ function updateBadge() {
   if (badge) badge.innerText = total;
 }
 
+// ==========================================
+// CART TAB
+// ==========================================
 function renderCartScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.qty), 0);
   const delivery = (deliveryMode === 'delivery' && subtotal > 0) ? 30 : 0;
@@ -315,6 +326,9 @@ function applyPromo() {
   renderCartScreen(document.getElementById('app-container'));
 }
 
+// ==========================================
+// CHECKOUT TAB
+// ==========================================
 function renderCheckoutScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) * item.qty), 0);
   const delivery = (deliveryMode === 'delivery' && subtotal > 0) ? 30 : 0;
@@ -382,7 +396,11 @@ function placeDirectOrder(total) {
     timestamp: Date.now()
   };
 
-  db.ref('orders/' + orderId).set(newOrder)
+  // Safe multi-path write so both random key and orderId stay perfectly in sync
+  const updates = {};
+  updates['orders/' + orderId] = newOrder;
+
+  db.ref().update(updates)
     .then(() => {
       activeOrder = newOrder;
       localStorage.setItem('sa_active_order', JSON.stringify(activeOrder));
@@ -395,7 +413,7 @@ function placeDirectOrder(total) {
       showSuccessModal(orderId);
     })
     .catch(err => {
-      alert("Firebase Write Error: Check Database Rules! " + err.message);
+      alert("Firebase Write Error! Check Database Rules: " + err.message);
     });
 }
 
@@ -418,16 +436,22 @@ function closeModalAndTrack() {
   switchTab('orders');
 }
 
+// ==========================================
+// REALTIME LIVE TRACKING SYNC
+// ==========================================
 function listenToActiveOrder() {
   if (!activeOrder || !activeOrder.orderId) return;
 
+  // Direct sync on orderId
   db.ref('orders/' + activeOrder.orderId).on('value', snap => {
     const data = snap.val();
     if (data && data.status) {
-      activeOrder = data;
+      activeOrder.status = data.status;
       localStorage.setItem('sa_active_order', JSON.stringify(activeOrder));
       const currentTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
-      if (currentTab === 'track' || currentTab === 'orders') renderOrdersScreen(document.getElementById('app-container'));
+      if (currentTab === 'track' || currentTab === 'orders') {
+        renderOrdersScreen(document.getElementById('app-container'));
+      }
     }
   });
 }
@@ -440,7 +464,7 @@ function renderOrdersScreen(container) {
 
     <div style="padding: 15px;">
       <div style="display:flex; gap:8px; margin-bottom:15px;">
-        <input type="text" id="track-id-input" class="input-box" placeholder="Order ID (e.g. ORD-578035)" value="${activeOrder ? activeOrder.orderId : ''}">
+        <input type="text" id="track-id-input" class="input-box" placeholder="Order ID (e.g. ORD-505284)" value="${activeOrder ? activeOrder.orderId : ''}">
         <button class="btn-add-red" onclick="trackManualOrder()">TRACK</button>
       </div>
 
@@ -492,6 +516,9 @@ function trackManualOrder() {
   });
 }
 
+// ==========================================
+// PROFILE TAB
+// ==========================================
 function renderProfileScreen(container) {
   const user = JSON.parse(localStorage.getItem('sa_user_info')) || { name: '', phone: '', address: '' };
   const wishedDishes = restaurantMenu.filter(m => wishlist.includes(String(m.id)));
