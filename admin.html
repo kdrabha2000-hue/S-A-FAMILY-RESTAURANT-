@@ -3,32 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S&A Restaurant Admin</title>
+  <title>S&A Master Admin Panel</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    body { background:#0a0a0a; color:#fff; font-family:sans-serif; margin:0; padding:15px; }
-    .header { background:#D32F2F; padding:15px; text-align:center; font-weight:bold; border-radius:10px; margin-bottom:15px; display:flex; justify-content:space-between; align-items:center; }
-    .order-card { background:#161616; border:1px solid #2a2a2a; border-radius:10px; padding:14px; margin-bottom:15px; }
-    .order-card.new { border-color:#D32F2F; box-shadow:0 0 10px rgba(211,47,47,0.5); }
-    .status-btn { background:#222; color:#fff; border:1px solid #444; padding:6px 12px; border-radius:6px; font-size:11px; cursor:pointer; margin-right:5px; margin-top:8px; }
-    .status-btn.active { background:#D32F2F; border-color:#D32F2F; font-weight:bold; }
+    :root { --primary-red: #D32F2F; --bg-black: #0a0a0a; --card-bg: #161616; --border: #2a2a2a; }
+    body { background: var(--bg-black); color: #fff; font-family: sans-serif; margin: 0; padding: 12px; }
+    .header { background: var(--primary-red); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+    .tab-bar { display: flex; gap: 6px; margin: 15px 0; overflow-x: auto; }
+    .tab-btn { flex: 1; padding: 8px; background: var(--card-bg); color: #aaa; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap; font-weight: bold; }
+    .tab-btn.active { background: var(--primary-red); color: #fff; border-color: var(--primary-red); }
+    .order-card, .form-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+    .order-card.new { border-color: var(--primary-red); box-shadow: 0 0 10px rgba(211,47,47,0.5); }
+    .input-field { width: 100%; box-sizing: border-box; padding: 8px; background: #202020; border: 1px solid var(--border); color: #fff; border-radius: 6px; margin: 5px 0 10px 0; font-size: 12px; }
+    .status-btn { background: #222; color: #bbb; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 4px; margin-top: 6px; }
+    .status-btn.active { background: var(--primary-red); border-color: var(--primary-red); color: #fff; font-weight: bold; }
+    .btn-action { background: var(--primary-red); color: white; border: none; padding: 9px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
+    .menu-row { display: flex; justify-content: space-between; align-items: center; background: #202020; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
+    .stock-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; border: none; cursor: pointer; font-weight: bold; }
   </style>
 </head>
 <body>
 
-  <!-- Audio Alert for incoming orders -->
   <audio id="orderAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
   <div class="header">
-    <span>KITCHEN ADMIN DESK</span>
-    <button onclick="enableSound()" style="background:#000; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-size:11px; cursor:pointer;">
-      🔔 Sound ON
-    </button>
+    <span>S&A KITCHEN HQ</span>
+    <button onclick="enableSound()" style="background:#000; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer;">🔔 Sound ON</button>
   </div>
 
-  <div id="live-orders-container">Loading orders...</div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchAdminTab('orders', this)"><i class="fa-solid fa-bell"></i> Orders</button>
+    <button class="tab-btn" onclick="switchAdminTab('menu', this)"><i class="fa-solid fa-utensils"></i> Menu & Stock</button>
+    <button class="tab-btn" onclick="switchAdminTab('settings', this)"><i class="fa-solid fa-gear"></i> Settings & Sales</button>
+  </div>
+
+  <div id="tab-orders">
+    <div id="live-orders-container">Loading orders...</div>
+  </div>
+
+  <div id="tab-menu" style="display:none;">
+    <div class="form-card">
+      <strong style="color:var(--primary-red); font-size:12px;">ADD ITEM / VARIANT</strong>
+      <input type="text" id="m-name" class="input-field" placeholder="Dish Name">
+      <div style="display:flex; gap:6px;">
+        <input type="number" id="m-price" class="input-field" placeholder="Full Price (₹)">
+        <input type="number" id="m-half" class="input-field" placeholder="Half Price (Optional)">
+      </div>
+      <select id="m-cat" class="input-field">
+        <option value="Fast Food">Fast Food</option>
+        <option value="Rolls">Rolls</option>
+        <option value="Main Course">Main Course</option>
+        <option value="Drinks">Drinks</option>
+      </select>
+      <input type="text" id="m-img" class="input-field" placeholder="Image URL">
+      <button class="btn-action" onclick="addDish()">+ SAVE TO MENU</button>
+    </div>
+    <div id="admin-menu-list"></div>
+  </div>
+
+  <div id="tab-settings" style="display:none;">
+    <div class="form-card">
+      <strong style="color:var(--primary-red); font-size:12px;">STORE CONTROLS</strong>
+      <div style="margin:10px 0; font-size:13px;">
+        <label><input type="checkbox" id="set-shop-open"> 🟢 Store Open for Orders</label>
+      </div>
+      <label style="font-size:11px; color:#aaa;">Offer Strip Text</label>
+      <input type="text" id="set-offer" class="input-field">
+      <div style="display:flex; gap:6px;">
+        <div>
+          <label style="font-size:10px; color:#aaa;">Delivery Fee (₹)</label>
+          <input type="number" id="set-delivery" class="input-field">
+        </div>
+        <div>
+          <label style="font-size:10px; color:#aaa;">Packing Charge (₹)</label>
+          <input type="number" id="set-packing" class="input-field">
+        </div>
+      </div>
+      <button class="btn-action" onclick="saveSettings()">SAVE SETTINGS</button>
+    </div>
+
+    <div class="form-card" style="text-align:center;">
+      <strong style="color:var(--primary-red); font-size:12px; display:block; margin-bottom:8px;">DAILY SALES REPORT</strong>
+      <button class="btn-action" style="background:#2e7d32;" onclick="exportSalesCSV()"><i class="fa-solid fa-file-excel"></i> DOWNLOAD ORDERS (EXCEL/CSV)</button>
+    </div>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -40,54 +100,128 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const alertAudio = document.getElementById('orderAlert');
+    let allOrders = {};
 
     function enableSound() {
-      alertAudio.play().then(() => { alertAudio.pause(); alert("Sound Alerts Active!"); });
+      alertAudio.play().then(() => { alertAudio.pause(); alert("Sound Active!"); });
     }
 
-    // LISTEN LIVE TO ORDERS
-    db.ref('orders').on('value', (snap) => {
-      const orders = snap.val();
-      const container = document.getElementById('live-orders-container');
-      if (!orders) {
-        container.innerHTML = "<p style='text-align:center; color:#777;'>No orders yet.</p>";
-        return;
-      }
+    function switchAdminTab(t, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-orders').style.display = t === 'orders' ? 'block' : 'none';
+      document.getElementById('tab-menu').style.display = t === 'menu' ? 'block' : 'none';
+      document.getElementById('tab-settings').style.display = t === 'settings' ? 'block' : 'none';
+    }
 
-      const list = Object.values(orders).reverse();
+    // ORDERS
+    db.ref('orders').on('value', snap => {
+      allOrders = snap.val() || {};
+      const container = document.getElementById('live-orders-container');
+      const list = Object.entries(allOrders).map(([k, v]) => ({ k, ...v })).reverse();
       
-      // Ring sound if new order received
-      const hasNewOrder = list.some(o => o.status === 'Received');
-      if (hasNewOrder) {
-        alertAudio.play().catch(e => console.log("Tap Sound ON button"));
-      }
+      if (!list.length) { container.innerHTML = "<p style='color:#777;'>No orders yet.</p>"; return; }
+      if (list.some(o => o.status === 'Received')) alertAudio.play().catch(e=>{});
 
       container.innerHTML = list.map(o => `
         <div class="order-card ${o.status === 'Received' ? 'new' : ''}">
-          <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:bold;">
-            <span>#${o.orderId} - ${o.customerName}</span>
-            <span style="color:#D32F2F;">₹${o.totalBill}</span>
+          <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>#${o.orderId || o.k} - ${o.customerName || 'Customer'}</span>
+            <span style="color:var(--primary-red);">₹${o.totalBill || 0}</span>
           </div>
-          <div style="font-size:12px; color:#aaa; margin:6px 0;">
-            📞 <a href="tel:${o.phone}" style="color:#4CAF50; text-decoration:none;">${o.phone}</a><br>
-            📍 ${o.address}<br>
-            📝 Note: <i>${o.cookingNote || 'None'}</i>
+          <div style="font-size:11px; color:#aaa; margin:5px 0;">
+            📞 <a href="tel:${o.phone}" style="color:#4CAF50; text-decoration:none;">${o.phone}</a> | 📍 ${o.address}<br>
+            📝 <i>${o.cookingNote || 'No note'}</i>
           </div>
-          <div style="background:#202020; padding:8px; border-radius:6px; font-size:12px; margin:8px 0;">
-            ${o.items.map(i => `<div>• ${i.name} x ${i.qty} (₹${i.price * i.qty})</div>`).join('')}
+          <div style="background:#202020; padding:6px; border-radius:4px; font-size:11px; margin:6px 0;">
+            ${(o.items||[]).map(i => `<div>• ${i.name} x ${i.qty}</div>`).join('')}
           </div>
           <div>
-            <button class="status-btn ${o.status === 'Received' ? 'active' : ''}" onclick="updateStatus('${o.orderId}', 'Received')">Received</button>
-            <button class="status-btn ${o.status === 'Preparing' ? 'active' : ''}" onclick="updateStatus('${o.orderId}', 'Preparing')">Cooking</button>
-            <button class="status-btn ${o.status === 'On The Way' ? 'active' : ''}" onclick="updateStatus('${o.orderId}', 'On The Way')">Out for Delivery</button>
-            <button class="status-btn ${o.status === 'Delivered' ? 'active' : ''}" onclick="updateStatus('${o.orderId}', 'Delivered')">Delivered</button>
+            <button class="status-btn ${o.status === 'Received' ? 'active' : ''}" onclick="setStatus('${o.k}', 'Received')">Received</button>
+            <button class="status-btn ${o.status === 'Preparing' ? 'active' : ''}" onclick="setStatus('${o.k}', 'Preparing')">Cooking</button>
+            <button class="status-btn ${o.status === 'On The Way' ? 'active' : ''}" onclick="setStatus('${o.k}', 'On The Way')">Out for Delivery</button>
+            <button class="status-btn ${o.status === 'Delivered' ? 'active' : ''}" onclick="setStatus('${o.k}', 'Delivered')">Delivered</button>
           </div>
         </div>
       `).join('');
     });
 
-    function updateStatus(id, newStatus) {
-      db.ref('orders/' + id).update({ status: newStatus });
+    function setStatus(k, s) { db.ref('orders/' + k).update({ status: s }); }
+
+    // MENU
+    db.ref('restaurant_menu').on('value', snap => {
+      const data = snap.val() || {};
+      const container = document.getElementById('admin-menu-list');
+      container.innerHTML = Object.entries(data).map(([k, v]) => `
+        <div class="menu-row">
+          <div><strong>${v.name}</strong> - ₹${v.price} ${v.hasVariant ? `(Half: ₹${v.halfPrice})` : ''}</div>
+          <div>
+            <button class="stock-badge" style="background:${v.inStock ? '#2e7d32' : '#c62828'}; color:#fff;" onclick="toggleStock('${k}', ${!v.inStock})">
+              ${v.inStock ? 'In Stock' : 'Out'}
+            </button>
+            <button onclick="deleteDish('${k}')" style="background:none; border:none; color:#c62828; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `).join('');
+    });
+
+    function toggleStock(k, s) { db.ref('restaurant_menu/' + k).update({ inStock: s }); }
+    function deleteDish(k) { if(confirm("Delete item?")) db.ref('restaurant_menu/' + k).remove(); }
+
+    function addDish() {
+      const name = document.getElementById('m-name').value.trim();
+      const price = parseFloat(document.getElementById('m-price').value);
+      const halfPrice = parseFloat(document.getElementById('m-half').value) || null;
+      const category = document.getElementById('m-cat').value;
+      const img = document.getElementById('m-img').value.trim() || 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200';
+
+      if (!name || isNaN(price)) { alert("Enter valid Name & Price"); return; }
+      db.ref('restaurant_menu').push({
+        id: Date.now(),
+        name,
+        price,
+        halfPrice,
+        hasVariant: !!halfPrice,
+        category,
+        img,
+        inStock: true
+      }).then(() => {
+        alert("Dish Added!");
+        document.getElementById('m-name').value = '';
+        document.getElementById('m-price').value = '';
+        document.getElementById('m-half').value = '';
+      });
+    }
+
+    // SETTINGS
+    db.ref('shop_settings').on('value', snap => {
+      const s = snap.val() || {};
+      document.getElementById('set-shop-open').checked = s.isOpen !== false;
+      document.getElementById('set-offer').value = s.offerText || '';
+      document.getElementById('set-delivery').value = s.deliveryFee || 30;
+      document.getElementById('set-packing').value = s.packingFee || 10;
+    });
+
+    function saveSettings() {
+      db.ref('shop_settings').set({
+        isOpen: document.getElementById('set-shop-open').checked,
+        offerText: document.getElementById('set-offer').value,
+        deliveryFee: parseFloat(document.getElementById('set-delivery').value) || 0,
+        packingFee: parseFloat(document.getElementById('set-packing').value) || 0
+      }).then(() => alert("Settings Updated!"));
+    }
+
+    // CSV EXPORT
+    function exportSalesCSV() {
+      let csv = "Order ID,Customer,Phone,Address,Bill,Status\n";
+      Object.values(allOrders).forEach(o => {
+        csv += `"${o.orderId || ''}","${o.customerName || ''}","${o.phone || ''}","${(o.address || '').replace(/"/g, '""')}","${o.totalBill || 0}","${o.status || ''}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Orders_Report_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
     }
   </script>
 </body>
