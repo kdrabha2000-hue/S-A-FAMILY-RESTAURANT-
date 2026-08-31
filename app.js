@@ -447,3 +447,63 @@ function renderProfileScreen(container) {
     </div>
   `;
 }
+function renderProfileScreen(container) {
+  const user = JSON.parse(localStorage.getItem('sa_user_info')) || { name: '', phone: '', address: '' };
+  
+  container.innerHTML = `
+    <div class="red-top-bar"><span>CUSTOMER PROFILE</span></div>
+    
+    <div style="padding: 15px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <i class="fa-solid fa-circle-user" style="font-size: 65px; color: var(--primary-red);"></i>
+        <h3 style="margin-top: 8px; color: #fff;">${user.name || 'Guest Foodie'}</h3>
+        <p style="font-size: 12px; color: var(--text-gray);">${user.phone ? '📞 ' + user.phone : 'No phone linked'}</p>
+      </div>
+
+      <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+          <strong style="font-size: 13px; color: var(--primary-red);">MY DETAILS (AUTO-FILL)</strong>
+          <i class="fa-solid fa-user-pen" style="color: var(--primary-red);"></i>
+        </div>
+        
+        <div class="input-group" style="margin: 8px 0;">
+          <label style="font-size: 11px;">Your Name</label>
+          <input type="text" id="prof-name" class="input-box" value="${user.name}" placeholder="Enter your name">
+        </div>
+
+        <div class="input-group" style="margin: 8px 0;">
+          <label style="font-size: 11px;">Phone Number</label>
+          <input type="tel" id="prof-phone" class="input-box" value="${user.phone}" placeholder="Enter mobile number">
+        </div>
+
+        <div class="input-group" style="margin: 8px 0;">
+          <label style="font-size: 11px;">Default Delivery Address</label>
+          <textarea id="prof-address" class="input-box" rows="2" placeholder="House / Village / Landmark">${user.address}</textarea>
+        </div>
+
+        <button class="btn-large-red" style="width: 100%; margin: 10px 0 0 0; padding: 10px;" onclick="saveProfileData()">SAVE DETAILS</button>
+      </div>
+
+      <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center;">
+        <i class="fa-solid fa-store" style="color: var(--primary-red); font-size: 20px; margin-bottom: 5px;"></i>
+        <h4 style="font-size: 13px;">S&A FAMILY RESTAURANT</h4>
+        <p style="font-size: 11px; color: var(--text-gray); margin-top: 3px;">U.T. Road, Bengbari, Udalguri, Assam</p>
+      </div>
+    </div>
+  `;
+}
+
+function saveProfileData() {
+  const name = document.getElementById('prof-name').value.trim();
+  const phone = document.getElementById('prof-phone').value.trim();
+  const address = document.getElementById('prof-address').value.trim();
+
+  if (!name || !phone) {
+    alert("Kripya Naam aur Phone Number zaroor bharein!");
+    return;
+  }
+
+  localStorage.setItem('sa_user_info', JSON.stringify({ name, phone, address }));
+  alert("Profile Details Saved Successfully! 🎉");
+  renderProfileScreen(document.getElementById('app-container'));
+}
