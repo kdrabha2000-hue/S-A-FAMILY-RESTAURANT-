@@ -336,3 +336,102 @@ body {
   border-radius: 10px;
 }
 
+/* Search Bar UI */
+.search-wrapper {
+  margin: 10px 15px;
+  position: relative;
+}
+.search-wrapper input {
+  width: 100%;
+  padding: 10px 12px 10px 38px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.search-wrapper i {
+  position: absolute;
+  left: 14px;
+  top: 12px;
+  color: var(--text-gray);
+  font-size: 13px;
+}
+
+/* Veg / Non-Veg Badges */
+.badge-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.veg-dot { background: #4CAF50; }
+.nonveg-dot { background: #E53935; }
+
+/* Out of Stock Ribbon */
+.sold-out-badge {
+  background: #333;
+  color: #ff5252;
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* Live Tracker Stepper */
+.tracker-card {
+  background: var(--card-bg);
+  margin: 15px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+.track-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  opacity: 0.35;
+}
+.track-step.active {
+  opacity: 1;
+}
+.track-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.track-step.active .track-icon {
+  background: var(--primary-red);
+  color: white;
+  box-shadow: 0 0 10px rgba(211, 47, 47, 0.6);
+}
+
+/* Success Celebration Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+.modal-content {
+  background: #181818;
+  border: 1px solid var(--primary-red);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  max-width: 340px;
+  box-shadow: 0 10px 30px rgba(211, 47, 47, 0.4);
+}
