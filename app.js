@@ -1,4 +1,3 @@
-// FIREBASE CONFIGURATION
 const firebaseConfig = {
   apiKey: "AIzaSyDDTFZDBEAXS6hsQ_W5akOMRWiXyZdjkSo",
   authDomain: "kd-ka-khana-ghar-tak.firebaseapp.com",
@@ -9,42 +8,46 @@ const firebaseConfig = {
   appId: "1:69933070653:web:f9b93ba827d794bb376d54"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let restaurantMenu = [
-  { id: 1, name: "Chicken Pakora", price: 100, halfPrice: 50, hasVariant: true, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
-  { id: 2, name: "Veg Chowmein", price: 50, category: "Fast Food", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 3, name: "Chicken Chowmein", price: 100, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 4, name: "Chicken Momos", price: 70, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 5, name: "Chicken Roll", price: 80, category: "Rolls", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 6, name: "Cold Drink (Thumbs Up)", price: 40, category: "Drinks", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200" }
+const defaultMenu = [
+  { id: "1", name: "Chicken Steamed Momo (10 Pcs)", price: 120, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
+  { id: "2", name: "Chicken Fried Momo (10 Pcs)", price: 140, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
+  { id: "3", name: "Chicken Schezwan Gravy Momo", price: 160, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
+  { id: "4", name: "Chicken Pakora", price: 100, halfPrice: 50, hasVariant: true, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
+  { id: "5", name: "Veg Chowmein", price: 50, category: "Fast Food", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+  { id: "6", name: "Chicken Chowmein", price: 100, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+  { id: "7", name: "Veg Roll", price: 40, category: "Rolls", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+  { id: "8", name: "Chicken Roll", price: 80, category: "Rolls", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+  { id: "9", name: "Pork Roll", price: 100, category: "Rolls", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+  { id: "10", name: "Chicken Biryani", price: 180, category: "Main Course", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
+  { id: "11", name: "Cold Drink / Thumbs Up", price: 40, category: "Drinks", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200" }
 ];
 
-let shopSettings = {
-  isOpen: true,
-  offerText: "⚡ SPECIAL OFFER: Use WELCOME50 for Flat ₹50 OFF!",
-  deliveryFee: 30,
-  packingFee: 10,
-  minOrder: 100
-};
-
+let restaurantMenu = [...defaultMenu];
+let currentCategory = 'All';
 let cart = [];
+let wishlist = JSON.parse(localStorage.getItem('sa_wishlist')) || [];
 let activeOrder = JSON.parse(localStorage.getItem('sa_active_order')) || null;
 let appliedCoupon = null;
+let deliveryMode = 'delivery'; // 'delivery' or 'pickup'
+let userTip = 0;
+let cancelTimerInterval = null;
 
-// SYNC LIVE SETTINGS & MENU
-db.ref('shop_settings').on('value', snap => {
-  if (snap.val()) shopSettings = { ...shopSettings, ...snap.val() };
-});
-
-db.ref('restaurant_menu').on('value', snap => {
+// SYNC MENU FROM FIREBASE
+db.ref('restaurant_menu').on('value', (snap) => {
   const data = snap.val();
-  if (data) restaurantMenu = Object.values(data);
-  const activeTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
-  if (activeTab === 'home' || activeTab === 'menu') switchTab(activeTab);
+  if (data && Object.keys(data).length > 0) {
+    restaurantMenu = Object.entries(data).map(([k, item]) => ({
+      ...item,
+      id: item.id ? String(item.id) : k,
+      inStock: item.inStock !== false
+    }));
+  } else {
+    restaurantMenu = [...defaultMenu];
+  }
+  refreshView();
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -52,37 +55,35 @@ document.addEventListener('DOMContentLoaded', () => {
   listenToActiveOrder();
 });
 
-function switchTab(screenName) {
+function refreshView() {
+  const activeLabel = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
+  if (activeLabel === 'home') renderHomeScreen(document.getElementById('app-container'));
+  if (activeLabel === 'menu') renderMenuScreen(document.getElementById('app-container'));
+}
+
+function switchTab(screen) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  const btn = document.getElementById(`nav-${screenName}`);
+  const btn = document.getElementById(`nav-${screen}`);
   if (btn) btn.classList.add('active');
 
   const container = document.getElementById('app-container');
-  if (screenName === 'home') renderHomeScreen(container);
-  if (screenName === 'menu') renderMenuScreen(container);
-  if (screenName === 'cart') renderCartScreen(container);
-  if (screenName === 'checkout') renderCheckoutScreen(container);
-  if (screenName === 'orders') renderOrdersScreen(container);
-  if (screenName === 'profile') renderProfileScreen(container);
+  if (screen === 'home') renderHomeScreen(container);
+  if (screen === 'menu') renderMenuScreen(container);
+  if (screen === 'cart') renderCartScreen(container);
+  if (screen === 'checkout') renderCheckoutScreen(container);
+  if (screen === 'orders') renderOrdersScreen(container);
+  if (screen === 'profile') renderProfileScreen(container);
 }
 
 function renderHomeScreen(container) {
   container.innerHTML = `
     <div class="screen-header">
-      <div class="brand-main">
-        <div class="brand-title">S&A</div>
-        <div style="font-weight: bold; font-size: 13px; letter-spacing: 1px;">FAMILY RESTAURANT</div>
-        <div class="tagline">Fast Food & Fresh Meals</div>
-      </div>
+      <div class="brand-title">S&A</div>
+      <div style="font-weight:bold; font-size:13px; letter-spacing:1px;">FAMILY RESTAURANT</div>
+      <div class="tagline">Fast Food & Fresh Meals</div>
     </div>
 
-    ${!shopSettings.isOpen ? `
-      <div style="background:#b71c1c; color:#fff; text-align:center; padding:10px; font-size:12px; font-weight:bold;">
-        ⚠️ RESTAURANT IS TEMPORARILY CLOSED FOR NEW ORDERS
-      </div>
-    ` : ''}
-
-    <div class="offer-strip">${shopSettings.offerText}</div>
+    <div class="offer-strip">⚡ SPECIAL OFFER: Apply Code <b>WELCOME50</b> for Flat ₹50 OFF!</div>
 
     <div class="search-wrapper">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -91,10 +92,7 @@ function renderHomeScreen(container) {
 
     <div class="location-box">
       <i class="fa-solid fa-location-dot"></i>
-      <div>
-        <strong>U.T. Road, Bengbari</strong><br>
-        <span style="color:var(--text-gray);">Udalguri, Assam - 784523</span>
-      </div>
+      <div><strong>U.T. Road, Bengbari</strong><br><span style="color:var(--text-gray);">Udalguri, Assam - 784523</span></div>
     </div>
 
     <div class="special-banner">
@@ -102,7 +100,7 @@ function renderHomeScreen(container) {
         <small style="color:#ffcdd2; font-weight:bold;">BESTSELLER</small>
         <h3 style="font-size:17px; margin-top:2px;">Chicken Pakora</h3>
         <p class="price" style="margin-top:4px;">Starting ₹50</p>
-        <button class="btn-order-now" onclick="addToCart(1, 'Half')">ORDER HALF</button>
+        <button class="btn-order-now" onclick="addToCart('4', 'Half')">ORDER HALF</button>
       </div>
       <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=200" alt="Pakora">
     </div>
@@ -110,7 +108,7 @@ function renderHomeScreen(container) {
     <h4 style="padding: 10px 15px 5px 15px; font-size:13px; color:var(--primary-red);">POPULAR ITEMS</h4>
     <div id="home-list"></div>
 
-    <a href="tel:8453270362" style="position:fixed; bottom:75px; right:15px; background:#4CAF50; color:#fff; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.5); z-index:90;">
+    <a href="tel:8453270362" style="position:fixed; bottom:70px; right:15px; background:#4CAF50; color:#fff; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.5); z-index:90;">
       <i class="fa-solid fa-phone" style="font-size:18px;"></i>
     </a>
   `;
@@ -127,60 +125,75 @@ function renderMenuScreen(container) {
     </div>
 
     <div class="category-pills">
-      <button class="pill active" onclick="filterCategory('All', this)">All</button>
-      <button class="pill" onclick="filterCategory('Fast Food', this)">Fast Food</button>
-      <button class="pill" onclick="filterCategory('Rolls', this)">Rolls</button>
-      <button class="pill" onclick="filterCategory('Main Course', this)">Main Course</button>
-      <button class="pill" onclick="filterCategory('Drinks', this)">Drinks</button>
+      <button class="pill ${currentCategory==='All'?'active':''}" onclick="filterCategory('All', this)">All</button>
+      <button class="pill ${currentCategory==='Fast Food'?'active':''}" onclick="filterCategory('Fast Food', this)">Fast Food</button>
+      <button class="pill ${currentCategory==='Rolls'?'active':''}" onclick="filterCategory('Rolls', this)">Rolls</button>
+      <button class="pill ${currentCategory==='Main Course'?'active':''}" onclick="filterCategory('Main Course', this)">Main Course</button>
+      <button class="pill ${currentCategory==='Drinks'?'active':''}" onclick="filterCategory('Drinks', this)">Drinks</button>
     </div>
 
     <div id="full-menu-list"></div>
   `;
-  renderItemsList(restaurantMenu, 'full-menu-list');
-}
-
-function handleSearch(keyword, targetId) {
-  const filtered = restaurantMenu.filter(i => i.name.toLowerCase().includes(keyword.toLowerCase()));
-  renderItemsList(filtered, targetId);
+  const items = currentCategory === 'All' 
+    ? restaurantMenu 
+    : restaurantMenu.filter(i => (i.category || '').toLowerCase().trim() === currentCategory.toLowerCase().trim());
+  renderItemsList(items, 'full-menu-list');
 }
 
 function filterCategory(cat, btn) {
+  currentCategory = cat;
   document.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  const filtered = cat === 'All' ? restaurantMenu : restaurantMenu.filter(i => i.category === cat);
-  renderItemsList(filtered, 'full-menu-list');
+  const items = cat === 'All' 
+    ? restaurantMenu 
+    : restaurantMenu.filter(i => (i.category || '').toLowerCase().trim() === cat.toLowerCase().trim());
+  renderItemsList(items, 'full-menu-list');
+}
+
+function handleSearch(keyword, targetId) {
+  const filtered = restaurantMenu.filter(i => (i.name || '').toLowerCase().includes(keyword.toLowerCase()));
+  renderItemsList(filtered, targetId);
 }
 
 function renderItemsList(items, targetId) {
   const list = document.getElementById(targetId);
   if (!list) return;
 
+  if (!items || items.length === 0) {
+    list.innerHTML = `<p style="text-align:center; padding:30px; color:var(--text-gray); font-size:12px;">No dishes found in this category.</p>`;
+    return;
+  }
+
   list.innerHTML = items.map(item => {
     const badgeColor = item.isVeg ? "veg-dot" : "nonveg-dot";
-    const cartItem = cart.find(c => c.id === item.id);
+    const inCart = cart.find(c => c.id === item.id);
+    const isWished = wishlist.includes(String(item.id));
 
     return `
       <div class="item-card">
-        <img src="${item.img}" alt="${item.name}">
+        <button class="wishlist-btn ${isWished ? 'active' : ''}" onclick="toggleWishlist('${item.id}')">
+          <i class="fa-${isWished ? 'solid' : 'regular'} fa-heart"></i>
+        </button>
+        <img src="${item.img || 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200'}" alt="${item.name}">
         <div class="item-info">
           <h4><span class="badge-dot ${badgeColor}"></span>${item.name}</h4>
           <p class="price">₹${item.price} ${item.hasVariant ? `<small style="font-size:10px; color:#aaa;">(Full) / ₹${item.halfPrice} (Half)</small>` : ''}</p>
         </div>
-        ${!item.inStock ? `<span class="sold-out-badge">SOLD OUT</span>` : 
+        ${!item.inStock ? `<span class="sold-out-badge">SOLD OUT</span>` :
           item.hasVariant ? `
             <div style="display:flex; flex-direction:column; gap:4px;">
-              <button class="btn-add-red" style="font-size:10px; padding:4px 8px;" onclick="addToCart(${item.id}, 'Half')">HALF +</button>
-              <button class="btn-add-red" style="font-size:10px; padding:4px 8px;" onclick="addToCart(${item.id}, 'Full')">FULL +</button>
+              <button class="btn-add-red" style="font-size:10px; padding:3px 8px;" onclick="addToCart('${item.id}', 'Half')">HALF +</button>
+              <button class="btn-add-red" style="font-size:10px; padding:3px 8px;" onclick="addToCart('${item.id}', 'Full')">FULL +</button>
             </div>
           ` :
-          cartItem ? `
+          inCart ? `
             <div class="qty-ctrl">
-              <button onclick="changeQty(${item.id}, -1)">-</button>
-              <span>${cartItem.qty}</span>
-              <button onclick="changeQty(${item.id}, 1)">+</button>
+              <button onclick="changeQty('${item.id}', -1)">-</button>
+              <span>${inCart.qty}</span>
+              <button onclick="changeQty('${item.id}', 1)">+</button>
             </div>
           ` : `
-            <button class="btn-add-red" onclick="addToCart(${item.id})">ADD +</button>
+            <button class="btn-add-red" onclick="addToCart('${item.id}')">ADD +</button>
           `
         }
       </div>
@@ -188,17 +201,24 @@ function renderItemsList(items, targetId) {
   }).join('');
 }
 
-function addToCart(id, variant = null) {
-  if (!shopSettings.isOpen) {
-    alert("Dukan abhi band hai. Order accept nahi ho rahe.");
-    return;
+function toggleWishlist(id) {
+  const strId = String(id);
+  if (wishlist.includes(strId)) {
+    wishlist = wishlist.filter(x => x !== strId);
+  } else {
+    wishlist.push(strId);
   }
-  const item = restaurantMenu.find(i => i.id === id);
+  localStorage.setItem('sa_wishlist', JSON.stringify(wishlist));
+  refreshView();
+}
+
+function addToCart(id, variant = null) {
+  const item = restaurantMenu.find(i => String(i.id) === String(id));
   if (!item || !item.inStock) return;
 
   const itemKey = variant ? `${item.id}_${variant}` : `${item.id}`;
   const itemName = variant ? `${item.name} (${variant})` : item.name;
-  const itemPrice = variant === 'Half' ? item.halfPrice : item.price;
+  const itemPrice = variant === 'Half' ? (item.halfPrice || item.price) : item.price;
 
   const existing = cart.find(i => i.cartKey === itemKey);
   if (existing) {
@@ -207,33 +227,31 @@ function addToCart(id, variant = null) {
     cart.push({ ...item, cartKey: itemKey, name: itemName, price: itemPrice, qty: 1 });
   }
   updateBadge();
-  const currentTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
-  if (currentTab === 'home' || currentTab === 'menu') switchTab(currentTab);
+  refreshView();
 }
 
 function changeQty(id, delta, cartKey = null) {
-  const item = cartKey ? cart.find(i => i.cartKey === cartKey) : cart.find(i => i.id === id);
+  const item = cartKey ? cart.find(i => i.cartKey === cartKey) : cart.find(i => String(i.id) === String(id));
   if (item) {
     item.qty += delta;
     if (item.qty <= 0) cart = cart.filter(i => i !== item);
   }
   updateBadge();
-  const currentTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
-  if (currentTab) switchTab(currentTab);
+  refreshView();
 }
 
 function updateBadge() {
-  const totalItems = cart.reduce((sum, i) => sum + i.qty, 0);
+  const total = cart.reduce((sum, i) => sum + i.qty, 0);
   const badge = document.getElementById('cart-badge');
-  if (badge) badge.innerText = totalItems;
+  if (badge) badge.innerText = total;
 }
 
 function renderCartScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = subtotal > 0 ? shopSettings.deliveryFee : 0;
-  const packing = subtotal > 0 ? shopSettings.packingFee : 0;
+  const delivery = (deliveryMode === 'delivery' && subtotal > 0) ? 30 : 0;
+  const packing = subtotal > 0 ? 10 : 0;
   const discount = appliedCoupon === 'WELCOME50' && subtotal >= 200 ? 50 : 0;
-  const total = Math.max(0, subtotal + delivery + packing - discount);
+  const total = Math.max(0, subtotal + delivery + packing + userTip - discount);
 
   container.innerHTML = `
     <div class="red-top-bar">
@@ -241,30 +259,47 @@ function renderCartScreen(container) {
       <i class="fa-solid fa-trash" onclick="cart=[]; updateBadge(); renderCartScreen(document.getElementById('app-container'));"></i>
     </div>
 
+    <!-- Takeaway vs Delivery Toggle -->
+    <div style="display:flex; margin:10px 15px; background:var(--card-bg); border-radius:8px; padding:4px; border:1px solid var(--border-color);">
+      <button style="flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer; background:${deliveryMode==='delivery'?'var(--primary-red)':'none'}; color:${deliveryMode==='delivery'?'#fff':'#aaa'};" onclick="deliveryMode='delivery'; renderCartScreen(document.getElementById('app-container'));">🛵 Home Delivery</button>
+      <button style="flex:1; padding:8px; border:none; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer; background:${deliveryMode==='pickup'?'var(--primary-red)':'none'}; color:${deliveryMode==='pickup'?'#fff':'#aaa'};" onclick="deliveryMode='pickup'; renderCartScreen(document.getElementById('app-container'));">🛍️ Takeaway / Pickup</button>
+    </div>
+
     ${cart.map(item => `
       <div class="item-card">
-        <img src="${item.img}">
+        <img src="${item.img || 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200'}">
         <div class="item-info">
           <h4>${item.name}</h4>
           <p class="price">₹${item.price}</p>
         </div>
         <div class="qty-ctrl">
-          <button onclick="changeQty(${item.id}, -1, '${item.cartKey}')">-</button>
+          <button onclick="changeQty('${item.id}', -1, '${item.cartKey}')">-</button>
           <span>${item.qty}</span>
-          <button onclick="changeQty(${item.id}, 1, '${item.cartKey}')">+</button>
+          <button onclick="changeQty('${item.id}', 1, '${item.cartKey}')">+</button>
         </div>
         <div style="font-weight:bold; width: 45px; text-align:right;">₹${item.price * item.qty}</div>
       </div>
     `).join('')}
 
     ${cart.length > 0 ? `
+      <!-- Upsell Drink Section -->
       <div style="background:#1a1a1a; margin:10px 15px; padding:10px; border-radius:8px; border:1px dashed #444; display:flex; justify-content:space-between; align-items:center;">
         <span style="font-size:12px;">🥤 Add Cold Drink (₹40)?</span>
-        <button class="btn-add-red" style="font-size:11px; padding:4px 10px;" onclick="addToCart(6)">ADD</button>
+        <button class="btn-add-red" style="font-size:11px; padding:4px 10px;" onclick="addToCart('11')">ADD</button>
+      </div>
+
+      <!-- Tip Rider / Kitchen -->
+      <div style="margin: 10px 15px;">
+        <label style="font-size:11px; color:var(--text-gray);">Add Tip to Kitchen / Rider</label>
+        <div style="display:flex; gap:8px; margin-top:4px;">
+          <button class="pill ${userTip===10?'active':''}" onclick="userTip = (userTip===10?0:10); renderCartScreen(document.getElementById('app-container'));">₹10</button>
+          <button class="pill ${userTip===20?'active':''}" onclick="userTip = (userTip===20?0:20); renderCartScreen(document.getElementById('app-container'));">₹20</button>
+          <button class="pill ${userTip===30?'active':''}" onclick="userTip = (userTip===30?0:30); renderCartScreen(document.getElementById('app-container'));">₹30</button>
+        </div>
       </div>
 
       <div style="margin: 10px 15px; display:flex; gap:8px;">
-        <input type="text" id="coupon-input" class="input-box" placeholder="Enter Coupon (e.g. WELCOME50)" style="text-transform:uppercase;">
+        <input type="text" id="coupon-input" class="input-box" placeholder="WELCOME50" style="text-transform:uppercase;">
         <button class="btn-add-red" onclick="applyPromo()">APPLY</button>
       </div>
 
@@ -272,22 +307,15 @@ function renderCartScreen(container) {
         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;"><span>Subtotal</span> <span>₹${subtotal}</span></div>
         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;"><span>Delivery Fee</span> <span>₹${delivery}</span></div>
         <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;"><span>Packaging Fee</span> <span>₹${packing}</span></div>
-        ${discount > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; color:#4CAF50;"><span>Discount (WELCOME50)</span> <span>-₹${discount}</span></div>` : ''}
+        ${userTip > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; color:#4CAF50;"><span>Tip</span> <span>+₹${userTip}</span></div>` : ''}
+        ${discount > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; color:#4CAF50;"><span>Discount</span> <span>-₹${discount}</span></div>` : ''}
         <hr style="border-color:var(--border-color); margin:8px 0;">
         <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15px;"><span>TOTAL</span> <span class="price" style="color:var(--primary-red);">₹${total}</span></div>
       </div>
 
-      <button class="btn-large-red" onclick="proceedToCheckout(${subtotal})">CONTINUE TO CHECKOUT ></button>
+      <button class="btn-large-red" onclick="switchTab('checkout')">CHECKOUT DETAILS ></button>
     ` : '<p style="padding:40px; text-align:center; color:var(--text-gray);">Your plate is empty!</p>'}
   `;
-}
-
-function proceedToCheckout(subtotal) {
-  if (subtotal < shopSettings.minOrder) {
-    alert(`Minimum order ₹${shopSettings.minOrder} hona chahiye.`);
-    return;
-  }
-  switchTab('checkout');
 }
 
 function applyPromo() {
@@ -303,8 +331,10 @@ function applyPromo() {
 
 function renderCheckoutScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  const delivery = (deliveryMode === 'delivery' && subtotal > 0) ? 30 : 0;
+  const packing = subtotal > 0 ? 10 : 0;
   const discount = appliedCoupon === 'WELCOME50' && subtotal >= 200 ? 50 : 0;
-  const total = Math.max(0, subtotal + shopSettings.deliveryFee + shopSettings.packingFee - discount);
+  const total = Math.max(0, subtotal + delivery + packing + userTip - discount);
   const savedUser = JSON.parse(localStorage.getItem('sa_user_info')) || {};
 
   container.innerHTML = `
@@ -321,13 +351,21 @@ function renderCheckoutScreen(container) {
     </div>
 
     <div class="input-group">
-      <label>Delivery Address</label>
-      <textarea id="cust-address" class="input-box" rows="2" placeholder="House / Village / Landmark">${savedUser.address || ''}</textarea>
+      <label>Delivery Address ${deliveryMode==='pickup'?'(Pickup Selected - Not Required)':''}</label>
+      <textarea id="cust-address" class="input-box" rows="2" placeholder="House / Village / Landmark">${deliveryMode==='pickup'?'Self Pickup at Restaurant':(savedUser.address || '')}</textarea>
     </div>
 
     <div class="input-group">
-      <label>Cooking Note (Optional)</label>
-      <input type="text" id="cust-note" class="input-box" placeholder="e.g. Extra sauce, mirchi kam">
+      <button type="button" class="btn-add-red" style="background:#2e7d32; font-size:11px;" onclick="fetchGPSLocation()">
+        📍 Attach My Exact GPS Location
+      </button>
+      <span id="gps-status" style="font-size:10px; color:#aaa; margin-left:6px;"></span>
+      <input type="hidden" id="cust-coords" value="">
+    </div>
+
+    <div class="input-group">
+      <label>Special Instructions / Cake Text</label>
+      <input type="text" id="cust-note" class="input-box" placeholder="e.g. Mirchi kam, extra chutney, birthday note">
     </div>
 
     <div style="display:flex; justify-content:space-between; padding: 10px 15px; font-weight:bold;">
@@ -339,11 +377,31 @@ function renderCheckoutScreen(container) {
   `;
 }
 
+function fetchGPSLocation() {
+  const status = document.getElementById('gps-status');
+  if (!navigator.geolocation) {
+    status.innerText = "GPS not supported on browser.";
+    return;
+  }
+  status.innerText = "Locating...";
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const coords = `${pos.coords.latitude},${pos.coords.longitude}`;
+      document.getElementById('cust-coords').value = coords;
+      status.innerText = "✅ GPS Attached!";
+    },
+    err => {
+      status.innerText = "⚠️ Permission denied.";
+    }
+  );
+}
+
 function placeDirectOrder(total) {
   const name = document.getElementById('cust-name').value.trim();
   const phone = document.getElementById('cust-phone').value.trim();
   const address = document.getElementById('cust-address').value.trim();
   const note = document.getElementById('cust-note').value.trim();
+  const coords = document.getElementById('cust-coords').value;
 
   if (!name || !phone || !address) {
     alert("Please fill Name, Phone, and Address!");
@@ -358,11 +416,13 @@ function placeDirectOrder(total) {
     customerName: name,
     phone: phone,
     address: address,
+    coords: coords || "N/A",
+    deliveryMode: deliveryMode,
     cookingNote: note || "None",
     items: cart,
     totalBill: total,
     status: "Received",
-    date: new Date().toLocaleDateString(),
+    createdAt: Date.now(),
     timestamp: Date.now()
   };
 
@@ -374,10 +434,7 @@ function placeDirectOrder(total) {
     cart = [];
     updateBadge();
 
-    if (typeof confetti === 'function') {
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-    }
-
+    if (typeof confetti === 'function') confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     showSuccessModal(orderId);
   });
 }
@@ -388,9 +445,9 @@ function showSuccessModal(orderId) {
   overlay.innerHTML = `
     <div class="modal-content">
       <i class="fa-solid fa-circle-check" style="color:#4CAF50; font-size:45px; margin-bottom:12px;"></i>
-      <h3 style="color:#fff;">Order Received!</h3>
-      <p style="color:var(--text-gray); font-size:12px; margin: 8px 0;">Order #${orderId} has been sent to kitchen.</p>
-      <button class="btn-large-red" style="margin:10px 0 0 0;" onclick="closeModalAndTrack()">LIVE STATUS</button>
+      <h3 style="color:#fff;">Order Placed!</h3>
+      <p style="color:var(--text-gray); font-size:12px; margin: 8px 0;">Order #${orderId} sent to kitchen.</p>
+      <button class="btn-large-red" style="margin:10px 0 0 0;" onclick="closeModalAndTrack()">TRACK STATUS</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -402,11 +459,14 @@ function closeModalAndTrack() {
 }
 
 function listenToActiveOrder() {
-  if (!activeOrder) return;
+  if (!activeOrder || !activeOrder.orderId) return;
+
   db.ref('orders/' + activeOrder.orderId).on('value', snap => {
     const data = snap.val();
-    if (data) {
-      activeOrder = data;
+    if (data && data.status) {
+      activeOrder.status = data.status;
+      activeOrder.riderName = data.riderName;
+      activeOrder.riderPhone = data.riderPhone;
       localStorage.setItem('sa_active_order', JSON.stringify(activeOrder));
       const currentTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
       if (currentTab === 'track' || currentTab === 'orders') renderOrdersScreen(document.getElementById('app-container'));
@@ -415,65 +475,118 @@ function listenToActiveOrder() {
 }
 
 function renderOrdersScreen(container) {
-  if (!activeOrder) {
-    container.innerHTML = `
-      <div class="red-top-bar"><span>LIVE ORDER TRACKING</span></div>
-      <p style="padding:40px; text-align:center; color:var(--text-gray);">No active orders right now.</p>
-    `;
-    return;
-  }
+  const s = activeOrder ? activeOrder.status : '';
+  const isCancellable = activeOrder && activeOrder.status === 'Received';
 
-  const s = activeOrder.status;
   container.innerHTML = `
-    <div class="red-top-bar"><span>LIVE STATUS</span></div>
+    <div class="red-top-bar"><span>LIVE ORDER TRACKING</span></div>
 
-    <div class="tracker-card">
-      <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:13px;">
-        <span>Order <b>#${activeOrder.orderId}</b></span>
-        <span style="color:var(--primary-red); font-weight:bold;">₹${activeOrder.totalBill}</span>
+    <div style="padding: 15px;">
+      <div style="display:flex; gap:8px; margin-bottom:15px;">
+        <input type="text" id="track-id-input" class="input-box" placeholder="Order ID (e.g. ORD-578035)" value="${activeOrder ? activeOrder.orderId : ''}">
+        <button class="btn-add-red" onclick="trackManualOrder()">TRACK</button>
       </div>
 
-      <div class="track-step ${['Received', 'Preparing', 'On The Way', 'Delivered'].includes(s) ? 'active' : ''}">
-        <div class="track-icon"><i class="fa-solid fa-receipt"></i></div>
-        <div><strong>Order Received</strong><div style="font-size:10px; color:var(--text-gray);">Restaurant has received your order</div></div>
-      </div>
+      ${activeOrder ? `
+        <div class="tracker-card" style="margin:0;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px;">
+            <span>Order <b>#${activeOrder.orderId}</b></span>
+            <span style="color:var(--primary-red); font-weight:bold;">₹${activeOrder.totalBill}</span>
+          </div>
 
-      <div class="track-step ${['Preparing', 'On The Way', 'Delivered'].includes(s) ? 'active' : ''}">
-        <div class="track-icon"><i class="fa-solid fa-kitchen-set"></i></div>
-        <div><strong>Cooking in Kitchen</strong><div style="font-size:10px; color:var(--text-gray);">Chef is preparing fresh hot food</div></div>
-      </div>
+          ${activeOrder.riderName ? `
+            <div style="background:#202020; padding:8px; border-radius:6px; font-size:11px; margin-bottom:12px; border:1px solid #333;">
+              🛵 Rider Assigned: <b>${activeOrder.riderName}</b> (${activeOrder.riderPhone})
+              <a href="tel:${activeOrder.riderPhone}" style="color:#4CAF50; margin-left:8px; text-decoration:none;"><i class="fa-solid fa-phone"></i> Call</a>
+            </div>
+          ` : ''}
 
-      <div class="track-step ${['On The Way', 'Delivered'].includes(s) ? 'active' : ''}">
-        <div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div>
-        <div><strong>Out for Delivery</strong><div style="font-size:10px; color:var(--text-gray);">Rider is on the way</div></div>
-      </div>
+          <div class="track-step ${['Received', 'Preparing', 'On The Way', 'Delivered'].includes(s) ? 'active' : ''}">
+            <div class="track-icon"><i class="fa-solid fa-receipt"></i></div>
+            <div><strong>Order Received</strong><div style="font-size:10px; color:var(--text-gray);">Order accepted by kitchen</div></div>
+          </div>
 
-      <div class="track-step ${s === 'Delivered' ? 'active' : ''}">
-        <div class="track-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <div><strong>Delivered</strong><div style="font-size:10px; color:var(--text-gray);">Enjoy your meal!</div></div>
-      </div>
+          <div class="track-step ${['Preparing', 'On The Way', 'Delivered'].includes(s) ? 'active' : ''}">
+            <div class="track-icon"><i class="fa-solid fa-kitchen-set"></i></div>
+            <div><strong>Cooking in Kitchen</strong><div style="font-size:10px; color:var(--text-gray);">Chef is preparing food (ETA ~25 mins)</div></div>
+          </div>
+
+          <div class="track-step ${['On The Way', 'Delivered'].includes(s) ? 'active' : ''}">
+            <div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div>
+            <div><strong>Out for Delivery</strong><div style="font-size:10px; color:var(--text-gray);">Rider is on the way</div></div>
+          </div>
+
+          <div class="track-step ${s === 'Delivered' ? 'active' : ''}">
+            <div class="track-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div><strong>Delivered</strong><div style="font-size:10px; color:var(--text-gray);">Delivered! Rate us on Profile.</div></div>
+          </div>
+
+          ${isCancellable ? `
+            <button class="btn-large-red" style="background:#444; width:100%; margin:15px 0 0 0; padding:8px; font-size:11px;" onclick="cancelActiveOrder()">
+              ❌ Cancel Order (Within 2 Mins)
+            </button>
+          ` : ''}
+        </div>
+      ` : `<p style="padding:30px; text-align:center; color:var(--text-gray); font-size:12px;">No active order found.</p>`}
     </div>
   `;
 }
 
+function cancelActiveOrder() {
+  if (!confirm("Are you sure you want to cancel this order?")) return;
+  db.ref('orders/' + activeOrder.orderId).update({ status: 'Cancelled' }).then(() => {
+    alert("Order Cancelled.");
+    activeOrder = null;
+    localStorage.removeItem('sa_active_order');
+    renderOrdersScreen(document.getElementById('app-container'));
+  });
+}
+
+function trackManualOrder() {
+  const id = document.getElementById('track-id-input').value.trim();
+  if (!id) return;
+  db.ref('orders/' + id).once('value', snap => {
+    const data = snap.val();
+    if (data) {
+      activeOrder = data;
+      localStorage.setItem('sa_active_order', JSON.stringify(activeOrder));
+      listenToActiveOrder();
+      renderOrdersScreen(document.getElementById('app-container'));
+    } else {
+      alert("Order not found!");
+    }
+  });
+}
+
 function renderProfileScreen(container) {
   const user = JSON.parse(localStorage.getItem('sa_user_info')) || { name: '', phone: '', address: '' };
+  const wishedDishes = restaurantMenu.filter(m => wishlist.includes(String(m.id)));
+
   container.innerHTML = `
     <div class="red-top-bar"><span>CUSTOMER PROFILE</span></div>
     <div style="padding: 15px;">
-      <div style="text-align:center; margin-bottom:20px;">
-        <i class="fa-solid fa-circle-user" style="font-size:65px; color:var(--primary-red);"></i>
-        <h3 style="margin-top:8px;">${user.name || 'Foodie'}</h3>
-        <p style="font-size:12px; color:var(--text-gray);">${user.phone || 'No phone linked'}</p>
+      <div style="text-align:center; margin-bottom:15px;">
+        <i class="fa-solid fa-circle-user" style="font-size:55px; color:var(--primary-red);"></i>
+        <h3 style="margin-top:6px;">${user.name || 'Foodie'}</h3>
+        <p style="font-size:11px; color:var(--text-gray);">${user.phone || 'No phone added'}</p>
       </div>
 
-      <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:15px;">
-        <strong style="font-size:13px; color:var(--primary-red);">MY DETAILS (AUTO-FILL)</strong>
-        <div class="input-group" style="margin:8px 0;"><input type="text" id="prof-name" class="input-box" value="${user.name}" placeholder="Name"></div>
-        <div class="input-group" style="margin:8px 0;"><input type="tel" id="prof-phone" class="input-box" value="${user.phone}" placeholder="Phone"></div>
-        <div class="input-group" style="margin:8px 0;"><textarea id="prof-address" class="input-box" rows="2" placeholder="Address">${user.address}</textarea></div>
-        <button class="btn-large-red" style="width:100%; margin:10px 0 0 0; padding:10px;" onclick="saveProfileData()">SAVE DETAILS</button>
+      <div style="background:var(--card-bg); padding:12px; border-radius:10px; border:1px solid var(--border-color); margin-bottom:15px;">
+        <strong style="font-size:12px; color:var(--primary-red);">AUTO-FILL ADDRESS</strong>
+        <div class="input-group" style="margin:6px 0;"><input type="text" id="prof-name" class="input-box" value="${user.name}" placeholder="Name"></div>
+        <div class="input-group" style="margin:6px 0;"><input type="tel" id="prof-phone" class="input-box" value="${user.phone}" placeholder="Phone"></div>
+        <div class="input-group" style="margin:6px 0;"><textarea id="prof-address" class="input-box" rows="2" placeholder="Address">${user.address}</textarea></div>
+        <button class="btn-large-red" style="width:100%; margin:8px 0 0 0; padding:8px;" onclick="saveProfileData()">SAVE DETAILS</button>
       </div>
+
+      <strong style="font-size:12px; color:var(--primary-red); display:block; margin-bottom:8px;">MY WISHLIST / FAVORITES (❤️)</strong>
+      ${wishedDishes.length > 0 ? wishedDishes.map(w => `
+        <div class="item-card" style="margin:6px 0;">
+          <img src="${w.img}">
+          <div class="item-info"><h4>${w.name}</h4><p class="price">₹${w.price}</p></div>
+          <button class="btn-add-red" onclick="addToCart('${w.id}')">ADD</button>
+        </div>
+      `).join('') : '<p style="color:var(--text-gray); font-size:11px;">No dishes in wishlist yet. Tap ❤️ on any dish.</p>'}
     </div>
   `;
 }
