@@ -3,50 +3,246 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S&A Master Admin Panel</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <title>S&A Kitchen Admin Desk (Pro)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    :root { --primary-red: #D32F2F; --bg-black: #0a0a0a; --card-bg: #161616; --border: #2a2a2a; }
-    body { background: var(--bg-black); color: #fff; font-family: sans-serif; margin: 0; padding: 12px; }
-    .header { background: var(--primary-red); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
-    .tab-bar { display: flex; gap: 6px; margin: 15px 0; overflow-x: auto; }
-    .tab-btn { flex: 1; padding: 8px; background: var(--card-bg); color: #aaa; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 11px; white-space: nowrap; font-weight: bold; }
+    :root {
+      --primary-red: #D32F2F;
+      --bg-black: #0c0c0c;
+      --card-bg: #181818;
+      --border-color: #262626;
+      --text-gray: #9e9e9e;
+      --accent-green: #2e7d32;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg-black); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; }
+    
+    .admin-header {
+      background: var(--primary-red);
+      padding: 12px 16px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+    .sound-btn {
+      background: #000;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* Top Stats Strip */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin: 10px 0;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-card span { font-size: 10px; color: var(--text-gray); display: block; }
+    .stat-card strong { font-size: 16px; color: #fff; }
+
+    /* Tab Switcher */
+    .tab-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--card-bg);
+      color: #aaa;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+    }
     .tab-btn.active { background: var(--primary-red); color: #fff; border-color: var(--primary-red); }
-    .order-card, .form-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-    .order-card.new { border-color: var(--primary-red); box-shadow: 0 0 10px rgba(211,47,47,0.5); }
-    .input-field { width: 100%; box-sizing: border-box; padding: 8px; background: #202020; border: 1px solid var(--border); color: #fff; border-radius: 6px; margin: 5px 0 10px 0; font-size: 12px; }
-    .status-btn { background: #222; color: #bbb; border: 1px solid #444; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 4px; margin-top: 6px; }
-    .status-btn.active { background: var(--primary-red); border-color: var(--primary-red); color: #fff; font-weight: bold; }
-    .btn-action { background: var(--primary-red); color: white; border: none; padding: 9px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; }
-    .menu-row { display: flex; justify-content: space-between; align-items: center; background: #202020; padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
-    .stock-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; border: none; cursor: pointer; font-weight: bold; }
+
+    /* Orders Desk Cards */
+    .order-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .order-card.new-order {
+      border-color: var(--primary-red);
+      box-shadow: 0 0 12px rgba(211, 47, 47, 0.4);
+      animation: pulseAlert 1.5s infinite;
+    }
+    @keyframes pulseAlert {
+      0% { border-color: var(--primary-red); }
+      50% { border-color: #ff8a80; }
+      100% { border-color: var(--primary-red); }
+    }
+
+    .order-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 6px; }
+    .customer-info { font-size: 11px; color: #bbb; line-height: 1.6; margin-bottom: 8px; }
+    .items-box { background: #202020; border-radius: 6px; padding: 8px; font-size: 12px; margin-bottom: 8px; }
+    
+    .status-btn-group { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 8px; }
+    .status-btn {
+      background: #252525;
+      color: #aaa;
+      border: 1px solid #3a3a3a;
+      padding: 6px 9px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .status-btn.active { background: var(--primary-red); color: #fff; border-color: var(--primary-red); font-weight: bold; }
+
+    .quick-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-quick {
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: bold;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-call { background: var(--accent-green); color: #fff; }
+    .btn-wa { background: #128C7E; color: #fff; }
+    .btn-print { background: #444; color: #fff; }
+
+    /* Menu & Form Section */
+    .form-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 15px;
+    }
+    .input-field {
+      width: 100%;
+      padding: 9px;
+      background: #222;
+      border: 1px solid var(--border-color);
+      color: #fff;
+      border-radius: 6px;
+      margin: 4px 0 10px 0;
+      font-size: 12px;
+      outline: none;
+    }
+    .btn-red-full {
+      width: 100%;
+      background: var(--primary-red);
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .menu-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    .stock-badge {
+      padding: 5px 9px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    .icon-action-btn {
+      background: none;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      padding: 4px 6px;
+    }
+
+    /* Edit Modal Popup */
+    .edit-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-box {
+      background: #1a1a1a;
+      border: 1px solid var(--primary-red);
+      border-radius: 12px;
+      padding: 16px;
+      width: 90%;
+      max-width: 400px;
+    }
   </style>
 </head>
 <body>
 
-  <audio id="orderAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+  <div class="admin-header">
+    <span>S&A KITCHEN DESK</span>
+    <button id="soundBtn" class="sound-btn" onclick="toggleSoundAlert()">
+      🔔 Sound OFF (Tap to ON)
+    </button>
+  </div>
 
-  <div class="header">
-    <span>S&A KITCHEN HQ</span>
-    <button onclick="enableSound()" style="background:#000; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; cursor:pointer;">🔔 Sound ON</button>
+  <!-- Realtime Analytics Bar -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <span>TODAY ORDERS</span>
+      <strong id="stat-total-orders">0</strong>
+    </div>
+    <div class="stat-card">
+      <span>GROSS REVENUE</span>
+      <strong id="stat-total-rev" style="color:var(--primary-red);">₹0</strong>
+    </div>
+    <div class="stat-card">
+      <span>CSV EXPORT</span>
+      <button onclick="downloadSalesCSV()" style="background:#333; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:10px; margin-top:2px; cursor:pointer;">Export</button>
+    </div>
   </div>
 
   <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchAdminTab('orders', this)"><i class="fa-solid fa-bell"></i> Orders</button>
-    <button class="tab-btn" onclick="switchAdminTab('menu', this)"><i class="fa-solid fa-utensils"></i> Menu & Stock</button>
-    <button class="tab-btn" onclick="switchAdminTab('settings', this)"><i class="fa-solid fa-gear"></i> Settings & Sales</button>
+    <button class="tab-btn active" onclick="switchTab('orders', this)"><i class="fa-solid fa-bell"></i> Live Orders</button>
+    <button class="tab-btn" onclick="switchTab('menu', this)"><i class="fa-solid fa-utensils"></i> Menu & Edit</button>
   </div>
 
+  <!-- TAB 1: LIVE ORDERS DESK -->
   <div id="tab-orders">
-    <div id="live-orders-container">Loading orders...</div>
+    <div id="live-orders-feed">Connecting to live kitchen feed...</div>
   </div>
 
+  <!-- TAB 2: MENU & EDIT SYSTEM -->
   <div id="tab-menu" style="display:none;">
     <div class="form-card">
-      <strong style="color:var(--primary-red); font-size:12px;">ADD ITEM / VARIANT</strong>
-      <input type="text" id="m-name" class="input-field" placeholder="Dish Name">
+      <strong style="color:var(--primary-red); font-size:12px;">+ ADD NEW DISH TO MENU</strong>
+      <input type="text" id="m-name" class="input-field" placeholder="Dish Name (e.g. Chicken Chowmein)">
       <div style="display:flex; gap:6px;">
         <input type="number" id="m-price" class="input-field" placeholder="Full Price (₹)">
         <input type="number" id="m-half" class="input-field" placeholder="Half Price (Optional)">
@@ -57,36 +253,49 @@
         <option value="Main Course">Main Course</option>
         <option value="Drinks">Drinks</option>
       </select>
-      <input type="text" id="m-img" class="input-field" placeholder="Image URL">
-      <button class="btn-action" onclick="addDish()">+ SAVE TO MENU</button>
+      <input type="text" id="m-img" class="input-field" placeholder="Image URL (Unsplash or direct link)">
+      <button class="btn-red-full" onclick="addNewDish()">+ ADD DISH TO LIVE MENU</button>
     </div>
-    <div id="admin-menu-list"></div>
+
+    <strong style="font-size:13px; color:var(--primary-red); display:block; margin: 15px 0 8px;">ALL MENU ITEMS (EDIT / IN-STOCK)</strong>
+    <div id="admin-menu-list">Loading items...</div>
   </div>
 
-  <div id="tab-settings" style="display:none;">
-    <div class="form-card">
-      <strong style="color:var(--primary-red); font-size:12px;">STORE CONTROLS</strong>
-      <div style="margin:10px 0; font-size:13px;">
-        <label><input type="checkbox" id="set-shop-open"> 🟢 Store Open for Orders</label>
+  <!-- EDIT DISH POPUP MODAL -->
+  <div class="edit-modal" id="editModal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <strong style="color:var(--primary-red);"><i class="fa-solid fa-pen-to-square"></i> EDIT DISH DETAILS</strong>
+        <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="closeEditModal()"></i>
       </div>
-      <label style="font-size:11px; color:#aaa;">Offer Strip Text</label>
-      <input type="text" id="set-offer" class="input-field">
-      <div style="display:flex; gap:6px;">
-        <div>
-          <label style="font-size:10px; color:#aaa;">Delivery Fee (₹)</label>
-          <input type="number" id="set-delivery" class="input-field">
+      <input type="hidden" id="edit-key">
+      
+      <label style="font-size:11px; color:var(--text-gray);">Dish Name</label>
+      <input type="text" id="edit-name" class="input-field">
+      
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1;">
+          <label style="font-size:11px; color:var(--text-gray);">Full Price (₹)</label>
+          <input type="number" id="edit-price" class="input-field">
         </div>
-        <div>
-          <label style="font-size:10px; color:#aaa;">Packing Charge (₹)</label>
-          <input type="number" id="set-packing" class="input-field">
+        <div style="flex:1;">
+          <label style="font-size:11px; color:var(--text-gray);">Half Price (₹)</label>
+          <input type="number" id="edit-half" class="input-field">
         </div>
       </div>
-      <button class="btn-action" onclick="saveSettings()">SAVE SETTINGS</button>
-    </div>
 
-    <div class="form-card" style="text-align:center;">
-      <strong style="color:var(--primary-red); font-size:12px; display:block; margin-bottom:8px;">DAILY SALES REPORT</strong>
-      <button class="btn-action" style="background:#2e7d32;" onclick="exportSalesCSV()"><i class="fa-solid fa-file-excel"></i> DOWNLOAD ORDERS (EXCEL/CSV)</button>
+      <label style="font-size:11px; color:var(--text-gray);">Category</label>
+      <select id="edit-cat" class="input-field">
+        <option value="Fast Food">Fast Food</option>
+        <option value="Rolls">Rolls</option>
+        <option value="Main Course">Main Course</option>
+        <option value="Drinks">Drinks</option>
+      </select>
+
+      <label style="font-size:11px; color:var(--text-gray);">Image Link</label>
+      <input type="text" id="edit-img" class="input-field">
+
+      <button class="btn-red-full" onclick="saveEditedDish()">SAVE CHANGES</button>
     </div>
   </div>
 
@@ -99,129 +308,318 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const alertAudio = document.getElementById('orderAlert');
-    let allOrders = {};
 
-    function enableSound() {
-      alertAudio.play().then(() => { alertAudio.pause(); alert("Sound Active!"); });
+    let allOrders = {};
+    let currentMenu = {};
+
+    // CONTINUOUS SYNTH AUDIO LOOP
+    let audioCtx = null;
+    let soundEnabled = false;
+    let soundLoopInterval = null;
+
+    function toggleSoundAlert() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('soundBtn');
+      if (soundEnabled) {
+        btn.innerText = "🔔 Sound ACTIVE";
+        btn.style.background = "#2e7d32";
+        playBeep();
+        alert("Sound Active! Naya order aane par bell bajti rahegi jab tak aap Cooking start na karein.");
+      } else {
+        btn.innerText = "🔔 Sound OFF";
+        btn.style.background = "#000";
+        stopSoundLoop();
+      }
     }
 
-    function switchAdminTab(t, btn) {
+    function playBeep() {
+      if (!audioCtx) return;
+      [0, 0.25, 0.5].forEach(delay => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(1, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + 0.2);
+      });
+    }
+
+    function startSoundLoop() {
+      if (!soundEnabled || soundLoopInterval) return;
+      playBeep();
+      soundLoopInterval = setInterval(playBeep, 10000); // Repeat every 10 secs
+    }
+
+    function stopSoundLoop() {
+      if (soundLoopInterval) {
+        clearInterval(soundLoopInterval);
+        soundLoopInterval = null;
+      }
+    }
+
+    function switchTab(t, btn) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-orders').style.display = t === 'orders' ? 'block' : 'none';
       document.getElementById('tab-menu').style.display = t === 'menu' ? 'block' : 'none';
-      document.getElementById('tab-settings').style.display = t === 'settings' ? 'block' : 'none';
     }
 
-    // ORDERS
+    // REALTIME LIVE ORDERS DESK
     db.ref('orders').on('value', snap => {
       allOrders = snap.val() || {};
-      const container = document.getElementById('live-orders-container');
+      const container = document.getElementById('live-orders-feed');
       const list = Object.entries(allOrders).map(([k, v]) => ({ k, ...v })).reverse();
-      
-      if (!list.length) { container.innerHTML = "<p style='color:#777;'>No orders yet.</p>"; return; }
-      if (list.some(o => o.status === 'Received')) alertAudio.play().catch(e=>{});
 
-      container.innerHTML = list.map(o => `
-        <div class="order-card ${o.status === 'Received' ? 'new' : ''}">
-          <div style="display:flex; justify-content:space-between; font-weight:bold;">
-            <span>#${o.orderId || o.k} - ${o.customerName || 'Customer'}</span>
-            <span style="color:var(--primary-red);">₹${o.totalBill || 0}</span>
+      if (!list.length) {
+        container.innerHTML = "<p style='color:#777; text-align:center; padding:30px;'>No orders placed yet.</p>";
+        stopSoundLoop();
+        updateStats([]);
+        return;
+      }
+
+      // Check for unaccepted "Received" orders
+      const hasUnaccepted = list.some(o => o.status === 'Received');
+      if (hasUnaccepted) {
+        startSoundLoop();
+      } else {
+        stopSoundLoop();
+      }
+
+      updateStats(list);
+
+      container.innerHTML = list.map(o => {
+        const isReceived = o.status === 'Received';
+        const hasCoords = o.coords && o.coords !== 'N/A';
+
+        return `
+          <div class="order-card ${isReceived ? 'new-order' : ''}">
+            <div class="order-header">
+              <span>#${o.orderId || o.k} - ${o.customerName || 'Customer'}</span>
+              <span style="color:var(--primary-red);">₹${o.totalBill || 0}</span>
+            </div>
+
+            <div class="customer-info">
+              📞 <b>${o.phone}</b> | 🛵 Mode: <b>${(o.deliveryMode||'delivery').toUpperCase()}</b><br>
+              📍 ${o.address} ${hasCoords ? `[<a href="https://maps.google.com/?q=${o.coords}" target="_blank" style="color:#0288d1;">Open GPS Map</a>]` : ''}<br>
+              📝 <i>Special Note: ${o.cookingNote || 'None'}</i>
+            </div>
+
+            <div class="items-box">
+              ${(o.items || []).map(i => `<div>• <b>${i.name}</b> x ${i.qty} — ₹${i.price * i.qty}</div>`).join('')}
+            </div>
+
+            <!-- Rider Assignment -->
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <input type="text" id="rider-name-${o.k}" class="input-field" style="margin:0; padding:4px 8px; font-size:11px;" placeholder="Rider Name" value="${o.riderName || ''}">
+              <input type="tel" id="rider-phone-${o.k}" class="input-field" style="margin:0; padding:4px 8px; font-size:11px;" placeholder="Rider Phone" value="${o.riderPhone || ''}">
+              <button class="status-btn" onclick="assignRider('${o.k}', '${o.orderId || o.k}')">Assign</button>
+            </div>
+
+            <div class="status-btn-group">
+              <button class="status-btn ${o.status === 'Received' ? 'active' : ''}" onclick="updateOrderStatus('${o.k}', '${o.orderId || o.k}', 'Received')">Received</button>
+              <button class="status-btn ${o.status === 'Preparing' ? 'active' : ''}" onclick="updateOrderStatus('${o.k}', '${o.orderId || o.k}', 'Preparing')">Cooking</button>
+              <button class="status-btn ${o.status === 'On The Way' ? 'active' : ''}" onclick="updateOrderStatus('${o.k}', '${o.orderId || o.k}', 'On The Way')">Out for Delivery</button>
+              <button class="status-btn ${o.status === 'Delivered' ? 'active' : ''}" onclick="updateOrderStatus('${o.k}', '${o.orderId || o.k}', 'Delivered')">Delivered</button>
+            </div>
+
+            <div class="quick-actions">
+              <a class="btn-quick btn-call" href="tel:${o.phone}"><i class="fa-solid fa-phone"></i> Call</a>
+              <a class="btn-quick btn-wa" href="https://wa.me/91${o.phone}?text=Hello%20${encodeURIComponent(o.customerName||'Customer')},%20your%20order%20#${o.orderId||o.k}%20from%20S&A%20Restaurant%20is%20now%20${encodeURIComponent(o.status||'Received')}." target="_blank"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+              <button class="btn-quick btn-print" onclick="printKOTSlip('${o.k}')"><i class="fa-solid fa-print"></i> KOT Print</button>
+            </div>
           </div>
-          <div style="font-size:11px; color:#aaa; margin:5px 0;">
-            📞 <a href="tel:${o.phone}" style="color:#4CAF50; text-decoration:none;">${o.phone}</a> | 📍 ${o.address}<br>
-            📝 <i>${o.cookingNote || 'No note'}</i>
-          </div>
-          <div style="background:#202020; padding:6px; border-radius:4px; font-size:11px; margin:6px 0;">
-            ${(o.items||[]).map(i => `<div>• ${i.name} x ${i.qty}</div>`).join('')}
-          </div>
-          <div>
-            <button class="status-btn ${o.status === 'Received' ? 'active' : ''}" onclick="setStatus('${o.k}', 'Received')">Received</button>
-            <button class="status-btn ${o.status === 'Preparing' ? 'active' : ''}" onclick="setStatus('${o.k}', 'Preparing')">Cooking</button>
-            <button class="status-btn ${o.status === 'On The Way' ? 'active' : ''}" onclick="setStatus('${o.k}', 'On The Way')">Out for Delivery</button>
-            <button class="status-btn ${o.status === 'Delivered' ? 'active' : ''}" onclick="setStatus('${o.k}', 'Delivered')">Delivered</button>
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     });
 
-    function setStatus(k, s) { db.ref('orders/' + k).update({ status: s }); }
+    function updateOrderStatus(key, orderId, newStatus) {
+      db.ref('orders/' + key).update({ status: newStatus });
+      if (orderId && orderId !== key) db.ref('orders/' + orderId).update({ status: newStatus });
+    }
 
-    // MENU
+    function assignRider(key, orderId) {
+      const riderName = document.getElementById(`rider-name-${key}`).value.trim();
+      const riderPhone = document.getElementById(`rider-phone-${key}`).value.trim();
+      db.ref('orders/' + key).update({ riderName, riderPhone });
+      if (orderId && orderId !== key) db.ref('orders/' + orderId).update({ riderName, riderPhone });
+      alert("Rider details updated on customer screen!");
+    }
+
+    // DIRECT KOT THERMAL RECEIPT PRINTER
+    function printKOTSlip(key) {
+      const o = allOrders[key];
+      if (!o) return;
+
+      const printWindow = window.open('', '', 'width=300,height=500');
+      printWindow.document.write(`
+        <html>
+        <head>
+          <style>
+            body { font-family: monospace; font-size: 12px; width: 260px; padding: 5px; margin: 0; }
+            .center { text-align: center; }
+            hr { border-top: 1px dashed #000; }
+            .item-row { display: flex; justify-content: space-between; }
+          </style>
+        </head>
+        <body onload="window.print(); window.close();">
+          <div class="center">
+            <strong>S&A FAMILY RESTAURANT</strong><br>
+            Bengbari, Udalguri<br>
+            *** KITCHEN ORDER TICKET (KOT) ***
+          </div>
+          <hr>
+          Order ID: #${o.orderId || key}<br>
+          Customer: ${o.customerName || 'Walk-in'}<br>
+          Phone: ${o.phone}<br>
+          Address: ${o.address}<br>
+          Note: <b>${o.cookingNote || 'None'}</b>
+          <hr>
+          ${(o.items || []).map(i => `<div class="item-row"><span>${i.name} x ${i.qty}</span><span>₹${i.price * i.qty}</span></div>`).join('')}
+          <hr>
+          <div class="item-row"><strong>TOTAL BILL:</strong><strong>₹${o.totalBill}</strong></div>
+          <hr>
+          <div class="center">THANK YOU!</div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    // TOP STATS COUNTER
+    function updateStats(list) {
+      document.getElementById('stat-total-orders').innerText = list.length;
+      const totalRev = list.reduce((sum, o) => sum + (parseFloat(o.totalBill) || 0), 0);
+      document.getElementById('stat-total-rev').innerText = "₹" + totalRev;
+    }
+
+    // CSV SALES EXPORT
+    function downloadSalesCSV() {
+      const list = Object.values(allOrders);
+      if (!list.length) { alert("No orders to export!"); return; }
+
+      let csv = "Order ID,Customer Name,Phone,Address,Total Bill,Status\n";
+      list.forEach(o => {
+        csv += `"${o.orderId||''}","${o.customerName||''}","${o.phone||''}","${(o.address||'').replace(/"/g, '""')}","${o.totalBill||0}","${o.status||''}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `SA_Sales_${Date.now()}.csv`;
+      a.click();
+    }
+
+    // ==========================================
+    // MENU & EDIT SYSTEM (WITH ✏️ EDIT BUTTON)
+    // ==========================================
     db.ref('restaurant_menu').on('value', snap => {
-      const data = snap.val() || {};
+      currentMenu = snap.val() || {};
       const container = document.getElementById('admin-menu-list');
-      container.innerHTML = Object.entries(data).map(([k, v]) => `
+      const items = Object.entries(currentMenu);
+
+      if (!items.length) {
+        container.innerHTML = "<p style='color:#777;'>No dishes in menu.</p>";
+        return;
+      }
+
+      container.innerHTML = items.map(([k, v]) => `
         <div class="menu-row">
-          <div><strong>${v.name}</strong> - ₹${v.price} ${v.hasVariant ? `(Half: ₹${v.halfPrice})` : ''}</div>
           <div>
-            <button class="stock-badge" style="background:${v.inStock ? '#2e7d32' : '#c62828'}; color:#fff;" onclick="toggleStock('${k}', ${!v.inStock})">
-              ${v.inStock ? 'In Stock' : 'Out'}
+            <strong>${v.name}</strong> - ₹${v.price} ${v.hasVariant ? `<small style="color:#aaa;">(Half: ₹${v.halfPrice})</small>` : ''}
+            <div style="font-size:10px; color:#888;">${v.category}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button class="stock-badge" style="background:${v.inStock !== false ? '#2e7d32' : '#c62828'}; color:#fff;" onclick="toggleStock('${k}', ${v.inStock === false})">
+              ${v.inStock !== false ? 'In Stock' : 'Out'}
             </button>
-            <button onclick="deleteDish('${k}')" style="background:none; border:none; color:#c62828; cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+            <button class="icon-action-btn" style="color:#0288D1;" onclick="openEditModal('${k}')" title="Edit Item">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button class="icon-action-btn" style="color:#c62828;" onclick="deleteDish('${k}')" title="Delete Item">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </div>
         </div>
       `).join('');
     });
 
-    function toggleStock(k, s) { db.ref('restaurant_menu/' + k).update({ inStock: s }); }
-    function deleteDish(k) { if(confirm("Delete item?")) db.ref('restaurant_menu/' + k).remove(); }
+    function openEditModal(key) {
+      const item = currentMenu[key];
+      if (!item) return;
 
-    function addDish() {
+      document.getElementById('edit-key').value = key;
+      document.getElementById('edit-name').value = item.name || '';
+      document.getElementById('edit-price').value = item.price || '';
+      document.getElementById('edit-half').value = item.halfPrice || '';
+      document.getElementById('edit-cat').value = item.category || 'Fast Food';
+      document.getElementById('edit-img').value = item.img || '';
+
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    function saveEditedDish() {
+      const key = document.getElementById('edit-key').value;
+      const name = document.getElementById('edit-name').value.trim();
+      const price = parseFloat(document.getElementById('edit-price').value);
+      const halfPrice = parseFloat(document.getElementById('edit-half').value) || null;
+      const category = document.getElementById('edit-cat').value;
+      const img = document.getElementById('edit-img').value.trim();
+
+      if (!name || isNaN(price)) {
+        alert("Naam aur Full Price daalna zaroori hai!");
+        return;
+      }
+
+      db.ref('restaurant_menu/' + key).update({
+        name,
+        price,
+        halfPrice,
+        hasVariant: !!halfPrice,
+        category,
+        img
+      }).then(() => {
+        closeEditModal();
+        alert("Dish update ho gayi! Customer app par live update ho chuka hai.");
+      });
+    }
+
+    function toggleStock(key, newStatus) {
+      db.ref('restaurant_menu/' + key).update({ inStock: newStatus });
+    }
+
+    function deleteDish(key) {
+      if (confirm("Kya aap sach me is dish ko delete karna chahte hain?")) {
+        db.ref('restaurant_menu/' + key).remove();
+      }
+    }
+
+    function addNewDish() {
       const name = document.getElementById('m-name').value.trim();
       const price = parseFloat(document.getElementById('m-price').value);
       const halfPrice = parseFloat(document.getElementById('m-half').value) || null;
       const category = document.getElementById('m-cat').value;
       const img = document.getElementById('m-img').value.trim() || 'https://images.unsplash.com/photo-1562967914-608f82629710?w=200';
 
-      if (!name || isNaN(price)) { alert("Enter valid Name & Price"); return; }
+      if (!name || isNaN(price)) { alert("Enter Name & Price"); return; }
       db.ref('restaurant_menu').push({
-        id: Date.now(),
-        name,
-        price,
-        halfPrice,
-        hasVariant: !!halfPrice,
-        category,
-        img,
-        inStock: true
+        name, price, halfPrice, hasVariant: !!halfPrice, category, img, inStock: true
       }).then(() => {
-        alert("Dish Added!");
+        alert("New Dish Added to Live Menu!");
         document.getElementById('m-name').value = '';
         document.getElementById('m-price').value = '';
         document.getElementById('m-half').value = '';
       });
-    }
-
-    // SETTINGS
-    db.ref('shop_settings').on('value', snap => {
-      const s = snap.val() || {};
-      document.getElementById('set-shop-open').checked = s.isOpen !== false;
-      document.getElementById('set-offer').value = s.offerText || '';
-      document.getElementById('set-delivery').value = s.deliveryFee || 30;
-      document.getElementById('set-packing').value = s.packingFee || 10;
-    });
-
-    function saveSettings() {
-      db.ref('shop_settings').set({
-        isOpen: document.getElementById('set-shop-open').checked,
-        offerText: document.getElementById('set-offer').value,
-        deliveryFee: parseFloat(document.getElementById('set-delivery').value) || 0,
-        packingFee: parseFloat(document.getElementById('set-packing').value) || 0
-      }).then(() => alert("Settings Updated!"));
-    }
-
-    // CSV EXPORT
-    function exportSalesCSV() {
-      let csv = "Order ID,Customer,Phone,Address,Bill,Status\n";
-      Object.values(allOrders).forEach(o => {
-        csv += `"${o.orderId || ''}","${o.customerName || ''}","${o.phone || ''}","${(o.address || '').replace(/"/g, '""')}","${o.totalBill || 0}","${o.status || ''}"\n`;
-      });
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `Orders_Report_${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
     }
   </script>
 </body>
