@@ -9,44 +9,42 @@ const firebaseConfig = {
   appId: "1:69933070653:web:f9b93ba827d794bb376d54"
 };
 
-// Initialize Firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.database();
 
-// DEFAULT RESTAURANT MENU
 let restaurantMenu = [
-  { id: 1, name: "Chicken Pakora (Full)", price: 100, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
-  { id: 2, name: "Chicken Pakora (Half)", price: 50, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
-  { id: 3, name: "Veg Chowmein", price: 50, category: "Fast Food", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 4, name: "Chicken Chowmein", price: 100, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 5, name: "Pork Chowmein", price: 120, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
-  { id: 6, name: "Veg Momos", price: 50, category: "Fast Food", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 7, name: "Chicken Momos", price: 70, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 8, name: "Pork Momos", price: 80, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
-  { id: 9, name: "Veg Roll", price: 40, category: "Rolls", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 10, name: "Chicken Roll", price: 80, category: "Rolls", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 11, name: "Pork Roll", price: 100, category: "Rolls", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
-  { id: 12, name: "Chicken Biryani", price: 180, category: "Main Course", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=200" },
-  { id: 13, name: "Butter Chicken", price: 200, category: "Main Course", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=200" },
-  { id: 14, name: "Cold Coffee", price: 70, category: "Drinks", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=200" }
+  { id: 1, name: "Chicken Pakora", price: 100, halfPrice: 50, hasVariant: true, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1562967914-608f82629710?w=200" },
+  { id: 2, name: "Veg Chowmein", price: 50, category: "Fast Food", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+  { id: 3, name: "Chicken Chowmein", price: 100, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=200" },
+  { id: 4, name: "Chicken Momos", price: 70, category: "Fast Food", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1625201941771-7eb5a3a67d02?w=200" },
+  { id: 5, name: "Chicken Roll", price: 80, category: "Rolls", isVeg: false, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=200" },
+  { id: 6, name: "Cold Drink (Thumbs Up)", price: 40, category: "Drinks", isVeg: true, inStock: true, img: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=200" }
 ];
+
+let shopSettings = {
+  isOpen: true,
+  offerText: "⚡ SPECIAL OFFER: Use WELCOME50 for Flat ₹50 OFF!",
+  deliveryFee: 30,
+  packingFee: 10,
+  minOrder: 100
+};
 
 let cart = [];
 let activeOrder = JSON.parse(localStorage.getItem('sa_active_order')) || null;
 let appliedCoupon = null;
 
-// SYNC MENU FROM FIREBASE REALTIME
-db.ref('restaurant_menu').on('value', (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    restaurantMenu = Object.values(data);
-    const activeTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
-    if (activeTab === 'home' || activeTab === 'menu') {
-      switchTab(activeTab);
-    }
-  }
+// SYNC LIVE SETTINGS & MENU
+db.ref('shop_settings').on('value', snap => {
+  if (snap.val()) shopSettings = { ...shopSettings, ...snap.val() };
+});
+
+db.ref('restaurant_menu').on('value', snap => {
+  const data = snap.val();
+  if (data) restaurantMenu = Object.values(data);
+  const activeTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
+  if (activeTab === 'home' || activeTab === 'menu') switchTab(activeTab);
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -78,7 +76,13 @@ function renderHomeScreen(container) {
       </div>
     </div>
 
-    <div class="offer-strip">⚡ SPECIAL OFFER: Use <b>WELCOME50</b> for Flat ₹50 OFF!</div>
+    ${!shopSettings.isOpen ? `
+      <div style="background:#b71c1c; color:#fff; text-align:center; padding:10px; font-size:12px; font-weight:bold;">
+        ⚠️ RESTAURANT IS TEMPORARILY CLOSED FOR NEW ORDERS
+      </div>
+    ` : ''}
+
+    <div class="offer-strip">${shopSettings.offerText}</div>
 
     <div class="search-wrapper">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -97,21 +101,25 @@ function renderHomeScreen(container) {
       <div>
         <small style="color:#ffcdd2; font-weight:bold;">BESTSELLER</small>
         <h3 style="font-size:17px; margin-top:2px;">Chicken Pakora</h3>
-        <p class="price" style="margin-top:4px;">Just ₹50</p>
-        <button class="btn-order-now" onclick="addToCart(2)">ORDER NOW</button>
+        <p class="price" style="margin-top:4px;">Starting ₹50</p>
+        <button class="btn-order-now" onclick="addToCart(1, 'Half')">ORDER HALF</button>
       </div>
       <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=200" alt="Pakora">
     </div>
 
-    <h4 style="padding: 10px 15px 5px 15px; font-size:13px; color:var(--primary-red);">POPULAR DISHES</h4>
+    <h4 style="padding: 10px 15px 5px 15px; font-size:13px; color:var(--primary-red);">POPULAR ITEMS</h4>
     <div id="home-list"></div>
+
+    <a href="tel:8453270362" style="position:fixed; bottom:75px; right:15px; background:#4CAF50; color:#fff; width:45px; height:45px; border-radius:50%; display:flex; align-items:center; justify-content:center; text-decoration:none; box-shadow:0 4px 10px rgba(0,0,0,0.5); z-index:90;">
+      <i class="fa-solid fa-phone" style="font-size:18px;"></i>
+    </a>
   `;
   renderItemsList(restaurantMenu, 'home-list');
 }
 
 function renderMenuScreen(container) {
   container.innerHTML = `
-    <div class="red-top-bar"><span>OUR FULL MENU</span></div>
+    <div class="red-top-bar"><span>FULL MENU</span></div>
 
     <div class="search-wrapper">
       <i class="fa-solid fa-magnifying-glass"></i>
@@ -148,20 +156,27 @@ function renderItemsList(items, targetId) {
   if (!list) return;
 
   list.innerHTML = items.map(item => {
-    const inCart = cart.find(c => c.id === item.id);
     const badgeColor = item.isVeg ? "veg-dot" : "nonveg-dot";
+    const cartItem = cart.find(c => c.id === item.id);
+
     return `
       <div class="item-card">
         <img src="${item.img}" alt="${item.name}">
         <div class="item-info">
           <h4><span class="badge-dot ${badgeColor}"></span>${item.name}</h4>
-          <p class="price">₹${item.price}</p>
+          <p class="price">₹${item.price} ${item.hasVariant ? `<small style="font-size:10px; color:#aaa;">(Full) / ₹${item.halfPrice} (Half)</small>` : ''}</p>
         </div>
         ${!item.inStock ? `<span class="sold-out-badge">SOLD OUT</span>` : 
-          inCart ? `
+          item.hasVariant ? `
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <button class="btn-add-red" style="font-size:10px; padding:4px 8px;" onclick="addToCart(${item.id}, 'Half')">HALF +</button>
+              <button class="btn-add-red" style="font-size:10px; padding:4px 8px;" onclick="addToCart(${item.id}, 'Full')">FULL +</button>
+            </div>
+          ` :
+          cartItem ? `
             <div class="qty-ctrl">
               <button onclick="changeQty(${item.id}, -1)">-</button>
-              <span>${inCart.qty}</span>
+              <span>${cartItem.qty}</span>
               <button onclick="changeQty(${item.id}, 1)">+</button>
             </div>
           ` : `
@@ -173,25 +188,34 @@ function renderItemsList(items, targetId) {
   }).join('');
 }
 
-function addToCart(id) {
+function addToCart(id, variant = null) {
+  if (!shopSettings.isOpen) {
+    alert("Dukan abhi band hai. Order accept nahi ho rahe.");
+    return;
+  }
   const item = restaurantMenu.find(i => i.id === id);
   if (!item || !item.inStock) return;
-  const existing = cart.find(i => i.id === id);
+
+  const itemKey = variant ? `${item.id}_${variant}` : `${item.id}`;
+  const itemName = variant ? `${item.name} (${variant})` : item.name;
+  const itemPrice = variant === 'Half' ? item.halfPrice : item.price;
+
+  const existing = cart.find(i => i.cartKey === itemKey);
   if (existing) {
     existing.qty += 1;
   } else {
-    cart.push({ ...item, qty: 1 });
+    cart.push({ ...item, cartKey: itemKey, name: itemName, price: itemPrice, qty: 1 });
   }
   updateBadge();
   const currentTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
   if (currentTab === 'home' || currentTab === 'menu') switchTab(currentTab);
 }
 
-function changeQty(id, delta) {
-  const item = cart.find(i => i.id === id);
+function changeQty(id, delta, cartKey = null) {
+  const item = cartKey ? cart.find(i => i.cartKey === cartKey) : cart.find(i => i.id === id);
   if (item) {
     item.qty += delta;
-    if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+    if (item.qty <= 0) cart = cart.filter(i => i !== item);
   }
   updateBadge();
   const currentTab = document.querySelector('.nav-item.active span')?.innerText.toLowerCase();
@@ -206,9 +230,10 @@ function updateBadge() {
 
 function renderCartScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const delivery = subtotal > 0 ? 30 : 0;
+  const delivery = subtotal > 0 ? shopSettings.deliveryFee : 0;
+  const packing = subtotal > 0 ? shopSettings.packingFee : 0;
   const discount = appliedCoupon === 'WELCOME50' && subtotal >= 200 ? 50 : 0;
-  const total = Math.max(0, subtotal + delivery - discount);
+  const total = Math.max(0, subtotal + delivery + packing - discount);
 
   container.innerHTML = `
     <div class="red-top-bar">
@@ -224,38 +249,52 @@ function renderCartScreen(container) {
           <p class="price">₹${item.price}</p>
         </div>
         <div class="qty-ctrl">
-          <button onclick="changeQty(${item.id}, -1)">-</button>
+          <button onclick="changeQty(${item.id}, -1, '${item.cartKey}')">-</button>
           <span>${item.qty}</span>
-          <button onclick="changeQty(${item.id}, 1)">+</button>
+          <button onclick="changeQty(${item.id}, 1, '${item.cartKey}')">+</button>
         </div>
         <div style="font-weight:bold; width: 45px; text-align:right;">₹${item.price * item.qty}</div>
       </div>
     `).join('')}
 
     ${cart.length > 0 ? `
+      <div style="background:#1a1a1a; margin:10px 15px; padding:10px; border-radius:8px; border:1px dashed #444; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:12px;">🥤 Add Cold Drink (₹40)?</span>
+        <button class="btn-add-red" style="font-size:11px; padding:4px 10px;" onclick="addToCart(6)">ADD</button>
+      </div>
+
       <div style="margin: 10px 15px; display:flex; gap:8px;">
-        <input type="text" id="coupon-input" class="input-box" placeholder="Enter WELCOME50" style="text-transform:uppercase;">
+        <input type="text" id="coupon-input" class="input-box" placeholder="Enter Coupon (e.g. WELCOME50)" style="text-transform:uppercase;">
         <button class="btn-add-red" onclick="applyPromo()">APPLY</button>
       </div>
 
       <div style="padding: 12px; background: var(--card-bg); margin: 15px; border-radius:12px; border:1px solid var(--border-color);">
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Subtotal</span> <span>₹${subtotal}</span></div>
-        <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px;"><span>Delivery Fee</span> <span>₹${delivery}</span></div>
-        ${discount > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:13px; color:#4CAF50;"><span>Coupon Applied</span> <span>-₹${discount}</span></div>` : ''}
-        <hr style="border-color:var(--border-color); margin:10px 0;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;"><span>Subtotal</span> <span>₹${subtotal}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;"><span>Delivery Fee</span> <span>₹${delivery}</span></div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px;"><span>Packaging Fee</span> <span>₹${packing}</span></div>
+        ${discount > 0 ? `<div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; color:#4CAF50;"><span>Discount (WELCOME50)</span> <span>-₹${discount}</span></div>` : ''}
+        <hr style="border-color:var(--border-color); margin:8px 0;">
         <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:15px;"><span>TOTAL</span> <span class="price" style="color:var(--primary-red);">₹${total}</span></div>
       </div>
 
-      <button class="btn-large-red" onclick="switchTab('checkout')">CONTINUE TO ORDER ></button>
+      <button class="btn-large-red" onclick="proceedToCheckout(${subtotal})">CONTINUE TO CHECKOUT ></button>
     ` : '<p style="padding:40px; text-align:center; color:var(--text-gray);">Your plate is empty!</p>'}
   `;
+}
+
+function proceedToCheckout(subtotal) {
+  if (subtotal < shopSettings.minOrder) {
+    alert(`Minimum order ₹${shopSettings.minOrder} hona chahiye.`);
+    return;
+  }
+  switchTab('checkout');
 }
 
 function applyPromo() {
   const code = document.getElementById('coupon-input').value.trim().toUpperCase();
   if (code === 'WELCOME50') {
     appliedCoupon = 'WELCOME50';
-    alert("Coupon applied! ₹50 OFF on orders above ₹200.");
+    alert("Coupon applied! ₹50 OFF.");
   } else {
     alert("Invalid Coupon Code");
   }
@@ -265,11 +304,11 @@ function applyPromo() {
 function renderCheckoutScreen(container) {
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const discount = appliedCoupon === 'WELCOME50' && subtotal >= 200 ? 50 : 0;
-  const total = Math.max(0, subtotal + 30 - discount);
+  const total = Math.max(0, subtotal + shopSettings.deliveryFee + shopSettings.packingFee - discount);
   const savedUser = JSON.parse(localStorage.getItem('sa_user_info')) || {};
 
   container.innerHTML = `
-    <div class="red-top-bar"><span>COMPLETE YOUR ORDER</span></div>
+    <div class="red-top-bar"><span>CHECKOUT DETAILS</span></div>
 
     <div class="input-group">
       <label>Customer Name</label>
@@ -287,15 +326,8 @@ function renderCheckoutScreen(container) {
     </div>
 
     <div class="input-group">
-      <label>Special Instructions (Optional)</label>
-      <input type="text" id="cust-note" class="input-box" placeholder="e.g. Less spicy, extra sauce">
-    </div>
-
-    <div class="input-group">
-      <label>Payment Method</label>
-      <div style="background:var(--card-bg); padding:12px; border-radius:8px; border:1px solid var(--border-color); font-size:12px;">
-        <i class="fa-solid fa-circle-check" style="color:var(--primary-red);"></i> Cash on Delivery (COD) / Direct UPI
-      </div>
+      <label>Cooking Note (Optional)</label>
+      <input type="text" id="cust-note" class="input-box" placeholder="e.g. Extra sauce, mirchi kam">
     </div>
 
     <div style="display:flex; justify-content:space-between; padding: 10px 15px; font-weight:bold;">
@@ -307,7 +339,6 @@ function renderCheckoutScreen(container) {
   `;
 }
 
-// DIRECT FIREBASE ORDER SUBMISSION (NO WHATSAPP NEEDED)
 function placeDirectOrder(total) {
   const name = document.getElementById('cust-name').value.trim();
   const phone = document.getElementById('cust-phone').value.trim();
@@ -319,7 +350,6 @@ function placeDirectOrder(total) {
     return;
   }
 
-  // Save details for auto-fill in profile
   localStorage.setItem('sa_user_info', JSON.stringify({ name, phone, address }));
 
   const orderId = "ORD-" + Math.floor(100000 + Math.random() * 900000);
@@ -331,29 +361,24 @@ function placeDirectOrder(total) {
     cookingNote: note || "None",
     items: cart,
     totalBill: total,
-    status: "Received", // Statuses: Received -> Preparing -> On The Way -> Delivered
+    status: "Received",
+    date: new Date().toLocaleDateString(),
     timestamp: Date.now()
   };
 
-  // Push directly to Firebase Realtime Database
   db.ref('orders/' + orderId).set(newOrder).then(() => {
-    // Save to active order
     activeOrder = newOrder;
     localStorage.setItem('sa_active_order', JSON.stringify(activeOrder));
     listenToActiveOrder();
 
-    // Reset Cart
     cart = [];
     updateBadge();
 
-    // Trigger Celebration Confetti
     if (typeof confetti === 'function') {
       confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
     }
 
     showSuccessModal(orderId);
-  }).catch(err => {
-    alert("Database connection error: " + err.message);
   });
 }
 
@@ -363,9 +388,9 @@ function showSuccessModal(orderId) {
   overlay.innerHTML = `
     <div class="modal-content">
       <i class="fa-solid fa-circle-check" style="color:#4CAF50; font-size:45px; margin-bottom:12px;"></i>
-      <h3 style="color:#fff;">Order Confirmed!</h3>
-      <p style="color:var(--text-gray); font-size:12px; margin: 8px 0;">Order #${orderId} kitchen mein receive ho chuka hai!</p>
-      <button class="btn-large-red" style="margin:10px 0 0 0;" onclick="closeModalAndTrack()">TRACK ORDER NOW</button>
+      <h3 style="color:#fff;">Order Received!</h3>
+      <p style="color:var(--text-gray); font-size:12px; margin: 8px 0;">Order #${orderId} has been sent to kitchen.</p>
+      <button class="btn-large-red" style="margin:10px 0 0 0;" onclick="closeModalAndTrack()">LIVE STATUS</button>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -376,10 +401,9 @@ function closeModalAndTrack() {
   switchTab('orders');
 }
 
-// REALTIME ORDER TRACKER
 function listenToActiveOrder() {
   if (!activeOrder) return;
-  db.ref('orders/' + activeOrder.orderId).on('value', (snap) => {
+  db.ref('orders/' + activeOrder.orderId).on('value', snap => {
     const data = snap.val();
     if (data) {
       activeOrder = data;
@@ -401,7 +425,7 @@ function renderOrdersScreen(container) {
 
   const s = activeOrder.status;
   container.innerHTML = `
-    <div class="red-top-bar"><span>LIVE TRACKING</span></div>
+    <div class="red-top-bar"><span>LIVE STATUS</span></div>
 
     <div class="tracker-card">
       <div style="display:flex; justify-content:space-between; margin-bottom:15px; font-size:13px;">
@@ -426,68 +450,29 @@ function renderOrdersScreen(container) {
 
       <div class="track-step ${s === 'Delivered' ? 'active' : ''}">
         <div class="track-icon"><i class="fa-solid fa-circle-check"></i></div>
-        <div><strong>Order Delivered</strong><div style="font-size:10px; color:var(--text-gray);">Enjoy your fresh meal!</div></div>
+        <div><strong>Delivered</strong><div style="font-size:10px; color:var(--text-gray);">Enjoy your meal!</div></div>
       </div>
     </div>
   `;
 }
 
-function renderProfileScreen(container) {
-  const user = JSON.parse(localStorage.getItem('sa_user_info')) || { name: 'Customer', phone: 'Not set', address: 'Not set' };
-  container.innerHTML = `
-    <div class="red-top-bar"><span>MY PROFILE</span></div>
-    <div style="padding:20px; text-align:center;">
-      <i class="fa-solid fa-circle-user" style="font-size:60px; color:var(--primary-red); margin-bottom:10px;"></i>
-      <h3>${user.name}</h3>
-      <p style="color:var(--text-gray); font-size:12px;">${user.phone}</p>
-      <div style="background:var(--card-bg); margin-top:20px; padding:15px; border-radius:10px; text-align:left; border:1px solid var(--border-color);">
-        <strong style="font-size:12px; color:var(--primary-red);">SAVED ADDRESS</strong>
-        <p style="font-size:12px; margin-top:4px;">${user.address}</p>
-      </div>
-    </div>
-  `;
-}
 function renderProfileScreen(container) {
   const user = JSON.parse(localStorage.getItem('sa_user_info')) || { name: '', phone: '', address: '' };
-  
   container.innerHTML = `
     <div class="red-top-bar"><span>CUSTOMER PROFILE</span></div>
-    
     <div style="padding: 15px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <i class="fa-solid fa-circle-user" style="font-size: 65px; color: var(--primary-red);"></i>
-        <h3 style="margin-top: 8px; color: #fff;">${user.name || 'Guest Foodie'}</h3>
-        <p style="font-size: 12px; color: var(--text-gray);">${user.phone ? '📞 ' + user.phone : 'No phone linked'}</p>
+      <div style="text-align:center; margin-bottom:20px;">
+        <i class="fa-solid fa-circle-user" style="font-size:65px; color:var(--primary-red);"></i>
+        <h3 style="margin-top:8px;">${user.name || 'Foodie'}</h3>
+        <p style="font-size:12px; color:var(--text-gray);">${user.phone || 'No phone linked'}</p>
       </div>
 
-      <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 15px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
-          <strong style="font-size: 13px; color: var(--primary-red);">MY DETAILS (AUTO-FILL)</strong>
-          <i class="fa-solid fa-user-pen" style="color: var(--primary-red);"></i>
-        </div>
-        
-        <div class="input-group" style="margin: 8px 0;">
-          <label style="font-size: 11px;">Your Name</label>
-          <input type="text" id="prof-name" class="input-box" value="${user.name}" placeholder="Enter your name">
-        </div>
-
-        <div class="input-group" style="margin: 8px 0;">
-          <label style="font-size: 11px;">Phone Number</label>
-          <input type="tel" id="prof-phone" class="input-box" value="${user.phone}" placeholder="Enter mobile number">
-        </div>
-
-        <div class="input-group" style="margin: 8px 0;">
-          <label style="font-size: 11px;">Default Delivery Address</label>
-          <textarea id="prof-address" class="input-box" rows="2" placeholder="House / Village / Landmark">${user.address}</textarea>
-        </div>
-
-        <button class="btn-large-red" style="width: 100%; margin: 10px 0 0 0; padding: 10px;" onclick="saveProfileData()">SAVE DETAILS</button>
-      </div>
-
-      <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border-color); text-align: center;">
-        <i class="fa-solid fa-store" style="color: var(--primary-red); font-size: 20px; margin-bottom: 5px;"></i>
-        <h4 style="font-size: 13px;">S&A FAMILY RESTAURANT</h4>
-        <p style="font-size: 11px; color: var(--text-gray); margin-top: 3px;">U.T. Road, Bengbari, Udalguri, Assam</p>
+      <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border-color); margin-bottom:15px;">
+        <strong style="font-size:13px; color:var(--primary-red);">MY DETAILS (AUTO-FILL)</strong>
+        <div class="input-group" style="margin:8px 0;"><input type="text" id="prof-name" class="input-box" value="${user.name}" placeholder="Name"></div>
+        <div class="input-group" style="margin:8px 0;"><input type="tel" id="prof-phone" class="input-box" value="${user.phone}" placeholder="Phone"></div>
+        <div class="input-group" style="margin:8px 0;"><textarea id="prof-address" class="input-box" rows="2" placeholder="Address">${user.address}</textarea></div>
+        <button class="btn-large-red" style="width:100%; margin:10px 0 0 0; padding:10px;" onclick="saveProfileData()">SAVE DETAILS</button>
       </div>
     </div>
   `;
@@ -497,13 +482,7 @@ function saveProfileData() {
   const name = document.getElementById('prof-name').value.trim();
   const phone = document.getElementById('prof-phone').value.trim();
   const address = document.getElementById('prof-address').value.trim();
-
-  if (!name || !phone) {
-    alert("Kripya Naam aur Phone Number zaroor bharein!");
-    return;
-  }
-
   localStorage.setItem('sa_user_info', JSON.stringify({ name, phone, address }));
-  alert("Profile Details Saved Successfully! 🎉");
+  alert("Profile Saved!");
   renderProfileScreen(document.getElementById('app-container'));
 }
