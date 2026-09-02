@@ -3,111 +3,251 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIP Club Pass - S&A Family Restaurant</title>
+  <title>VIP Privilege Card - S&A Family Restaurant</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background: #0f1115; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; color: #f3f4f6; }
-    .vip-card { background: linear-gradient(145deg, #1b1f24, #121418); border-radius: 24px; border: 1.5px solid #d4af37; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px rgba(212,175,55,0.1); width: 100%; max-width: 420px; padding: 22px; text-align: center; }
-    .header h1 { font-size: 20px; color: #d4af37; letter-spacing: 1px; margin-bottom: 2px; text-transform: uppercase; }
-    .header .subtitle { color: #9ca3af; font-size: 13px; margin-bottom: 4px; }
-    .header .tagline { color: #e5e7eb; font-size: 12px; font-style: italic; margin-bottom: 18px; }
+    body { background: #0a0b0d; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; color: #f3f4f6; }
     
-    .instant-offers { background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.4); border-radius: 14px; padding: 12px; margin-bottom: 18px; text-align: left; }
-    .offer-title { font-size: 12px; font-weight: bold; color: #d4af37; margin-bottom: 8px; text-transform: uppercase; text-align: center; }
-    .offer-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; }
-    .offer-row:last-child { margin-bottom: 0; }
-    .action-btn { background: #d4af37; color: #111; text-decoration: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 11px; transition: 0.2s; white-space: nowrap; }
-    .action-btn:hover { background: #f3cf5f; }
-    
-    .reward-banner { display: none; background: #064e3b; border: 1px solid #10b981; color: #a7f3d0; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 15px; animation: pulse 1.5s infinite; }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
-    
-    .grid-title { font-size: 12px; color: #9ca3af; margin-bottom: 12px; }
-    .stamp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
-    .stamp-slot { background: #22272e; border: 1.5px solid #374151; border-radius: 14px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70px; transition: all 0.3s; }
-    .stamp-slot.milestone { border-color: #d4af37; background: rgba(212, 175, 55, 0.08); }
-    .stamp-slot.active { background: #d4af37; border-color: #f3cf5f; color: #111; transform: scale(1.03); box-shadow: 0 0 12px rgba(212, 175, 55, 0.4); }
-    .stamp-num { font-size: 11px; font-weight: bold; opacity: 0.8; margin-bottom: 2px; }
-    .stamp-slot.active .stamp-num { color: #111; }
-    .stamp-icon { font-size: 18px; }
-    .milestone-tag { font-size: 9px; font-weight: bold; margin-top: 3px; line-height: 1; }
-    
-    .staff-btn { background: linear-gradient(135deg, #d4af37, #aa8214); color: #111; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; letter-spacing: 0.5px; }
-    .staff-btn:active { transform: scale(0.98); }
-    .terms { font-size: 11px; color: #6b7280; margin-top: 15px; line-height: 1.4; text-align: left; border-top: 1px solid #22272e; padding-top: 10px; }
-    .reset-btn { margin-top: 10px; font-size: 11px; color: #4b5563; cursor: pointer; text-decoration: underline; display: inline-block; }
+    .card-wrap {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(135deg, #1e232a 0%, #12151a 50%, #0d0f12 100%);
+      border-radius: 26px;
+      border: 2px solid #d4af37;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(212,175,55,0.25);
+      padding: 24px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-wrap::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(212,175,55,0.25);
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+    }
+    .brand-title { color: #f5d77f; font-size: 17px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
+    .brand-sub { color: #9ca3af; font-size: 12px; margin-top: 2px; }
+    .chip {
+      width: 38px;
+      height: 28px;
+      background: linear-gradient(135deg, #e6ca65, #997819);
+      border-radius: 6px;
+      border: 1px solid #ffe885;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .offers-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .offer-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(212,175,55,0.3);
+      border-radius: 12px;
+      padding: 10px 8px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .offer-box h4 { font-size: 11px; color: #d4af37; margin-bottom: 3px; }
+    .offer-box p { font-size: 11px; color: #e5e7eb; margin-bottom: 8px; font-weight: bold; }
+    .btn-action {
+      background: linear-gradient(135deg, #d4af37, #997819);
+      color: #0d0f12;
+      font-size: 10px;
+      font-weight: 800;
+      text-decoration: none;
+      padding: 5px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-reward {
+      display: none;
+      background: linear-gradient(90deg, #10b981, #059669);
+      color: #fff;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+    }
+
+    .section-label {
+      font-size: 11px;
+      color: #d4af37;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+
+    .coin-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px 8px;
+      margin-bottom: 22px;
+    }
+    .coin-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .coin {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: #181c22;
+      border: 2px dashed rgba(212,175,55,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: bold;
+      color: #9ca3af;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .coin.active {
+      background: radial-gradient(circle, #ffe685 10%, #d4af37 60%, #8c6d12 100%);
+      border: 2px solid #fff;
+      color: #111;
+      box-shadow: 0 0 15px rgba(212,175,55,0.7);
+      transform: scale(1.08);
+    }
+    .coin.milestone {
+      border: 2px solid #d4af37;
+      background: rgba(212,175,55,0.08);
+    }
+    .coin-tag {
+      font-size: 9px;
+      font-weight: 700;
+      color: #f5d77f;
+      margin-top: 5px;
+      text-align: center;
+      line-height: 1.1;
+    }
+
+    .btn-stamp {
+      background: linear-gradient(135deg, #f5d77f 0%, #d4af37 50%, #997819 100%);
+      color: #0d0f12;
+      border: none;
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(212,175,55,0.3);
+    }
+    .btn-stamp:active { transform: scale(0.98); }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      font-size: 10px;
+      color: #6b7280;
+    }
+    .reset-link { color: #6b7280; text-decoration: underline; cursor: pointer; }
   </style>
 </head>
 <body>
 
-  <div class="vip-card">
-    <div class="header">
-      <h1>👑 VIP CLUB PASS</h1>
-      <div class="subtitle">S&A FAMILY RESTAURANT (Bengbari)</div>
-      <div class="tagline">"स्वाद आपका, प्यार और रिवॉर्ड्स हमारा"</div>
+  <div class="card-wrap">
+    <div class="card-header">
+      <div>
+        <div class="brand-title">S&A FAMILY RESTAURANT</div>
+        <div class="brand-sub">Bengbari • VIP Privilege Pass</div>
+      </div>
+      <div class="chip"></div>
     </div>
 
-    <!-- Instant Discounts -->
-    <div class="instant-offers">
-      <div class="offer-title">⭐ तुरंत छूट (Instant Rewards)</div>
-      <div class="offer-row">
-        <span>📍 Google 5★ रिव्यू ➜ <b>₹20 OFF</b></span>
-        <a href="https://maps.app.goo.gl/yE4mh8BorbVaPGCL6?g_st=ac" target="_blank" class="action-btn">रिव्यू दें</a>
+    <!-- 1-Click Action Offers -->
+    <div class="offers-section">
+      <div class="offer-box">
+        <h4>GOOGLE REVIEW</h4>
+        <p>₹20 छूट तुरंत</p>
+        <a href="https://maps.app.goo.gl/yE4mh8BorbVaPGCL6?g_st=ac" target="_blank" class="btn-action">रिव्यू दें</a>
       </div>
-      <div class="offer-row">
-        <span>📸 Instagram फॉलो ➜ <b>₹20 OFF</b> (हर विज़िट, बिल ₹100+)</span>
-        <a href="https://instagram.com" target="_blank" id="instaLink" class="action-btn">फॉलो करें</a>
+      <div class="offer-box">
+        <h4>INSTA FOLLOW</h4>
+        <p>₹20 छूट (बिल ₹100+)</p>
+        <a href="https://instagram.com" target="_blank" class="btn-action">फॉलो करें</a>
       </div>
     </div>
 
-    <!-- Live Reward Message -->
-    <div class="reward-banner" id="rewardBanner">🎉 बधाई! आपका रिवॉर्ड अनलॉक हो गया है!</div>
+    <div class="banner-reward" id="rewardBanner"></div>
 
-    <!-- 12 Stamp Grid -->
-    <div class="grid-title">🍽️ लॉयल्टी स्टैंप्स (प्रत्येक ₹299+ के बिल पर)</div>
-    <div class="stamp-grid" id="stampGrid"></div>
+    <div class="section-label">✦ लॉयल्टी कॉइन्स (न्यूनतम बिल ₹299) ✦</div>
 
-    <button class="staff-btn" onclick="addStamp()">✨ स्टैंप जोड़ें (स्टाफ केवल)</button>
-    <br>
-    <span class="reset-btn" onclick="resetCard()">कार्ड रीसेट करें</span>
+    <!-- 12 Coin Stamp Grid -->
+    <div class="coin-grid" id="coinGrid"></div>
 
-    <div class="terms">
-      <b>प्यार भरी गुज़ारिश:</b><br>
-      • ₹299+ के भोजन पर प्रति विज़िट 1 स्टैंप मान्य।<br>
-      • Instagram फॉलो डिस्काउंट हर बार बिलिंग काउंटर पर लाइव दिखाना होगा (न्यूनतम बिल ₹100)।
+    <button class="btn-stamp" onclick="addStamp()">✨ कॉइन पंच करें (स्टाफ केवल)</button>
+
+    <div class="card-footer">
+      <span>VIP GUEST PASS</span>
+      <span class="reset-link" onclick="resetCard()">कार्ड रीसेट</span>
     </div>
   </div>
 
   <script>
-    const SECRET_PIN = "1234"; // आपका 4-अंकों का स्टाफ पिन
+    const PIN = "1234";
     const TOTAL = 12;
-
-    const milestones = {
-      3: { name: "वेलकम ड्रिंक", icon: "🥤" },
-      6: { name: "₹200 डिश", icon: "🎁" },
-      12: { name: "₹500 दावत", icon: "👑" }
+    const rewards = {
+      3: { tag: "वेलकम ड्रिंक", icon: "🥤" },
+      6: { tag: "₹200 डिश", icon: "🎁" },
+      12: { tag: "₹500 दावत", icon: "👑" }
     };
 
     function getCount() {
-      return parseInt(localStorage.getItem('sa_vip_stamps') || '0');
+      return parseInt(localStorage.getItem('sa_vip_coins') || '0');
     }
 
     function render() {
       const count = getCount();
-      const grid = document.getElementById('stampGrid');
+      const grid = document.getElementById('coinGrid');
       grid.innerHTML = '';
 
       for (let i = 1; i <= TOTAL; i++) {
         const slot = document.createElement('div');
-        slot.className = 'stamp-slot' + (milestones[i] ? ' milestone' : '') + (i <= count ? ' active' : '');
-        
-        let icon = i <= count ? '✓' : (milestones[i] ? milestones[i].icon : '○');
-        let tag = milestones[i] ? `<span class="milestone-tag">${milestones[i].name}</span>` : '';
+        slot.className = 'coin-slot';
+
+        const isMilestone = rewards[i] !== undefined;
+        const isActive = i <= count;
+
+        let icon = isActive ? '✓' : (isMilestone ? rewards[i].icon : '#' + i);
+        let tagText = isMilestone ? `<span class="coin-tag">${rewards[i].tag}</span>` : '';
 
         slot.innerHTML = `
-          <span class="stamp-num">#${i}</span>
-          <span class="stamp-icon">${icon}</span>
-          ${tag}
+          <div class="coin ${isMilestone ? 'milestone' : ''} ${isActive ? 'active' : ''}">
+            ${icon}
+          </div>
+          ${tagText}
         `;
         grid.appendChild(slot);
       }
@@ -115,39 +255,39 @@
       const banner = document.getElementById('rewardBanner');
       if (count >= 12) {
         banner.style.display = 'block';
-        banner.innerHTML = '👑 बधाई! 12वीं विज़िट पूरी! आपकी ₹500 की रॉयल दावत अनलॉक हो चुकी है!';
+        banner.innerHTML = '👑 12वीं विज़िट पूरी! ₹500 की रॉयल दावत अनलॉक!';
       } else if (count >= 6) {
         banner.style.display = 'block';
-        banner.innerHTML = '🎁 बधाई! आपकी ₹200 की पसंदीदा डिश मुफ़्त अनलॉक हो चुकी है!';
+        banner.innerHTML = '🎁 बधाई! ₹200 की पसंदीदा डिश मुफ़्त अनलॉक!';
       } else if (count >= 3) {
         banner.style.display = 'block';
-        banner.innerHTML = '🥤 बधाई! आपका मुफ़्त वेलकम ड्रिंक / स्पेशल शेक अनलॉक हो चुका है!';
+        banner.innerHTML = '🥤 बधाई! मुफ़्त वेलकम ड्रिंक / शेक अनलॉक!';
       } else {
         banner.style.display = 'none';
       }
     }
 
     function addStamp() {
-      const pin = prompt("स्टाफ सिक्योरिटी पिन दर्ज करें:");
-      if (pin === SECRET_PIN) {
+      const p = prompt("स्टाफ सिक्योरिटी पिन दर्ज करें:");
+      if (p === PIN) {
         let current = getCount();
         if (current < TOTAL) {
-          localStorage.setItem('sa_vip_stamps', current + 1);
+          localStorage.setItem('sa_vip_coins', current + 1);
           render();
         } else {
-          alert("12 स्टैंप्स पूरे हो चुके हैं! रिवॉर्ड देने के बाद कार्ड रीसेट करें।");
+          alert("12 कॉइन्स पूरे हो चुके हैं! रिवॉर्ड देने के बाद रीसेट करें।");
         }
-      } else if (pin !== null) {
+      } else if (p !== null) {
         alert("गलत पिन!");
       }
     }
 
     function resetCard() {
-      const pin = prompt("रीसेट करने के लिए स्टाफ पिन दर्ज करें:");
-      if (pin === SECRET_PIN) {
-        localStorage.setItem('sa_vip_stamps', '0');
+      const p = prompt("रीसेट करने के लिए पिन डालें:");
+      if (p === PIN) {
+        localStorage.setItem('sa_vip_coins', '0');
         render();
-      } else if (pin !== null) {
+      } else if (p !== null) {
         alert("गलत पिन!");
       }
     }
