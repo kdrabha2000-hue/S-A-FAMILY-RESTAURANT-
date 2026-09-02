@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S&A Restaurant Counter Standee</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background: #1a1a1a; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+    /* Exact Standard PVC Card Size (CR80): 85.6mm x 53.98mm */
+    .pvc-card {
+      width: 85.6mm;
+      height: 54mm;
+      background: linear-gradient(135deg, #111418 0%, #1c222b 50%, #0d0f12 100%);
+      border-radius: 4mm;
+      border: 1.5px solid #d4af37;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 15px rgba(212,175,55,0.3);
+      padding: 3mm 4mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    /* Subtle Gold Glow */
+    .pvc-card::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      left: -30%;
+      width: 160%;
+      height: 160%;
+      background: radial-gradient(circle, rgba(212,175,55,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .header { text-align: center; border-bottom: 1px solid rgba(212,175,55,0.3); padding-bottom: 1.5mm; }
+    .brand-title { color: #f5d77f; font-size: 11pt; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; }
+    .brand-sub { color: #d1d5db; font-size: 6.5pt; font-weight: 600; letter-spacing: 0.5px; }
+
+    .main-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 3mm;
+      margin-top: 1mm;
+    }
+
+    /* QR Code Container */
+    .qr-container {
+      background: #ffffff;
+      padding: 1.5mm;
+      border-radius: 2.5mm;
+      border: 1.5px solid #d4af37;
+      box-shadow: 0 0 8px rgba(212,175,55,0.4);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 25mm;
+      height: 25mm;
+      flex-shrink: 0;
+    }
+
+    .qr-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .perks-box {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.2mm;
+    }
+
+    .cta-badge {
+      background: linear-gradient(90deg, #d4af37, #f5d77f);
+      color: #111;
+      font-size: 6.5pt;
+      font-weight: 800;
+      padding: 1mm 2mm;
+      border-radius: 2mm;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .offer-item {
+      font-size: 6pt;
+      color: #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 1.5mm;
+      line-height: 1.1;
+    }
+    .offer-item b { color: #f5d77f; }
+
+    .footer {
+      text-align: center;
+      font-size: 5.5pt;
+      color: #9ca3af;
+      border-top: 1px dashed rgba(212,175,55,0.3);
+      padding-top: 1mm;
+      letter-spacing: 0.2px;
+    }
+
+    .print-btn {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: #d4af37;
+      color: #111;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    @media print {
+      body { background: transparent; padding: 0; }
+      .print-btn { display: none; }
+      .pvc-card { box-shadow: none; margin: auto; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PVC Card Print Area -->
+  <div class="pvc-card">
+    <div class="header">
+      <div class="brand-title">👑 S&A FAMILY RESTAURANT</div>
+      <div class="brand-sub">BENGBARI • VIP REWARD PASS</div>
+    </div>
+
+    <div class="main-body">
+      <!-- QR Image directly embedded -->
+      <div class="qr-container">
+        <img src="https://kdrabha2000-hue.github.io/S-A-FAMILY-RESTAURANT/stamp.html" 
+             onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://kdrabha2000-hue.github.io/S-A-FAMILY-RESTAURANT/stamp.html'" 
+             alt="Scan QR">
+      </div>
+
+      <div class="perks-box">
+        <div class="cta-badge">⚡ स्कैन करें और तुरंत छूट पाएँ!</div>
+        <div class="offer-item">📍 Google Review ➜ <b>₹20 OFF तुरंत</b></div>
+        <div class="offer-item">📸 Insta Follow ➜ <b>₹20 OFF हर बार</b></div>
+        <div class="offer-item">🥤 3rd Visit ➜ <b>मुफ़्त वेलकम ड्रिंक</b></div>
+        <div class="offer-item">👑 12th Visit ➜ <b>₹500 की रॉयल दावत</b></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      कैमरा खोलें • QR स्कैन करें • अपने हर बिल पर मुफ़्त रिवॉर्ड्स जीतें!
+    </div>
+  </div>
+
+  <button class="print-btn" onclick="window.print()">🖨️ PVC कार्ड प्रिंट करें</button>
+
+</body>
+</html>
