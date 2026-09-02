@@ -1,0 +1,17 @@
+{
+  "name": "S&A FAMILY RESTAURANT",
+  "short_name": "A&A Restaurant",
+  "description": "ए एंड ए फैमिली रेस्टोरेंट में आपका स्वागत है। ताज़ा और स्वादिष्ट भोजन ऑनलाइन ऑर्डर करें और तेज़ होम डिलीवरी का आनंद लें।",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
+  "icons": [
+    {
+      "src": "./logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
