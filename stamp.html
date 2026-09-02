@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>डिजिटल लॉयल्टी कार्ड</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
+    .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; padding: 25px; text-align: center; }
+    h2 { margin: 0 0 5px; color: #1f2937; }
+    p { color: #6b7280; font-size: 14px; margin-bottom: 25px; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
+    .stamp { width: 80px; height: 80px; border: 2px dashed #d1d5db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: auto; font-size: 20px; font-weight: bold; color: #9ca3af; transition: all 0.3s ease; }
+    .stamp.active { background: #10b981; border: 2px solid #059669; color: white; transform: scale(1.05); }
+    .reward-box { display: none; background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; }
+    .btn { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 15px; cursor: pointer; width: 100%; font-weight: bold; }
+    .btn:active { transform: scale(0.98); }
+    .reset-link { margin-top: 15px; font-size: 12px; color: #9ca3af; cursor: pointer; text-decoration: underline; display: inline-block; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>लॉयल्टी रिवॉर्ड्स</h2>
+    <p>हर विज़िट पर स्टैंप पाएं और 6ठे पर मुफ़्त रिवॉर्ड जीतें!</p>
+
+    <div class="reward-box" id="rewardBox">🎉 बधाई! आपका मुफ़्त रिवॉर्ड अनलॉक हो गया है!</div>
+
+    <div class="grid">
+      <div class="stamp" id="s1">1</div>
+      <div class="stamp" id="s2">2</div>
+      <div class="stamp" id="s3">3</div>
+      <div class="stamp" id="s4">4</div>
+      <div class="stamp" id="s5">5</div>
+      <div class="stamp" id="s6">🎁</div>
+    </div>
+
+    <button class="btn" onclick="addStamp()">स्टैंप जोड़ें (स्टाफ केवल)</button>
+    <br>
+    <span class="reset-link" onclick="resetCard()">कार्ड रीसेट करें</span>
+  </div>
+
+  <script>
+    const SECRET_PIN = "3699"; // अपना सीक्रेट स्टाफ पिन यहाँ सेट करें
+    const TOTAL_STAMPS = 6;
+
+    function getStamps() {
+      return parseInt(localStorage.getItem('my_stamps') || '0');
+    }
+
+    function render() {
+      const count = getStamps();
+      for (let i = 1; i <= TOTAL_STAMPS; i++) {
+        const el = document.getElementById('s' + i);
+        if (i <= count) {
+          el.classList.add('active');
+          el.innerHTML = i === TOTAL_STAMPS ? '🎉' : '✓';
+        } else {
+          el.classList.remove('active');
+          el.innerHTML = i === TOTAL_STAMPS ? '🎁' : i;
+        }
+      }
+      document.getElementById('rewardBox').style.display = count >= TOTAL_STAMPS ? 'block' : 'none';
+    }
+
+    function addStamp() {
+      const pin = prompt("स्टाफ सिक्योरिटी पिन दर्ज करें:");
+      if (pin === SECRET_PIN) {
+        let current = getStamps();
+        if (current < TOTAL_STAMPS) {
+          localStorage.setItem('my_stamps', current + 1);
+          render();
+        } else {
+          alert("कार्ड पहले ही पूरा हो चुका है! कृपया रीसेट करें।");
+        }
+      } else if (pin !== null) {
+        alert("गलत पिन!");
+      }
+    }
+
+    function resetCard() {
+      const pin = prompt("रीसेट करने के लिए स्टाफ पिन दर्ज करें:");
+      if (pin === SECRET_PIN) {
+        localStorage.setItem('my_stamps', '0');
+        render();
+      } else if (pin !== null) {
+        alert("गलत पिन!");
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
