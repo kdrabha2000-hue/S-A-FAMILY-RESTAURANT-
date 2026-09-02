@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VIP Privilege Card - S&A Family Restaurant</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background: #0a0b0d; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; color: #f3f4f6; }
+    body { background: #0a0b0d; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; color: #f3f4f6; }
     
     .card-wrap {
       width: 100%;
@@ -18,17 +19,6 @@
       padding: 24px 20px;
       position: relative;
       overflow: hidden;
-    }
-
-    .card-wrap::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(212,175,55,0.06) 0%, transparent 60%);
-      pointer-events: none;
     }
 
     .card-header {
@@ -147,6 +137,31 @@
       line-height: 1.1;
     }
 
+    .btn-group {
+      width: 100%;
+      max-width: 420px;
+      margin-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-download {
+      background: #1e293b;
+      color: #f5d77f;
+      border: 1.5px solid #d4af37;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-download:active { transform: scale(0.98); }
+
     .btn-stamp {
       background: linear-gradient(135deg, #f5d77f 0%, #d4af37 50%, #997819 100%);
       color: #0d0f12;
@@ -159,7 +174,6 @@
       text-transform: uppercase;
       letter-spacing: 1px;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(212,175,55,0.3);
     }
     .btn-stamp:active { transform: scale(0.98); }
 
@@ -172,12 +186,13 @@
       font-size: 10px;
       color: #6b7280;
     }
-    .reset-link { color: #6b7280; text-decoration: underline; cursor: pointer; }
+    .reset-link { color: #6b7280; text-decoration: underline; cursor: pointer; text-align: center; margin-top: 8px; font-size: 11px; }
   </style>
 </head>
 <body>
 
-  <div class="card-wrap">
+  <!-- Card Area -->
+  <div class="card-wrap" id="vipCardArea">
     <div class="card-header">
       <div>
         <div class="brand-title">S&A FAMILY RESTAURANT</div>
@@ -186,7 +201,7 @@
       <div class="chip"></div>
     </div>
 
-    <!-- 1-Click Action Offers -->
+    <!-- Offers -->
     <div class="offers-section">
       <div class="offer-box">
         <h4>GOOGLE REVIEW</h4>
@@ -204,19 +219,24 @@
 
     <div class="section-label">✦ लॉयल्टी कॉइन्स (न्यूनतम बिल ₹299) ✦</div>
 
-    <!-- 12 Coin Stamp Grid -->
+    <!-- 12 Coin Grid -->
     <div class="coin-grid" id="coinGrid"></div>
-
-    <button class="btn-stamp" onclick="addStamp()">✨ कॉइन पंच करें (स्टाफ केवल)</button>
 
     <div class="card-footer">
       <span>VIP GUEST PASS</span>
-      <span class="reset-link" onclick="resetCard()">कार्ड रीसेट</span>
+      <span>VALID AT: BENGBARI</span>
     </div>
   </div>
 
+  <!-- Action Buttons -->
+  <div class="btn-group">
+    <button class="btn-download" onclick="downloadCard()">📲 कार्ड डाउनलोड करें (फोटो सेव करें)</button>
+    <button class="btn-stamp" onclick="addStamp()">✨ कॉइन पंच करें (स्टाफ केवल)</button>
+    <span class="reset-link" onclick="resetCard()">कार्ड रीसेट करें</span>
+  </div>
+
   <script>
-    const PIN = "1234";
+    const PIN = "3699"; // आपका नया सीक्रेट स्टाफ पिन
     const TOTAL = 12;
     const rewards = {
       3: { tag: "वेलकम ड्रिंक", icon: "🥤" },
@@ -290,6 +310,16 @@
       } else if (p !== null) {
         alert("गलत पिन!");
       }
+    }
+
+    function downloadCard() {
+      const target = document.getElementById('vipCardArea');
+      html2canvas(target, { scale: 2, backgroundColor: "#0a0b0d" }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'SA-VIP-Privilege-Card.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
     }
 
     render();
