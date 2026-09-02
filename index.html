@@ -1,47 +1,685 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S&A FAMILY RESTAURANT</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Firebase CDN -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>S & A FAMILY RESTAURANT</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ff3e6c" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css?v=203" />
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <!-- Confetti CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 </head>
 <body>
-  <div class="app-container" id="app-container">
-    <!-- Live Views Inject Here -->
+<!-- === FULL SELF-CONTAINED SPLASH SCREEN START === -->
+<style>
+  #custom-splash-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #1b2430 0%, #0a0d14 100%) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2147483647 !important;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #ffffff;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  .splash-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    max-width: 90%;
+  }
+  .splash-brand {
+    color: #ffca42 !important;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin: 0 0 4px 0;
+    text-shadow: 0 0 15px rgba(255, 202, 66, 0.4);
+  }
+  .splash-sub {
+    color: #c9d1d9 !important;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin: 0 0 16px 0;
+    opacity: 0.85;
+  }
+  .splash-glow-box {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 10px 0 15px 0;
+    border-radius: 24px;
+    border: 2px solid #00d2ff;
+    box-shadow: 0 0 25px rgba(0, 210, 255, 0.6), inset 0 0 15px rgba(0, 210, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: splashPulse 2s infinite ease-in-out;
+  }
+  .splash-logo-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+  }
+  .splash-food-tags {
+    display: flex;
+    gap: 6px;
+    margin: 10px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .splash-food-tags span {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 202, 66, 0.3);
+    color: #ffdf7e !important;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+  }
+  .splash-bar {
+    width: 160px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 15px;
+  }
+  .splash-fill {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, #ffca42, #00d2ff);
+    animation: splashMove 1.5s infinite ease-in-out;
+  }
+  .splash-tagline {
+    color: #8b949e !important;
+    font-size: 11px;
+    margin-top: 8px;
+    font-style: italic;
+  }
+  @keyframes splashPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  @keyframes splashMove {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* PWA Install Banner Style */
+  #pwaInstallBanner {
+    display: none;
+    position: fixed;
+    bottom: 65px;
+    left: 12px;
+    right: 12px;
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 99999;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #38bdf8;
+    animation: bounceIn 0.5s ease;
+  }
+  @keyframes bounceIn {
+    0% { transform: translateY(50px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+</style>
+
+<div id="custom-splash-screen">
+  <div class="splash-card">
+    <h1 class="splash-brand" id="splashBrandText">S&A FAMILY RESTAURANT</h1>
+    <p class="splash-sub">WHERE EVERY MEAL FEELS LIKE HOME</p>
+
+    <div class="splash-glow-box">
+      <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" alt="Logo" class="splash-logo-img">
+    </div>
+
+    <div class="splash-food-tags">
+      <span>🍕 Pizza</span>
+      <span>🍗 Biryani</span>
+      <span>🍛 Special Curry</span>
+    </div>
+
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+    <p class="splash-tagline">Crafting moments, one flavor at a time.</p>
+  </div>
+</div>
+
+<script>
+  (function() {
+    function dismissSplash() {
+      var s = document.getElementById("custom-splash-screen");
+      if (s) {
+        s.style.opacity = "0";
+        setTimeout(function() { s.style.display = "none"; }, 300);
+      }
+    }
+    window.addEventListener("DOMContentLoaded", function() { setTimeout(dismissSplash, 500); });
+    window.addEventListener("load", dismissSplash);
+  })();
+</script>
+<!-- === FULL SELF-CONTAINED SPLASH SCREEN END === -->
+
+  <!-- PWA Install Popup Bar -->
+  <div id="pwaInstallBanner">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:36px; height:36px; border-radius:8px;" />
+      <div>
+        <div style="font-weight:700; font-size:13px; color:#ffca42;">S&A RESTAURANT APP</div>
+        <div style="font-size:10px; color:#94a3b8;">Install for instant ordering & offers</div>
+      </div>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button id="pwaInstallBtn" style="background:#10b981; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer;"><i class="fa-solid fa-download"></i> Install</button>
+      <button onclick="document.getElementById('pwaInstallBanner').style.display='none'" style="background:transparent; color:#94a3b8; border:none; font-size:16px; cursor:pointer;">✕</button>
+    </div>
+  </div>
+
+  <header class="app-header">
+    <div class="top-bar">
+      <div class="brand-box">
+        <h1 id="mainBrandTitle">S & A FAMILY RESTAURANT</h1>
+        <p><i class="fa-solid fa-location-dot"></i> Bengbari, Udalguri (784523)</p>
+      </div>
+      <div class="header-actions">
+        <div class="coin-pill" onclick="switchNavTab('account')"><i class="fa-solid fa-coins"></i> <span id="headerCoins">25</span></div>
+        <div class="admin-icon-btn" onclick="openAdminGateway()" title="Admin Control Room"><i class="fa-solid fa-shield-halved"></i></div>
+      </div>
+    </div>
+
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="searchInput" placeholder="Search momos, rolls, thukpa, cakes..." onkeyup="searchDishes()" />
+      <i class="fa-solid fa-microphone mic-icon" onclick="triggerVoiceSearch()"></i>
+    </div>
+  </header>
+
+  <div class="promo-carousel">
+    <span class="promo-badge">🎉 FESTIVAL DEAL</span>
+    <h2 id="bannerTitle">K.D RABHA SPECIAL</h2>
+    <p id="bannerSub">Flat ₹9 Fixed Delivery on All Orders in Bengbari!</p>
+  </div>
+
+  <div class="category-scroll" id="categoryContainer">
+    <div class="cat-item active" onclick="filterCategory('all', this)">
+      <div class="cat-circle"><i class="fa-solid fa-utensils"></i></div>
+      <div class="cat-name">All Items</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('momos', this)">
+      <div class="cat-circle"><i class="fa-solid fa-bowl-rice"></i></div>
+      <div class="cat-name">Momos</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('rolls', this)">
+      <div class="cat-circle"><i class="fa-solid fa-bread-slice"></i></div>
+      <div class="cat-name">Rolls</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('chicken', this)">
+      <div class="cat-circle"><i class="fa-solid fa-drumstick-bite"></i></div>
+      <div class="cat-name">Chicken</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('pork', this)">
+      <div class="cat-circle"><i class="fa-solid fa-bacon"></i></div>
+      <div class="cat-name">Pork Special</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('chow_thukpa', this)">
+      <div class="cat-circle"><i class="fa-solid fa-plate-wheat"></i></div>
+      <div class="cat-name">Chow & Soup</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('cakes', this)">
+      <div class="cat-circle"><i class="fa-solid fa-cake-candles"></i></div>
+      <div class="cat-name">Cakes Studio</div>
+    </div>
+    <div class="cat-item" onclick="filterCategory('drinks', this)">
+      <div class="cat-circle"><i class="fa-solid fa-wine-glass"></i></div>
+      <div class="cat-name">Beverages</div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span>Recommended Dishes</span>
+    <span style="font-size:12px; color:var(--primary); font-weight:600;">8:00 AM - 10:00 PM</span>
+  </div>
+
+  <div class="food-grid" id="foodGrid"></div>
+
+  <div class="floating-cart-bar" id="floatingCart" onclick="openCartModal()">
+    <div>
+      <span id="cartCount" style="font-weight:700;">1 Item</span> | <span id="cartTotal">₹0</span>
+      <div style="font-size:10px; opacity:0.8;">+ ₹9 Fixed Delivery</div>
+    </div>
+    <div style="font-weight:700;">View Bag <i class="fa-solid fa-arrow-right"></i></div>
   </div>
 
   <nav class="bottom-nav">
-    <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
-      <i class="fa-solid fa-house"></i>
-      <span>Home</span>
-    </button>
-    <button class="nav-item" id="nav-menu" onclick="switchTab('menu')">
-      <i class="fa-solid fa-utensils"></i>
-      <span>Menu</span>
-    </button>
-    <button class="nav-item" id="nav-cart" onclick="switchTab('cart')">
-      <i class="fa-solid fa-cart-shopping"></i>
-      <span class="cart-badge" id="cart-badge">0</span>
-      <span>Cart</span>
-    </button>
-    <button class="nav-item" id="nav-orders" onclick="switchTab('orders')">
-      <i class="fa-solid fa-clipboard-list"></i>
-      <span>Track</span>
-    </button>
-    <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
-      <i class="fa-solid fa-user"></i>
-      <span>Profile</span>
-    </button>
+    <div class="nav-tab active" id="tabHome" onclick="switchNavTab('home')"><i class="fa-solid fa-house"></i>Home</div>
+    <div class="nav-tab" id="tabCakes" onclick="openCakeStudio()"><i class="fa-solid fa-cake-candles"></i>Cakes</div>
+    <div class="nav-tab" id="tabOrders" onclick="openOrderHistoryModal()"><i class="fa-solid fa-bag-shopping"></i>My Orders</div>
+    <div class="nav-tab" id="tabAccount" onclick="switchNavTab('account')"><i class="fa-solid fa-circle-user"></i>Account</div>
   </nav>
 
-  <script src="app.js"></script>
+  <div class="full-modal" id="productDetailModal" style="display:none !important;">
+    <div class="modal-header">
+      <i class="fa-solid fa-arrow-left close-btn" onclick="closeModal('productDetailModal')"></i>
+      <div style="font-weight:700; font-size:14px;">Item Details</div>
+      <i class="fa-solid fa-share-nodes" style="font-size:18px; cursor:pointer;" onclick="shareCurrentItem()"></i>
+    </div>
+    <div class="pdp-container">
+      <div class="pdp-img-box">
+        <img id="pdpImg" src="" alt="Dish" />
+        <button class="pdp-wish-btn" id="pdpWishBtn" onclick="toggleCurrentWish()"><i class="fa-solid fa-heart"></i></button>
+      </div>
+
+      <div class="pdp-info">
+        <h2 id="pdpTitle">Dish Title</h2>
+        <div class="pdp-rating-row">
+          <span class="rating-badge"><i class="fa-solid fa-star"></i> 4.5</span>
+          <span style="font-size:12px; color:var(--gray);">(420+ ratings)</span>
+          <span class="bestseller-tag">HOT DEAL</span>
+        </div>
+
+        <div class="pdp-price-row">
+          <span class="pdp-price" id="pdpPrice">₹120</span>
+          <span class="pdp-mrp" id="pdpMrp">₹180</span>
+          <span class="pdp-discount">33% OFF</span>
+        </div>
+
+        <div class="variant-box" id="pdpVariantBox">
+          <label class="form-label">Select Portion / Quantity</label>
+          <div class="weight-pills">
+            <div class="weight-pill active" onclick="selectDishVariant('standard', 0, this)">Standard Portion</div>
+            <div class="weight-pill" onclick="selectDishVariant('double', 60, this)">Double Combo (+₹60)</div>
+          </div>
+        </div>
+
+        <div class="service-strip">
+          <div><i class="fa-solid fa-truck-fast"></i> 30-40 Min Delivery</div>
+          <div><i class="fa-solid fa-bowl-food"></i> 100% Fresh & Hot</div>
+          <div><i class="fa-solid fa-money-bill-wave"></i> Cash / UPI</div>
+        </div>
+
+        <div class="review-section">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h4>Customer Reviews (Bengbari Food Lovers)</h4>
+            <button onclick="openReviewModal()" style="background:#ff3e6c; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer;">+ Write Review</button>
+          </div>
+          <div id="pdpReviewsList">
+            <div class="review-item">
+              <div class="rev-header"><span>⭐ 5.0 - Pranjal R.</span><small>Yesterday</small></div>
+              <p>Super delicious momos and fast delivery in Batiyamari area!</p>
+            </div>
+            <div class="review-item">
+              <div class="rev-header"><span>⭐ 5.0 - Anjana R.</span><small>3 days ago</small></div>
+              <p>Best custom birthday cake in Udalguri. Very soft & fresh.</p>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <h4 style="font-size:14px; margin-bottom:10px;">Similar Dishes You May Like</h4>
+          <div class="category-scroll" id="similarDishesScroll"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pdp-bottom-bar">
+      <button class="pdp-btn btn-cart" onclick="addPdpToCart()"><i class="fa-solid fa-bag-shopping"></i> Add to Bag</button>
+      <button class="pdp-btn btn-buy" onclick="buyNowPdp()"><i class="fa-solid fa-bolt"></i> Order Now</button>
+    </div>
+  </div>
+
+  <div class="full-modal" id="accountModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>My Account</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('accountModal')"></i>
+    </div>
+
+    <div class="account-container">
+      <div style="background:#fff; border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 20px rgba(0,0,0,0.08); margin-bottom:14px;">
+        <div style="position:relative; width:65px; height:65px; min-width:65px; flex-shrink:0;">
+          <img id="userAvatarImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" style="width:65px; height:65px; border-radius:50%; object-fit:cover; border:2px solid #ff3e6c; display:block;" />
+          <label for="avatarFileInput" style="position:absolute; bottom:0; right:0; background:#ff3e6c; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.2);"><i class="fa-solid fa-camera"></i></label>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadCustomerAvatar(this)" />
+        </div>
+        <div style="flex:1;">
+          <h3 id="accNameDisplay" style="font-size:16px; margin-bottom:2px; font-weight:700;">Guest User</h3>
+          <p id="accPhoneDisplay" style="font-size:12px; color:#64748b; margin-bottom:4px;">Login to Account</p>
+          <span class="vip-pill"><i class="fa-solid fa-user"></i> New Customer</span>
+        </div>
+      </div>
+
+      <div class="account-grid-4">
+        <div class="acc-tile" onclick="openOrderHistoryModal()">
+          <i class="fa-solid fa-box-open" style="color:#ff3e6c;"></i>
+          <span>Orders History</span>
+        </div>
+        <div class="acc-tile" onclick="openSavedItemsModal()">
+          <i class="fa-solid fa-heart" style="color:#ef4444;"></i>
+          <span>Saved Items</span>
+        </div>
+        <div class="acc-tile" onclick="openLanguageModal()">
+          <i class="fa-solid fa-language" style="color:#0284c7;"></i>
+          <span>Language</span>
+        </div>
+        <div class="acc-tile" onclick="window.open('tel:8453270362')">
+          <i class="fa-solid fa-headset" style="color:#10b981;"></i>
+          <span>Contact Us</span>
+        </div>
+      </div>
+
+      <div class="account-reward-card">
+        <div>
+          <div style="font-size:12px; font-weight:700;">SuperCoins & Rewards</div>
+          <div style="font-size:18px; font-weight:800; color:var(--gold);"><i class="fa-solid fa-coins"></i> <span id="accCoinCount">25</span> Coins</div>
+        </div>
+        <button class="add-btn" style="background:#fff; color:var(--dark); border:none;" onclick="alert('Coins give instant discounts at checkout!')">Use Coins</button>
+      </div>
+
+      <div class="account-section">
+        <h4><i class="fa-solid fa-location-dot"></i> Delivery Address & Login Sync</h4>
+        <input type="text" id="accInputName" class="form-input" placeholder="Your Full Name" />
+        <input type="tel" id="accInputPhone" class="form-input" placeholder="Phone Number (For Cloud History Sync)" />
+        <textarea id="accInputAddress" class="form-input" placeholder="Complete Street/House Landmark in Bengbari/Udalguri"></textarea>
+        <button class="admin-btn btn-green" onclick="saveCustomerAccount()">SYNC & SAVE ACCOUNT</button>
+      </div>
+
+      <div class="acc-menu-list">
+        <div class="acc-menu-row" onclick="triggerPwaInstall()">
+          <div><i class="fa-solid fa-mobile-screen-button" style="color:#0284c7;"></i> Install Mobile App</div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </div>
+        <div class="acc-menu-row" onclick="shareReferralLink()">
+          <div><i class="fa-solid fa-share-nodes" style="color:#10b981;"></i> Refer & Earn with S&A (Get ₹20)</div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </div>
+        <div class="acc-menu-row" onclick="openSavedItemsModal()">
+          <div><i class="fa-solid fa-heart" style="color:#ef4444;"></i> My Wishlist & Favourites</div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </div>
+        <div class="acc-menu-row" onclick="openAdminGateway()">
+          <div><i class="fa-solid fa-shield-halved"></i> Restaurant Admin Gateway</div>
+          <i class="fa-solid fa-chevron-right"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language Selection Modal -->
+  <div class="full-modal" id="languageModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>🌐 Select Language</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('languageModal')"></i>
+    </div>
+    <div style="padding:16px;">
+      <div style="background:#fff; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">
+        <div style="padding:14px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="selectLanguage('English')">
+          <span style="font-weight:600;">English</span>
+          <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
+        </div>
+        <div style="padding:14px; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="selectLanguage('Assamese')">
+          <span style="font-weight:600;">অসমীয়া (Assamese)</span>
+          <i class="fa-solid fa-chevron-right" style="color:#94a3b8;"></i>
+        </div>
+        <div style="padding:14px; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="selectLanguage('Hindi')">
+          <span style="font-weight:600;">हिन्दी (Hindi)</span>
+          <i class="fa-solid fa-chevron-right" style="color:#94a3b8;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="full-modal" id="orderHistoryModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>📦 My Orders & Live Tracking</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('orderHistoryModal')"></i>
+    </div>
+    <div style="padding:16px;" id="orderHistoryContainer">
+      <p style="text-align:center; color:var(--gray); margin-top:30px;">Loading your order history...</p>
+    </div>
+  </div>
+
+  <div class="full-modal" id="trackingModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>Live Order Progress</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('trackingModal')"></i>
+    </div>
+    <div style="padding:20px 16px;" id="trackingContent"></div>
+  </div>
+
+  <div class="full-modal" id="wishlistModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>❤️ Saved Dishes (Wishlist)</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('wishlistModal')"></i>
+    </div>
+    <div style="padding:16px;" id="wishlistItemsContainer">
+      <p style="text-align:center; color:var(--gray); margin-top:30px;">No saved items in your wishlist.</p>
+    </div>
+  </div>
+
+  <div class="full-modal" id="cakeStudioModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>🎂 Custom Cake Studio</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cakeStudioModal')"></i>
+    </div>
+    <div style="padding:16px;">
+      <p style="font-size:12px; color:var(--gray); margin-bottom:12px;">Customize weight, message and design for fresh delivery in Udalguri.</p>
+
+      <label class="form-label">Select Flavor</label>
+      <select id="cakeFlavorSelect" class="form-input">
+        <option value="Black Forest Special">Black Forest Special (Fresh Cream)</option>
+        <option value="Chocolate Truffle Loaded">Chocolate Truffle Loaded</option>
+        <option value="Fresh Pineapple Delight">Fresh Pineapple Delight</option>
+        <option value="Red Velvet Heart">Red Velvet Heart</option>
+        <option value="Butterscotch Crunch">Butterscotch Crunch</option>
+      </select>
+
+      <label class="form-label">Select Weight</label>
+      <div class="weight-pills">
+        <div class="weight-pill" onclick="selectCakeWeight(0.5, 450, this)">0.5 Kg (₹450)</div>
+        <div class="weight-pill active" onclick="selectCakeWeight(1.0, 850, this)">1.0 Kg (₹850)</div>
+        <div class="weight-pill" onclick="selectCakeWeight(2.0, 1650, this)">2.0 Kg (₹1650)</div>
+      </div>
+
+      <label class="form-label">Message on Cake</label>
+      <input type="text" id="cakeCustomText" class="form-input" placeholder="e.g. Happy Birthday Rahul!" />
+
+      <label class="form-label">Upload Custom Design / Photo</label>
+      <input type="file" id="cakePhotoFile" accept="image/*" class="form-input" onchange="previewCakeUpload(this)" />
+      <img id="cakePhotoPreview" style="display:none; width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:12px;" />
+
+      <button class="admin-btn btn-primary" onclick="addCustomCakeToCart()">ADD CUSTOM CAKE TO BAG</button>
+    </div>
+  </div>
+
+  <div class="full-modal" id="cartModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>Review Order & Checkout</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cartModal')"></i>
+    </div>
+    <div style="padding:16px;">
+      <div id="cartItemsList"></div>
+
+      <div style="display:flex; gap:8px; margin:12px 0;">
+        <input type="text" id="couponCodeInput" class="form-input" placeholder="Promo Code (e.g. KD20)" style="margin-bottom:0;" />
+        <button class="add-btn" style="padding:0 16px;" onclick="applyDiscountCoupon()">APPLY</button>
+      </div>
+
+      <div style="background:#fffbeb; border:1px solid #fde68a; padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="font-size:12px;"><span>🪙 Pay with SuperCoins (Use 20 Coins)</span></div>
+        <input type="checkbox" id="redeemCoinsCheck" onchange="toggleCoinRedemption()" />
+      </div>
+
+      <div class="bill-box">
+        <h4 style="font-size:14px; margin-bottom:8px;">Bill Summary</h4>
+        <div class="bill-row"><span>Item Total:</span><span id="billSubtotal">₹0</span></div>
+        <div class="bill-row"><span>Fixed Delivery Fee:</span><span>₹9</span></div>
+        <div class="bill-row" id="discountRow" style="display:none; color:var(--green);"><span>Coupon Discount:</span><span id="billDiscount">-₹0</span></div>
+        <div class="bill-row" id="coinsDiscountRow" style="display:none; color:var(--gold);"><span>Coins Discount:</span><span>-₹20</span></div>
+        <hr style="border:none; border-top:1px dashed #cbd5e1; margin:8px 0;" />
+        <div class="bill-row" style="font-weight:700; font-size:15px;"><span>Grand Total:</span><span id="billGrandTotal" style="color:var(--primary);">₹0</span></div>
+      </div>
+
+      <h4 style="font-size:14px; margin-bottom:8px;">Delivery Details</h4>
+      <input type="text" id="custName" class="form-input" placeholder="Full Name" />
+      <input type="tel" id="custPhone" class="form-input" placeholder="Mobile Number (For Delivery Confirmation)" />
+      <textarea id="custAddress" class="form-input" placeholder="Full Landmark / House Address in Bengbari..."></textarea>
+
+      <h4 style="font-size:14px; margin-bottom:8px;">Payment Mode</h4>
+      <div style="display:flex; gap:10px; margin-bottom:14px;">
+        <button class="add-btn" id="codBtn" style="flex:1; padding:10px; background:var(--primary); color:#fff;" onclick="setPaymentMethod('COD')">Cash on Delivery</button>
+        <button class="add-btn" id="upiBtn" style="flex:1; padding:10px; background:#f1f5f9; color:var(--dark); border-color:#cbd5e1;" onclick="setPaymentMethod('UPI')">Google Pay / UPI</button>
+      </div>
+
+      <div id="upiQrBox" class="upi-box">
+        <p style="font-size:12px; font-weight:600; margin-bottom:4px;">Scan & Pay via Google Pay / Any UPI</p>
+        <p style="font-size:11px; color:var(--gray); margin-bottom:8px;">UPI ID: <strong>6000026478@okbizaxis</strong></p>
+        <div style="background:#fff; padding:10px; display:inline-block; border-radius:8px; box-shadow:var(--shadow);">
+          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=6000026478@okbizaxis&pn=KD%20RABHA%20Coffee%20Shops" alt="UPI QR" style="width:160px; height:160px;" />
+        </div>
+      </div>
+
+      <button class="admin-btn btn-primary" onclick="placeOrder()">CONFIRM & PLACE ORDER</button>
+    </div>
+  </div>
+
+  <div class="full-modal admin-modal" id="adminModal" style="display:none !important;">
+    <div class="modal-header" style="background:#0f172a; border-color:#334155;">
+      <h3 style="color:#f8fafc;"><i class="fa-solid fa-user-shield" style="color:var(--primary);"></i> S&A Manager Admin Room</h3>
+      <i class="fa-solid fa-xmark close-btn" style="color:#f8fafc;" onclick="closeModal('adminModal')"></i>
+    </div>
+
+    <div id="adminLockScreen" style="padding:30px 20px; text-align:center;">
+      <div style="width:80px; height:80px; border-radius:50%; background:#1e293b; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; border:2px solid var(--primary);">
+        <i class="fa-solid fa-lock" style="font-size:32px; color:var(--primary);"></i>
+      </div>
+      <h3 style="margin-bottom:6px; color:#fff;">Restricted Manager Access</h3>
+      <p style="font-size:12px; color:#94a3b8; margin-bottom:20px;">Enter Private Master Password to Unlock</p>
+
+      <input type="password" id="adminPinInput" placeholder="Enter Master Password" style="width:100%; padding:14px; border-radius:8px; border:1px solid #334155; background:#1e293b; color:#fff; text-align:center; font-size:16px; margin-bottom:12px;" />
+      <button class="admin-btn btn-primary" onclick="unlockAdminWithPin()"><i class="fa-solid fa-key"></i> Unlock Admin Panel</button>
+    </div>
+
+    <div id="adminDashboard" style="display:none; padding:10px 0;">
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> Daily Sales & Analytics</h4>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center;">
+          <div style="background:#0f172a; padding:10px; border-radius:8px;">
+            <div style="font-size:11px; color:#94a3b8;">Today's Revenue</div>
+            <div id="statTotalSales" style="font-size:18px; font-weight:700; color:#10b981;">₹0</div>
+          </div>
+          <div style="background:#0f172a; padding:10px; border-radius:8px;">
+            <div style="font-size:11px; color:#94a3b8;">Total Orders</div>
+            <div id="statOrderCount" style="font-size:18px; font-weight:700; color:#38bdf8;">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <h4 style="font-size:14px; color:#38bdf8;"><i class="fa-solid fa-bell"></i> Live Orders & KOT Control</h4>
+          <span class="vip-pill" style="background:#10b981; color:#fff;">Live Ringer Active</span>
+        </div>
+        <div id="adminLiveOrdersList"></div>
+      </div>
+
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-plus-circle"></i> Add New Dish</h4>
+        <input type="text" id="newDishName" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Dish Name" />
+        <input type="number" id="newDishPrice" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Price (₹)" />
+        <select id="newDishCat" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;">
+          <option value="momos">Momos</option>
+          <option value="rolls">Rolls</option>
+          <option value="chicken">Chicken</option>
+          <option value="pork">Pork</option>
+          <option value="chow_thukpa">Chow / Soup</option>
+          <option value="cakes">Cakes</option>
+          <option value="drinks">Drinks</option>
+        </select>
+
+        <label class="form-label" style="color:#94a3b8;">Select Photo from Camera / Gallery</label>
+        <input type="file" id="newDishPhotoFile" accept="image/*" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" onchange="previewAdminDishUpload(this)" />
+        <input type="text" id="newDishImgUrl" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Or Paste Image URL Link" />
+        <img id="adminDishPreview" style="display:none; width:100%; height:120px; object-fit:cover; border-radius:8px; margin-bottom:10px;" />
+
+        <button class="admin-btn btn-green" onclick="adminSaveNewDish()">SAVE DISH TO MENU</button>
+      </div>
+
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-list-check"></i> Manage Existing Menu Items</h4>
+        <div id="adminMenuItemsList"></div>
+      </div>
+
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-tags"></i> Promo Code Creator</h4>
+        <input type="text" id="newCouponCode" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Code (e.g. KD20)" />
+        <input type="number" id="newCouponDiscount" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Discount Value in ₹" />
+        <button class="admin-btn btn-blue" onclick="adminCreateCoupon()">SAVE PROMO CODE</button>
+      </div>
+
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-store"></i> Store & Carousel Control</h4>
+        <button class="admin-btn btn-green" onclick="toggleStoreStatus()" id="storeStatusBtn">Restaurant is: OPEN (8am - 10pm)</button>
+        <button class="admin-btn btn-blue" onclick="editPromoBanner()">Edit Carousel Banner Headline</button>
+      </div>
+
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-crown"></i> Customer VIP Badge</h4>
+        <input type="tel" id="vipCustPhone" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Customer Mobile Number" />
+        <button class="admin-btn btn-primary" onclick="assignVipBadge()">ACTIVATE VIP GOLD BADGE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer Review Modal -->
+  <div class="full-modal" id="reviewModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>⭐ Customer Feedback</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('reviewModal')"></i>
+    </div>
+    <div style="padding:16px;">
+      <label class="form-label">Your Rating</label>
+      <select id="reviewRatingSelect" class="form-input">
+        <option value="5">⭐⭐⭐⭐⭐ (5/5 Excellent)</option>
+        <option value="4">⭐⭐⭐⭐ (4/5 Very Good)</option>
+        <option value="3">⭐⭐⭐ (3/5 Good)</option>
+      </select>
+      <label class="form-label">Your Review Message</label>
+      <textarea id="reviewText" class="form-input" placeholder="Khana kaisa laga? Feedback share karein..."></textarea>
+      <button class="admin-btn btn-primary" onclick="submitCustomerReview()">SUBMIT REVIEW</button>
+    </div>
+  </div>
+
+  <audio id="orderAudioAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+  <script src="app.js?v=203"></script>
+
+  <!-- Celebration Popup Modal -->
+  <div id="order-success-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999999; align-items:center; justify-content:center; text-align:center; padding:20px;">
+    <div style="background:#141a24; border:1px solid #ffca42; border-radius:24px; padding:30px 20px; width:100%; max-width:320px; color:#fff; box-shadow:0 0 25px rgba(255,202,66,0.3);">
+      <div style="font-size:50px; margin-bottom:10px;">🎉</div>
+      <h2 style="color:#ffca42; margin:0 0 8px 0; font-size:22px;">Order Successful!</h2>
+      <p style="color:#94a3b8; font-size:13px; margin:0 0 20px 0;">Aapka swadist khana taiyar ho raha hai!</p>
+      <button onclick="document.getElementById('order-success-modal').style.display='none'; openOrderHistoryModal();" style="background:linear-gradient(135deg, #ffca42, #ff9800); color:#000; border:none; padding:12px 20px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; font-size:14px;">View My Orders 🛵</button>
+    </div>
+  </div>
+
 </body>
 </html>
