@@ -3,76 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>डिजिटल लॉयल्टी कार्ड</title>
+  <title>VIP Club Pass - S&A Family Restaurant</title>
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background: #f3f4f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 15px; }
-    .card { background: white; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 380px; padding: 25px; text-align: center; }
-    h2 { margin: 0 0 5px; color: #1f2937; }
-    p { color: #6b7280; font-size: 14px; margin-bottom: 25px; }
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-    .stamp { width: 80px; height: 80px; border: 2px dashed #d1d5db; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: auto; font-size: 20px; font-weight: bold; color: #9ca3af; transition: all 0.3s ease; }
-    .stamp.active { background: #10b981; border: 2px solid #059669; color: white; transform: scale(1.05); }
-    .reward-box { display: none; background: #ecfdf5; border: 1px solid #10b981; color: #065f46; padding: 12px; border-radius: 10px; margin-bottom: 20px; font-weight: bold; }
-    .btn { background: #2563eb; color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 15px; cursor: pointer; width: 100%; font-weight: bold; }
-    .btn:active { transform: scale(0.98); }
-    .reset-link { margin-top: 15px; font-size: 12px; color: #9ca3af; cursor: pointer; text-decoration: underline; display: inline-block; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+    body { background: #0f1115; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; color: #f3f4f6; }
+    .vip-card { background: linear-gradient(145deg, #1b1f24, #121418); border-radius: 24px; border: 1.5px solid #d4af37; box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px rgba(212,175,55,0.1); width: 100%; max-width: 420px; padding: 22px; text-align: center; }
+    .header h1 { font-size: 20px; color: #d4af37; letter-spacing: 1px; margin-bottom: 2px; text-transform: uppercase; }
+    .header .subtitle { color: #9ca3af; font-size: 13px; margin-bottom: 4px; }
+    .header .tagline { color: #e5e7eb; font-size: 12px; font-style: italic; margin-bottom: 18px; }
+    
+    .instant-offers { background: rgba(212, 175, 55, 0.05); border: 1px dashed rgba(212, 175, 55, 0.4); border-radius: 14px; padding: 12px; margin-bottom: 18px; text-align: left; }
+    .offer-title { font-size: 12px; font-weight: bold; color: #d4af37; margin-bottom: 8px; text-transform: uppercase; text-align: center; }
+    .offer-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; }
+    .offer-row:last-child { margin-bottom: 0; }
+    .action-btn { background: #d4af37; color: #111; text-decoration: none; padding: 6px 12px; border-radius: 8px; font-weight: bold; font-size: 11px; transition: 0.2s; white-space: nowrap; }
+    .action-btn:hover { background: #f3cf5f; }
+    
+    .reward-banner { display: none; background: #064e3b; border: 1px solid #10b981; color: #a7f3d0; padding: 10px; border-radius: 12px; font-size: 13px; font-weight: bold; margin-bottom: 15px; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+    
+    .grid-title { font-size: 12px; color: #9ca3af; margin-bottom: 12px; }
+    .stamp-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+    .stamp-slot { background: #22272e; border: 1.5px solid #374151; border-radius: 14px; padding: 10px 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70px; transition: all 0.3s; }
+    .stamp-slot.milestone { border-color: #d4af37; background: rgba(212, 175, 55, 0.08); }
+    .stamp-slot.active { background: #d4af37; border-color: #f3cf5f; color: #111; transform: scale(1.03); box-shadow: 0 0 12px rgba(212, 175, 55, 0.4); }
+    .stamp-num { font-size: 11px; font-weight: bold; opacity: 0.8; margin-bottom: 2px; }
+    .stamp-slot.active .stamp-num { color: #111; }
+    .stamp-icon { font-size: 18px; }
+    .milestone-tag { font-size: 9px; font-weight: bold; margin-top: 3px; line-height: 1; }
+    
+    .staff-btn { background: linear-gradient(135deg, #d4af37, #aa8214); color: #111; border: none; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; letter-spacing: 0.5px; }
+    .staff-btn:active { transform: scale(0.98); }
+    .terms { font-size: 11px; color: #6b7280; margin-top: 15px; line-height: 1.4; text-align: left; border-top: 1px solid #22272e; padding-top: 10px; }
+    .reset-btn { margin-top: 10px; font-size: 11px; color: #4b5563; cursor: pointer; text-decoration: underline; display: inline-block; }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>लॉयल्टी रिवॉर्ड्स</h2>
-    <p>हर विज़िट पर स्टैंप पाएं और 6ठे पर मुफ़्त रिवॉर्ड जीतें!</p>
-
-    <div class="reward-box" id="rewardBox">🎉 बधाई! आपका मुफ़्त रिवॉर्ड अनलॉक हो गया है!</div>
-
-    <div class="grid">
-      <div class="stamp" id="s1">1</div>
-      <div class="stamp" id="s2">2</div>
-      <div class="stamp" id="s3">3</div>
-      <div class="stamp" id="s4">4</div>
-      <div class="stamp" id="s5">5</div>
-      <div class="stamp" id="s6">🎁</div>
+  <div class="vip-card">
+    <div class="header">
+      <h1>👑 VIP CLUB PASS</h1>
+      <div class="subtitle">S&A FAMILY RESTAURANT (Bengbari)</div>
+      <div class="tagline">"स्वाद आपका, प्यार और रिवॉर्ड्स हमारा"</div>
     </div>
 
-    <button class="btn" onclick="addStamp()">स्टैंप जोड़ें (स्टाफ केवल)</button>
+    <!-- Instant Discounts -->
+    <div class="instant-offers">
+      <div class="offer-title">⭐ तुरंत छूट (Instant Rewards)</div>
+      <div class="offer-row">
+        <span>📍 Google 5★ रिव्यू ➜ <b>₹20 OFF</b></span>
+        <a href="https://maps.app.goo.gl/yE4mh8BorbVaPGCL6?g_st=ac" target="_blank" class="action-btn">रिव्यू दें</a>
+      </div>
+      <div class="offer-row">
+        <span>📸 Instagram फॉलो ➜ <b>₹20 OFF</b> (हर विज़िट, बिल ₹100+)</span>
+        <a href="https://instagram.com" target="_blank" id="instaLink" class="action-btn">फॉलो करें</a>
+      </div>
+    </div>
+
+    <!-- Live Reward Message -->
+    <div class="reward-banner" id="rewardBanner">🎉 बधाई! आपका रिवॉर्ड अनलॉक हो गया है!</div>
+
+    <!-- 12 Stamp Grid -->
+    <div class="grid-title">🍽️ लॉयल्टी स्टैंप्स (प्रत्येक ₹299+ के बिल पर)</div>
+    <div class="stamp-grid" id="stampGrid"></div>
+
+    <button class="staff-btn" onclick="addStamp()">✨ स्टैंप जोड़ें (स्टाफ केवल)</button>
     <br>
-    <span class="reset-link" onclick="resetCard()">कार्ड रीसेट करें</span>
+    <span class="reset-btn" onclick="resetCard()">कार्ड रीसेट करें</span>
+
+    <div class="terms">
+      <b>प्यार भरी गुज़ारिश:</b><br>
+      • ₹299+ के भोजन पर प्रति विज़िट 1 स्टैंप मान्य।<br>
+      • Instagram फॉलो डिस्काउंट हर बार बिलिंग काउंटर पर लाइव दिखाना होगा (न्यूनतम बिल ₹100)।
+    </div>
   </div>
 
   <script>
-    const SECRET_PIN = "3699"; // अपना सीक्रेट स्टाफ पिन यहाँ सेट करें
-    const TOTAL_STAMPS = 6;
+    const SECRET_PIN = "1234"; // आपका 4-अंकों का स्टाफ पिन
+    const TOTAL = 12;
 
-    function getStamps() {
-      return parseInt(localStorage.getItem('my_stamps') || '0');
+    const milestones = {
+      3: { name: "वेलकम ड्रिंक", icon: "🥤" },
+      6: { name: "₹200 डिश", icon: "🎁" },
+      12: { name: "₹500 दावत", icon: "👑" }
+    };
+
+    function getCount() {
+      return parseInt(localStorage.getItem('sa_vip_stamps') || '0');
     }
 
     function render() {
-      const count = getStamps();
-      for (let i = 1; i <= TOTAL_STAMPS; i++) {
-        const el = document.getElementById('s' + i);
-        if (i <= count) {
-          el.classList.add('active');
-          el.innerHTML = i === TOTAL_STAMPS ? '🎉' : '✓';
-        } else {
-          el.classList.remove('active');
-          el.innerHTML = i === TOTAL_STAMPS ? '🎁' : i;
-        }
+      const count = getCount();
+      const grid = document.getElementById('stampGrid');
+      grid.innerHTML = '';
+
+      for (let i = 1; i <= TOTAL; i++) {
+        const slot = document.createElement('div');
+        slot.className = 'stamp-slot' + (milestones[i] ? ' milestone' : '') + (i <= count ? ' active' : '');
+        
+        let icon = i <= count ? '✓' : (milestones[i] ? milestones[i].icon : '○');
+        let tag = milestones[i] ? `<span class="milestone-tag">${milestones[i].name}</span>` : '';
+
+        slot.innerHTML = `
+          <span class="stamp-num">#${i}</span>
+          <span class="stamp-icon">${icon}</span>
+          ${tag}
+        `;
+        grid.appendChild(slot);
       }
-      document.getElementById('rewardBox').style.display = count >= TOTAL_STAMPS ? 'block' : 'none';
+
+      const banner = document.getElementById('rewardBanner');
+      if (count >= 12) {
+        banner.style.display = 'block';
+        banner.innerHTML = '👑 बधाई! 12वीं विज़िट पूरी! आपकी ₹500 की रॉयल दावत अनलॉक हो चुकी है!';
+      } else if (count >= 6) {
+        banner.style.display = 'block';
+        banner.innerHTML = '🎁 बधाई! आपकी ₹200 की पसंदीदा डिश मुफ़्त अनलॉक हो चुकी है!';
+      } else if (count >= 3) {
+        banner.style.display = 'block';
+        banner.innerHTML = '🥤 बधाई! आपका मुफ़्त वेलकम ड्रिंक / स्पेशल शेक अनलॉक हो चुका है!';
+      } else {
+        banner.style.display = 'none';
+      }
     }
 
     function addStamp() {
       const pin = prompt("स्टाफ सिक्योरिटी पिन दर्ज करें:");
       if (pin === SECRET_PIN) {
-        let current = getStamps();
-        if (current < TOTAL_STAMPS) {
-          localStorage.setItem('my_stamps', current + 1);
+        let current = getCount();
+        if (current < TOTAL) {
+          localStorage.setItem('sa_vip_stamps', current + 1);
           render();
         } else {
-          alert("कार्ड पहले ही पूरा हो चुका है! कृपया रीसेट करें।");
+          alert("12 स्टैंप्स पूरे हो चुके हैं! रिवॉर्ड देने के बाद कार्ड रीसेट करें।");
         }
       } else if (pin !== null) {
         alert("गलत पिन!");
@@ -82,7 +145,7 @@
     function resetCard() {
       const pin = prompt("रीसेट करने के लिए स्टाफ पिन दर्ज करें:");
       if (pin === SECRET_PIN) {
-        localStorage.setItem('my_stamps', '0');
+        localStorage.setItem('sa_vip_stamps', '0');
         render();
       } else if (pin !== null) {
         alert("गलत पिन!");
