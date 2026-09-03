@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=305" />
+  <link rel="stylesheet" href="style.css?v=310" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-<!-- === FULL SELF-CONTAINED SPLASH SCREEN START === -->
+<!-- === FULL SPLASH SCREEN START === -->
 <style>
   #custom-splash-screen {
     position: fixed;
@@ -117,7 +117,7 @@
     100% { transform: translateX(100%); }
   }
 
-  /* PWA Install Banner Style */
+  /* PWA Install Banner */
   #pwaInstallBanner {
     display: none;
     position: fixed;
@@ -140,7 +140,7 @@
     100% { transform: translateY(0); opacity: 1; }
   }
 
-  /* Floating Toast Notification */
+  /* Floating Toast Alert */
   #cartToast {
     display: none;
     position: fixed;
@@ -162,7 +162,7 @@
     100% { transform: translate(-50%, 0); opacity: 1; }
   }
 
-  /* Order Mode Switcher (Delivery vs Dine-in) */
+  /* Order Mode Switcher (Delivery vs Table) */
   .order-mode-toggle {
     display: flex;
     background: #1c1c1e;
@@ -241,12 +241,12 @@
     window.addEventListener("load", dismissSplash);
   })();
 </script>
-<!-- === FULL SELF-CONTAINED SPLASH SCREEN END === -->
+<!-- === FULL SPLASH SCREEN END === -->
 
-  <!-- Added To Cart Toast Notification -->
+  <!-- Toast Notification -->
   <div id="cartToast">✅ Added to Cart!</div>
 
-  <!-- PWA Install Popup Bar -->
+  <!-- PWA Banner -->
   <div id="pwaInstallBanner">
     <div style="display:flex; align-items:center; gap:10px;">
       <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:36px; height:36px; border-radius:50%; border:1px solid #E21B24;" />
@@ -357,7 +357,7 @@
     <div style="font-weight:700;">View Cart <i class="fa-solid fa-arrow-right"></i></div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <div class="nav-tab active" id="tabHome" onclick="switchNavTab('home')"><i class="fa-solid fa-house"></i>Home</div>
     <div class="nav-tab" id="tabCakes" onclick="openCakeStudio()"><i class="fa-solid fa-cake-candles"></i>Cakes</div>
@@ -463,7 +463,7 @@
     </div>
   </div>
 
-  <!-- My Account Modal -->
+  <!-- Account Modal -->
   <div class="full-modal" id="accountModal" style="display:none !important;">
     <div class="modal-header">
       <h3>My Account</h3>
@@ -564,14 +564,14 @@
     </div>
   </div>
 
-  <!-- Multi-Step Cart & Checkout Modal -->
+  <!-- Cart & Checkout Modal -->
   <div class="full-modal" id="cartModal" style="display:none !important;">
     <div class="modal-header">
       <h3 id="checkoutStepTitle">1. Review Cart & Summary</h3>
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cartModal')"></i>
     </div>
     <div style="padding:16px;">
-      <!-- STEP 1: CART ITEMS, +/- CONTROLS -->
+      <!-- STEP 1: CART ITEMS & PLUS/MINUS -->
       <div id="checkoutStep1">
         <div id="cartItemsList"></div>
 
@@ -598,17 +598,30 @@
         <button class="admin-btn btn-primary" style="margin-top:14px;" onclick="goToCheckoutStep(2)">PROCEED ➔</button>
       </div>
 
-      <!-- STEP 2: ADDRESS OR DINE-IN TABLE CONFIRM -->
+      <!-- STEP 2: DINE-IN BILL / HOME DELIVERY ADDRESS -->
       <div id="checkoutStep2" style="display:none;">
-        <!-- DINE-IN TABLE DETAIL -->
-        <div id="dineInOrderSection" style="display:none; background:#1c1c1e; border:1px solid #E21B24; border-radius:12px; padding:14px; margin-bottom:14px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h4 style="font-size:14px; color:#E21B24; margin:0;"><i class="fa-solid fa-chair"></i> Dine-in Table Order</h4>
-            <button onclick="openTableSelectorModal()" style="background:transparent; color:#E21B24; border:1px solid #E21B24; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change</button>
+        <!-- DINE-IN TABLE ORDER SUMMARY (PAY AT COUNTER) -->
+        <div id="dineInOrderSection" style="display:none; background:#1c1c1e; border:1px solid #E21B24; border-radius:12px; padding:16px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h4 style="font-size:15px; color:#E21B24; margin:0;"><i class="fa-solid fa-chair"></i> Dine-in Table Order</h4>
+            <button onclick="openTableSelectorModal()" style="background:transparent; color:#E21B24; border:1px solid #E21B24; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change Table</button>
           </div>
-          <div style="font-size:14px; color:#fff; margin-bottom:12px;">Serving directly at: <strong id="checkoutTableDisplay" style="color:#ff6b6b; font-size:16px;">Table #1</strong></div>
-          <label style="font-size:11px; color:#888;">Your Name (Optional)</label>
+          
+          <div style="font-size:15px; color:#fff; margin-bottom:12px;">
+            Serving directly at: <strong id="checkoutTableDisplay" style="color:#ff6b6b; font-size:18px;">Table #1</strong>
+          </div>
+
+          <label style="font-size:11px; color:#aaa; margin-bottom:4px; display:block;">Customer Name (Optional):</label>
           <input type="text" id="custTableGuestName" class="form-input" placeholder="e.g. Rahul" />
+
+          <!-- TABLE BILL SUMMARY -->
+          <div class="bill-box" style="margin:12px 0 6px; background:#141414; border-color:#333;">
+            <div class="bill-row"><span>Items Bill Total:</span><span id="dineInBillTotal" style="color:#fff; font-weight:700;">₹0</span></div>
+            <div class="bill-row"><span>Delivery Charges:</span><span style="color:#10b981; font-weight:700;">₹0 (Dine-in)</span></div>
+            <hr style="border:none; border-top:1px dashed #333; margin:8px 0;" />
+            <div class="bill-row" style="font-size:15px; font-weight:800;"><span>Pay at Counter:</span><span id="dineInGrandTotal" style="color:#E21B24;">₹0</span></div>
+          </div>
+          <p style="font-size:11px; color:#888; text-align:center; margin-top:8px;">💡 Khana khane ke baad bill counter par cash ya scanner se pay karein.</p>
         </div>
 
         <!-- HOME DELIVERY DETAILS -->
@@ -624,13 +637,14 @@
           <textarea id="custAddress" class="form-input" placeholder="House no, Street name, Landmark in Bengbari/Udalguri"></textarea>
         </div>
 
+        <!-- ACTION BUTTONS -->
         <div style="display:flex; gap:10px; margin-top:14px;">
           <button class="admin-btn btn-primary" style="background:#333; flex:1;" onclick="goToCheckoutStep(1)">⬅ Back</button>
-          <button class="admin-btn btn-primary" style="flex:2;" onclick="goToCheckoutStep(3)">PROCEED TO PAYMENT ➔</button>
+          <button id="step2ConfirmBtn" class="admin-btn btn-green" style="flex:2;" onclick="handleStep2Action()">CONFIRM TABLE ORDER ✅</button>
         </div>
       </div>
 
-      <!-- STEP 3: PAYMENT OPTION, QR, DIRECT INTENT & VERIFICATION -->
+      <!-- STEP 3: ONLINE PAYMENT ONLY FOR HOME DELIVERY -->
       <div id="checkoutStep3" style="display:none;">
         <div class="bill-box" style="margin-bottom:14px;">
           <div class="bill-row" style="font-weight:700;"><span>Total Amount to Pay:</span><span id="step3GrandTotal" style="color:#E21B24; font-size:16px;">₹0</span></div>
@@ -642,7 +656,7 @@
           <button class="add-btn" id="upiBtn" style="flex:1; padding:12px 8px; background:#E21B24; color:#fff;" onclick="setPaymentMethod('UPI')">📱 Online / UPI</button>
         </div>
 
-        <!-- Online Payment Container -->
+        <!-- ONLINE PAYMENT CONTAINER -->
         <div id="upiQrBox" class="upi-box" style="display:block; text-align:center; padding:16px; background:#141414; border-radius:12px; border:1px solid #2a2a2a; margin-bottom:14px;">
           <p style="font-size:13px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Scan & Pay via Any UPI App</p>
 
@@ -655,12 +669,10 @@
             <button onclick="copyUpiId()" style="background:#0284c7; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Copy</button>
           </div>
 
-          <!-- Direct UPI Intent Launcher -->
           <button id="directUpiPayBtn" onclick="launchDirectUpiPayment()" style="width:100%; margin-top:12px; padding:12px; background:linear-gradient(135deg, #00c853, #10b981); color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
             ⚡ PAY NOW (GPay / PhonePe / Paytm)
           </button>
 
-          <!-- UTR Verification Box -->
           <div id="upiVerifyBox" style="margin-top:12px; text-align:left; background:#1e1e1e; padding:10px 12px; border-radius:8px; border:1px dashed #38bdf8;">
             <label style="font-size:11px; color:#ffca42; font-weight:700; display:block; margin-bottom:4px;">
               ⚠️ Payment ke baad 12-Digit UPI Ref / UTR Number daalein:
@@ -753,7 +765,7 @@
         <button class="admin-btn btn-blue" onclick="adminCreateCoupon()">SAVE PROMO CODE</button>
       </div>
 
-      <!-- Payment Gateways & QR Control -->
+      <!-- Payment Settings & QR Control -->
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-money-check-dollar"></i> Payment Gateways & QR Control</h4>
         <button class="admin-btn btn-green" onclick="toggleCodStatus()" id="adminCodToggleBtn" style="margin-bottom:12px;">Cash on Delivery: ENABLED</button>
@@ -792,7 +804,7 @@
     </div>
   </div>
 
-  <!-- Live Tracking Modal -->
+  <!-- Tracking Modal -->
   <div class="full-modal" id="trackingModal" style="display:none !important;">
     <div class="modal-header">
       <h3>Live Order Progress</h3>
@@ -848,7 +860,7 @@
     </div>
   </div>
 
-  <!-- Customer Review Modal -->
+  <!-- Review Modal -->
   <div class="full-modal" id="reviewModal" style="display:none !important;">
     <div class="modal-header">
       <h3>⭐ Customer Feedback</h3>
@@ -869,7 +881,7 @@
 
   <audio id="orderAudioAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
-  <!-- Celebration Popup Modal -->
+  <!-- Celebration Popup -->
   <div id="order-success-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999999; align-items:center; justify-content:center; text-align:center; padding:20px;">
     <div style="background:#141a24; border:1px solid #E21B24; border-radius:24px; padding:30px 20px; width:100%; max-width:320px; color:#fff; box-shadow:0 0 25px rgba(226,27,36,0.4);">
       <div style="font-size:50px; margin-bottom:10px;">🎉</div>
@@ -879,6 +891,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=305"></script>
+  <script src="app.js?v=310"></script>
 </body>
 </html>
