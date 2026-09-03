@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=301" />
+  <link rel="stylesheet" href="style.css?v=305" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-<!-- === SPLASH SCREEN START === -->
+<!-- === FULL SELF-CONTAINED SPLASH SCREEN START === -->
 <style>
   #custom-splash-screen {
     position: fixed;
@@ -49,7 +49,7 @@
     font-weight: 800;
     letter-spacing: 1.5px;
     margin: 0 0 4px 0;
-    text-shadow: 0 0 15px rgba(226, 27, 36, 0.4);
+    text-shadow: 0 0 15px rgba(226, 27, 36, 0.5);
   }
   .splash-sub {
     color: #c9d1d9 !important;
@@ -69,8 +69,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
     background: #000;
+    overflow: hidden;
   }
   .splash-logo-img {
     width: 95px;
@@ -117,13 +117,58 @@
     100% { transform: translateX(100%); }
   }
 
-  /* ORDER MODE SWITCHER BAR */
+  /* PWA Install Banner Style */
+  #pwaInstallBanner {
+    display: none;
+    position: fixed;
+    bottom: 65px;
+    left: 12px;
+    right: 12px;
+    background: #1e1e1e;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.7);
+    z-index: 99999;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #E21B24;
+    animation: bounceIn 0.5s ease;
+  }
+  @keyframes bounceIn {
+    0% { transform: translateY(50px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Floating Toast Notification */
+  #cartToast {
+    display: none;
+    position: fixed;
+    top: 25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #E21B24;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(226,27,36,0.5);
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 9999999;
+    animation: fadeInDown 0.3s ease;
+  }
+  @keyframes fadeInDown {
+    0% { transform: translate(-50%, -20px); opacity: 0; }
+    100% { transform: translate(-50%, 0); opacity: 1; }
+  }
+
+  /* Order Mode Switcher (Delivery vs Dine-in) */
   .order-mode-toggle {
     display: flex;
-    background: #1e1e1e;
-    border: 1px solid #333;
+    background: #1c1c1e;
+    border: 1px solid #2c2c2e;
     border-radius: 12px;
-    margin: 10px 14px 4px;
+    margin: 8px 14px 4px;
     padding: 4px;
     gap: 6px;
   }
@@ -131,7 +176,7 @@
     flex: 1;
     border: none;
     background: transparent;
-    color: #aaa;
+    color: #888;
     padding: 8px 10px;
     border-radius: 8px;
     font-weight: 600;
@@ -153,7 +198,7 @@
     background: #261012;
     border: 1px solid #E21B24;
     color: #fff;
-    margin: 8px 14px 0;
+    margin: 6px 14px 0;
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 12px;
@@ -196,12 +241,15 @@
     window.addEventListener("load", dismissSplash);
   })();
 </script>
-<!-- === SPLASH SCREEN END === -->
+<!-- === FULL SELF-CONTAINED SPLASH SCREEN END === -->
+
+  <!-- Added To Cart Toast Notification -->
+  <div id="cartToast">✅ Added to Cart!</div>
 
   <!-- PWA Install Popup Bar -->
   <div id="pwaInstallBanner">
     <div style="display:flex; align-items:center; gap:10px;">
-      <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:36px; height:36px; border-radius:50%;" />
+      <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:36px; height:36px; border-radius:50%; border:1px solid #E21B24;" />
       <div>
         <div style="font-weight:700; font-size:13px; color:#E21B24;">S&A RESTAURANT APP</div>
         <div style="font-size:10px; color:#94a3b8;">Install for instant ordering & offers</div>
@@ -216,19 +264,20 @@
   <header class="app-header">
     <div class="top-bar">
       <div class="brand-box" style="display:flex; align-items:center; gap:10px;">
-        <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" alt="Logo" style="width:40px; height:40px; border-radius:50%; border:1px solid #E21B24;" />
+        <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" alt="Logo" style="width:38px; height:38px; border-radius:50%; border:1.5px solid #E21B24;" />
         <div>
           <h1 id="mainBrandTitle">S & A FAMILY RESTAURANT</h1>
           <p><i class="fa-solid fa-location-dot" style="color:#E21B24;"></i> Bengbari, Udalguri (784523)</p>
         </div>
       </div>
       <div class="header-actions">
+        <div class="admin-icon-btn" onclick="openSavedItemsModal()" title="Saved Dishes (Wishlist)" style="color:#ef4444;"><i class="fa-solid fa-heart"></i></div>
         <div class="coin-pill" onclick="switchNavTab('account')"><i class="fa-solid fa-coins"></i> <span id="headerCoins">25</span></div>
         <div class="admin-icon-btn" onclick="openAdminGateway()" title="Admin Control Room"><i class="fa-solid fa-shield-halved"></i></div>
       </div>
     </div>
 
-    <!-- ORDER MODE SELECTION (HOME DELIVERY OR DINE-IN TABLE) -->
+    <!-- ORDER MODE SWITCHER -->
     <div class="order-mode-toggle">
       <button class="order-mode-btn active" id="modeDeliveryBtn" onclick="setOrderMode('delivery')">
         <i class="fa-solid fa-motorcycle"></i> Home Delivery
@@ -240,19 +289,19 @@
 
     <!-- ACTIVE TABLE BADGE -->
     <div class="table-banner" id="activeTableBanner">
-      <span><i class="fa-solid fa-utensils"></i> Ordering for: <strong id="activeTableLabel" style="color:#ff6b6b;">Table #1</strong></span>
+      <span><i class="fa-solid fa-utensils"></i> Dine-in: <strong id="activeTableLabel" style="color:#ff6b6b;">Table #1</strong></span>
       <button onclick="openTableSelectorModal()" style="background:transparent; color:#ff6b6b; border:1px solid #ff6b6b; padding:2px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change</button>
     </div>
 
     <div class="search-box">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="searchInput" placeholder="Search biryani, momos, rolls, cakes..." onkeyup="searchDishes()" />
+      <input type="text" id="searchInput" placeholder="Search momos, rolls, thukpa, biryani..." onkeyup="searchDishes()" />
       <i class="fa-solid fa-microphone mic-icon" onclick="triggerVoiceSearch()"></i>
     </div>
   </header>
 
   <div class="promo-carousel">
-    <span class="promo-badge">🎉 SPECIAL MENU</span>
+    <span class="promo-badge">🎉 FESTIVAL DEAL</span>
     <h2 id="bannerTitle">K.D RABHA SPECIAL</h2>
     <p id="bannerSub">Freshly Made, Especially for You in Bengbari!</p>
   </div>
@@ -299,24 +348,25 @@
 
   <div class="food-grid" id="foodGrid"></div>
 
-  <!-- FLOATING BOTTOM BAR -->
+  <!-- FLOATING CART BAR -->
   <div class="floating-cart-bar" id="floatingCart" onclick="openCartModal()">
     <div>
       <span id="cartCount" style="font-weight:700;">1 Item</span> | <span id="cartTotal">₹0</span>
       <div style="font-size:10px; opacity:0.8;" id="floatingDeliveryTag">+ ₹9 Fixed Delivery</div>
     </div>
-    <div style="font-weight:700;">View Bag <i class="fa-solid fa-arrow-right"></i></div>
+    <div style="font-weight:700;">View Cart <i class="fa-solid fa-arrow-right"></i></div>
   </div>
 
+  <!-- BOTTOM NAVIGATION BAR -->
   <nav class="bottom-nav">
     <div class="nav-tab active" id="tabHome" onclick="switchNavTab('home')"><i class="fa-solid fa-house"></i>Home</div>
-    <div class="nav-tab" id="tabMenuNav" onclick="window.scrollTo({top: 300, behavior:'smooth'})"><i class="fa-solid fa-utensils"></i>Menu</div>
     <div class="nav-tab" id="tabCakes" onclick="openCakeStudio()"><i class="fa-solid fa-cake-candles"></i>Cakes</div>
+    <div class="nav-tab" id="tabCartDirect" onclick="openCartModal()"><i class="fa-solid fa-cart-shopping"></i>Cart</div>
     <div class="nav-tab" id="tabOrders" onclick="openOrderHistoryModal()"><i class="fa-solid fa-bag-shopping"></i>Orders</div>
-    <div class="nav-tab" id="tabAccount" onclick="switchNavTab('account')"><i class="fa-solid fa-circle-user"></i>Profile</div>
+    <div class="nav-tab" id="tabAccount" onclick="switchNavTab('account')"><i class="fa-solid fa-circle-user"></i>Account</div>
   </nav>
 
-  <!-- TABLE SELECTION MODAL (POPUP) -->
+  <!-- TABLE SELECTION MODAL -->
   <div class="full-modal" id="tableSelectorModal" style="display:none !important;">
     <div class="modal-header">
       <h3>Select Your Table</h3>
@@ -338,10 +388,11 @@
         <button class="table-num-btn" onclick="confirmTableNumber(11)">Table 11</button>
         <button class="table-num-btn" onclick="confirmTableNumber(12)">Table 12</button>
       </div>
-      <button class="admin-btn" style="background:#333; color:#fff;" onclick="setOrderMode('delivery'); closeModal('tableSelectorModal');">Ghar ke liye order karna hai (Switch to Home Delivery)</button>
+      <button class="admin-btn" style="background:#262626; color:#fff;" onclick="setOrderMode('delivery'); closeModal('tableSelectorModal');">Ghar ke liye mangwana hai (Home Delivery)</button>
     </div>
   </div>
 
+  <!-- Product Detail Modal -->
   <div class="full-modal" id="productDetailModal" style="display:none !important;">
     <div class="modal-header">
       <i class="fa-solid fa-arrow-left close-btn" onclick="closeModal('productDetailModal')"></i>
@@ -371,8 +422,8 @@
         <div class="variant-box" id="pdpVariantBox">
           <label class="form-label">Select Portion / Quantity</label>
           <div class="weight-pills">
-            <div class="weight-pill active" onclick="selectDishVariant('standard', 0, this)">Standard Portion</div>
-            <div class="weight-pill" onclick="selectDishVariant('double', 60, this)">Double Combo (+₹60)</div>
+            <div class="weight-pill active" id="pillStandard" onclick="selectDishPortion('standard')">Standard Portion</div>
+            <div class="weight-pill" id="pillDouble" onclick="selectDishPortion('double')">Double Combo (2x)</div>
           </div>
         </div>
 
@@ -407,11 +458,12 @@
     </div>
 
     <div class="pdp-bottom-bar">
-      <button class="pdp-btn btn-cart" onclick="addPdpToCart()"><i class="fa-solid fa-bag-shopping"></i> Add to Bag</button>
+      <button class="pdp-btn btn-cart" onclick="addPdpToCart()"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
       <button class="pdp-btn btn-buy" onclick="buyNowPdp()"><i class="fa-solid fa-bolt"></i> Order Now</button>
     </div>
   </div>
 
+  <!-- My Account Modal -->
   <div class="full-modal" id="accountModal" style="display:none !important;">
     <div class="modal-header">
       <h3>My Account</h3>
@@ -419,7 +471,7 @@
     </div>
 
     <div class="account-container">
-      <div style="background:#1e1e1e; border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 20px rgba(0,0,0,0.5); margin-bottom:14px; border:1px solid #2a2a2a;">
+      <div style="background:#1c1c1e; border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:14px; box-shadow:0 4px 20px rgba(0,0,0,0.5); margin-bottom:14px; border:1px solid #2a2a2a;">
         <div style="position:relative; width:65px; height:65px; min-width:65px; flex-shrink:0;">
           <img id="userAvatarImg" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Avatar" style="width:65px; height:65px; border-radius:50%; object-fit:cover; border:2px solid #E21B24; display:block;" />
           <label for="avatarFileInput" style="position:absolute; bottom:0; right:0; background:#E21B24; color:#fff; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; cursor:pointer; border:2px solid #fff;"><i class="fa-solid fa-camera"></i></label>
@@ -462,7 +514,7 @@
       <div class="account-section">
         <h4 style="color:#fff;"><i class="fa-solid fa-location-dot" style="color:#E21B24;"></i> Delivery Address & Login Sync</h4>
         <input type="text" id="accInputName" class="form-input" placeholder="Your Full Name" />
-        <input type="tel" id="accInputPhone" class="form-input" placeholder="Phone Number" />
+        <input type="tel" id="accInputPhone" class="form-input" placeholder="Phone Number (For Cloud History Sync)" />
         <textarea id="accInputAddress" class="form-input" placeholder="Complete Street/House Landmark in Bengbari/Udalguri"></textarea>
         <button class="admin-btn btn-green" onclick="saveCustomerAccount()">SYNC & SAVE ACCOUNT</button>
       </div>
@@ -488,13 +540,14 @@
     </div>
   </div>
 
+  <!-- Language Selection Modal -->
   <div class="full-modal" id="languageModal" style="display:none !important;">
     <div class="modal-header">
       <h3>🌐 Select Language</h3>
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('languageModal')"></i>
     </div>
     <div style="padding:16px;">
-      <div style="background:#1e1e1e; border-radius:12px; border:1px solid #333; overflow:hidden;">
+      <div style="background:#1c1c1e; border-radius:12px; border:1px solid #2a2a2a; overflow:hidden;">
         <div style="padding:14px; border-bottom:1px solid #2a2a2a; display:flex; justify-content:space-between; align-items:center; cursor:pointer;" onclick="selectLanguage('English')">
           <span style="font-weight:600; color:#fff;">English</span>
           <i class="fa-solid fa-circle-check" style="color:#10b981;"></i>
@@ -511,135 +564,121 @@
     </div>
   </div>
 
-  <div class="full-modal" id="orderHistoryModal" style="display:none !important;">
-    <div class="modal-header">
-      <h3>📦 My Orders & Live Tracking</h3>
-      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('orderHistoryModal')"></i>
-    </div>
-    <div style="padding:16px;" id="orderHistoryContainer">
-      <p style="text-align:center; color:var(--gray); margin-top:30px;">Loading your order history...</p>
-    </div>
-  </div>
-
-  <div class="full-modal" id="trackingModal" style="display:none !important;">
-    <div class="modal-header">
-      <h3>Live Order Progress</h3>
-      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('trackingModal')"></i>
-    </div>
-    <div style="padding:20px 16px;" id="trackingContent"></div>
-  </div>
-
-  <div class="full-modal" id="wishlistModal" style="display:none !important;">
-    <div class="modal-header">
-      <h3>❤️ Saved Dishes (Wishlist)</h3>
-      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('wishlistModal')"></i>
-    </div>
-    <div style="padding:16px;" id="wishlistItemsContainer">
-      <p style="text-align:center; color:var(--gray); margin-top:30px;">No saved items in your wishlist.</p>
-    </div>
-  </div>
-
-  <div class="full-modal" id="cakeStudioModal" style="display:none !important;">
-    <div class="modal-header">
-      <h3>🎂 Custom Cake Studio</h3>
-      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cakeStudioModal')"></i>
-    </div>
-    <div style="padding:16px;">
-      <p style="font-size:12px; color:var(--gray); margin-bottom:12px;">Customize weight, message and design for fresh delivery in Udalguri.</p>
-
-      <label class="form-label">Select Flavor</label>
-      <select id="cakeFlavorSelect" class="form-input">
-        <option value="Black Forest Special">Black Forest Special (Fresh Cream)</option>
-        <option value="Chocolate Truffle Loaded">Chocolate Truffle Loaded</option>
-        <option value="Fresh Pineapple Delight">Fresh Pineapple Delight</option>
-        <option value="Red Velvet Heart">Red Velvet Heart</option>
-        <option value="Butterscotch Crunch">Butterscotch Crunch</option>
-      </select>
-
-      <label class="form-label">Select Weight</label>
-      <div class="weight-pills">
-        <div class="weight-pill" onclick="selectCakeWeight(0.5, 450, this)">0.5 Kg (₹450)</div>
-        <div class="weight-pill active" onclick="selectCakeWeight(1.0, 850, this)">1.0 Kg (₹850)</div>
-        <div class="weight-pill" onclick="selectCakeWeight(2.0, 1650, this)">2.0 Kg (₹1650)</div>
-      </div>
-
-      <label class="form-label">Message on Cake</label>
-      <input type="text" id="cakeCustomText" class="form-input" placeholder="e.g. Happy Birthday Rahul!" />
-
-      <label class="form-label">Upload Custom Design / Photo</label>
-      <input type="file" id="cakePhotoFile" accept="image/*" class="form-input" onchange="previewCakeUpload(this)" />
-      <img id="cakePhotoPreview" style="display:none; width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:12px;" />
-
-      <button class="admin-btn btn-primary" onclick="addCustomCakeToCart()">ADD CUSTOM CAKE TO BAG</button>
-    </div>
-  </div>
-
-  <!-- CART & CHECKOUT SCREEN -->
+  <!-- Multi-Step Cart & Checkout Modal -->
   <div class="full-modal" id="cartModal" style="display:none !important;">
     <div class="modal-header">
-      <h3>Review Order & Checkout</h3>
+      <h3 id="checkoutStepTitle">1. Review Cart & Summary</h3>
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cartModal')"></i>
     </div>
     <div style="padding:16px;">
-      <div id="cartItemsList"></div>
+      <!-- STEP 1: CART ITEMS, +/- CONTROLS -->
+      <div id="checkoutStep1">
+        <div id="cartItemsList"></div>
 
-      <div style="display:flex; gap:8px; margin:12px 0;">
-        <input type="text" id="couponCodeInput" class="form-input" placeholder="Promo Code (e.g. KD20)" style="margin-bottom:0;" />
-        <button class="add-btn" style="padding:0 16px;" onclick="applyDiscountCoupon()">APPLY</button>
-      </div>
-
-      <div style="background:#1e1e1e; border:1px solid #333; padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-        <div style="font-size:12px; color:#fff;"><span>🪙 Pay with SuperCoins (Use 20 Coins)</span></div>
-        <input type="checkbox" id="redeemCoinsCheck" onchange="toggleCoinRedemption()" />
-      </div>
-
-      <div class="bill-box">
-        <h4 style="font-size:14px; margin-bottom:8px; color:#fff;">Bill Summary</h4>
-        <div class="bill-row"><span>Item Total:</span><span id="billSubtotal">₹0</span></div>
-        <div class="bill-row" id="deliveryFeeRow"><span>Fixed Delivery Fee:</span><span id="deliveryFeeAmount">₹9</span></div>
-        <div class="bill-row" id="discountRow" style="display:none; color:var(--green);"><span>Coupon Discount:</span><span id="billDiscount">-₹0</span></div>
-        <div class="bill-row" id="coinsDiscountRow" style="display:none; color:var(--gold);"><span>Coins Discount:</span><span>-₹20</span></div>
-        <hr style="border:none; border-top:1px dashed #444; margin:8px 0;" />
-        <div class="bill-row" style="font-weight:700; font-size:15px;"><span>Grand Total:</span><span id="billGrandTotal" style="color:#E21B24;">₹0</span></div>
-      </div>
-
-      <!-- DINE-IN TABLE ORDER BOX -->
-      <div id="dineInOrderSection" style="display:none; background:#1e1e1e; border:1px solid #E21B24; border-radius:12px; padding:12px; margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <h4 style="font-size:14px; color:#E21B24; margin:0;"><i class="fa-solid fa-chair"></i> Dine-in Order Details</h4>
-          <button onclick="openTableSelectorModal()" style="background:transparent; color:#E21B24; border:1px solid #E21B24; padding:2px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change Table</button>
+        <div style="display:flex; gap:8px; margin:12px 0;">
+          <input type="text" id="couponCodeInput" class="form-input" placeholder="Promo Code (e.g. KD20)" style="margin-bottom:0;" />
+          <button class="add-btn" style="padding:0 16px;" onclick="applyDiscountCoupon()">APPLY</button>
         </div>
-        <div style="font-size:13px; color:#fff; margin-bottom:10px;">Serving at: <strong id="checkoutTableDisplay" style="color:#ff6b6b; font-size:15px;">Table #1</strong></div>
-        <input type="text" id="custTableGuestName" class="form-input" placeholder="Your Name (Optional)" />
+
+        <div style="background:#1c1c1e; border:1px solid #2a2a2a; padding:10px 14px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-size:12px; color:#fff;"><span>🪙 Pay with SuperCoins (Use 20 Coins)</span></div>
+          <input type="checkbox" id="redeemCoinsCheck" onchange="toggleCoinRedemption()" />
+        </div>
+
+        <div class="bill-box">
+          <h4 style="font-size:14px; margin-bottom:8px; color:#fff;">Bill Summary</h4>
+          <div class="bill-row"><span>Item Total:</span><span id="billSubtotal">₹0</span></div>
+          <div class="bill-row" id="deliveryFeeRow"><span>Fixed Delivery Fee:</span><span id="deliveryFeeAmount">₹9</span></div>
+          <div class="bill-row" id="discountRow" style="display:none; color:var(--green);"><span>Coupon Discount:</span><span id="billDiscount">-₹0</span></div>
+          <div class="bill-row" id="coinsDiscountRow" style="display:none; color:var(--gold);"><span>Coins Discount:</span><span>-₹20</span></div>
+          <hr style="border:none; border-top:1px dashed #333; margin:8px 0;" />
+          <div class="bill-row" style="font-weight:700; font-size:15px;"><span>Grand Total:</span><span id="billGrandTotal" style="color:#E21B24;">₹0</span></div>
+        </div>
+
+        <button class="admin-btn btn-primary" style="margin-top:14px;" onclick="goToCheckoutStep(2)">PROCEED ➔</button>
       </div>
 
-      <!-- HOME DELIVERY ADDRESS BOX -->
-      <div id="deliveryOrderSection">
-        <h4 style="font-size:14px; margin-bottom:8px; color:#fff;"><i class="fa-solid fa-motorcycle" style="color:#E21B24;"></i> Delivery Details</h4>
-        <input type="text" id="custName" class="form-input" placeholder="Full Name" />
-        <input type="tel" id="custPhone" class="form-input" placeholder="Mobile Number (For Delivery Confirmation)" />
-        <textarea id="custAddress" class="form-input" placeholder="Full Landmark / House Address in Bengbari..."></textarea>
-      </div>
+      <!-- STEP 2: ADDRESS OR DINE-IN TABLE CONFIRM -->
+      <div id="checkoutStep2" style="display:none;">
+        <!-- DINE-IN TABLE DETAIL -->
+        <div id="dineInOrderSection" style="display:none; background:#1c1c1e; border:1px solid #E21B24; border-radius:12px; padding:14px; margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <h4 style="font-size:14px; color:#E21B24; margin:0;"><i class="fa-solid fa-chair"></i> Dine-in Table Order</h4>
+            <button onclick="openTableSelectorModal()" style="background:transparent; color:#E21B24; border:1px solid #E21B24; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change</button>
+          </div>
+          <div style="font-size:14px; color:#fff; margin-bottom:12px;">Serving directly at: <strong id="checkoutTableDisplay" style="color:#ff6b6b; font-size:16px;">Table #1</strong></div>
+          <label style="font-size:11px; color:#888;">Your Name (Optional)</label>
+          <input type="text" id="custTableGuestName" class="form-input" placeholder="e.g. Rahul" />
+        </div>
 
-      <h4 style="font-size:14px; margin-bottom:8px; color:#fff;">Payment Mode</h4>
-      <div style="display:flex; gap:10px; margin-bottom:14px;">
-        <button class="add-btn" id="codBtn" style="flex:1; padding:10px; background:#E21B24; color:#fff;" onclick="setPaymentMethod('COD')">Cash on Delivery</button>
-        <button class="add-btn" id="upiBtn" style="flex:1; padding:10px; background:#1e1e1e; color:#fff; border-color:#333;" onclick="setPaymentMethod('UPI')">Google Pay / UPI</button>
-      </div>
+        <!-- HOME DELIVERY DETAILS -->
+        <div id="deliveryOrderSection">
+          <h4 style="font-size:14px; margin-bottom:12px; color:#fff;"><i class="fa-solid fa-motorcycle" style="color:#E21B24;"></i> Delivery Address</h4>
+          <label style="font-size:11px; color:#888;">Full Name</label>
+          <input type="text" id="custName" class="form-input" placeholder="Enter Full Name" />
 
-      <div id="upiQrBox" class="upi-box">
-        <p style="font-size:12px; font-weight:600; margin-bottom:4px; color:#fff;">Scan & Pay via Google Pay / Any UPI</p>
-        <p style="font-size:11px; color:var(--gray); margin-bottom:8px;">UPI ID: <strong>6000026478@okbizaxis</strong></p>
-        <div style="background:#fff; padding:10px; display:inline-block; border-radius:8px; box-shadow:var(--shadow);">
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=upi://pay?pa=6000026478@okbizaxis&pn=KD%20RABHA%20Coffee%20Shops" alt="UPI QR" style="width:160px; height:160px;" />
+          <label style="font-size:11px; color:#888;">Mobile Number</label>
+          <input type="tel" id="custPhone" class="form-input" placeholder="10-digit Mobile Number" />
+
+          <label style="font-size:11px; color:#888;">Delivery Address / Landmark</label>
+          <textarea id="custAddress" class="form-input" placeholder="House no, Street name, Landmark in Bengbari/Udalguri"></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="admin-btn btn-primary" style="background:#333; flex:1;" onclick="goToCheckoutStep(1)">⬅ Back</button>
+          <button class="admin-btn btn-primary" style="flex:2;" onclick="goToCheckoutStep(3)">PROCEED TO PAYMENT ➔</button>
         </div>
       </div>
 
-      <button class="admin-btn btn-primary" onclick="placeOrder()">CONFIRM & PLACE ORDER</button>
+      <!-- STEP 3: PAYMENT OPTION, QR, DIRECT INTENT & VERIFICATION -->
+      <div id="checkoutStep3" style="display:none;">
+        <div class="bill-box" style="margin-bottom:14px;">
+          <div class="bill-row" style="font-weight:700;"><span>Total Amount to Pay:</span><span id="step3GrandTotal" style="color:#E21B24; font-size:16px;">₹0</span></div>
+        </div>
+
+        <h4 style="font-size:14px; margin-bottom:10px; color:#fff;">Select Payment Mode</h4>
+        <div style="display:flex; gap:10px; margin-bottom:14px;">
+          <button class="add-btn" id="codBtn" style="flex:1; padding:12px 8px; background:#1c1c1e; color:#aaa; border:1px solid #333;" onclick="setPaymentMethod('COD')">💵 Cash</button>
+          <button class="add-btn" id="upiBtn" style="flex:1; padding:12px 8px; background:#E21B24; color:#fff;" onclick="setPaymentMethod('UPI')">📱 Online / UPI</button>
+        </div>
+
+        <!-- Online Payment Container -->
+        <div id="upiQrBox" class="upi-box" style="display:block; text-align:center; padding:16px; background:#141414; border-radius:12px; border:1px solid #2a2a2a; margin-bottom:14px;">
+          <p style="font-size:13px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Scan & Pay via Any UPI App</p>
+
+          <div style="background:#fff; padding:12px; display:inline-block; border-radius:10px;">
+            <img id="checkoutQrImg" src="" alt="UPI QR" style="width:160px; height:160px; display:block;" />
+          </div>
+
+          <div style="margin-top:12px; background:#1e1e1e; padding:8px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; color:#cbd5e1;">UPI ID: <strong id="displayUpiIdText" style="color:#ffca42;">6000026478@okbizaxis</strong></span>
+            <button onclick="copyUpiId()" style="background:#0284c7; color:#fff; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Copy</button>
+          </div>
+
+          <!-- Direct UPI Intent Launcher -->
+          <button id="directUpiPayBtn" onclick="launchDirectUpiPayment()" style="width:100%; margin-top:12px; padding:12px; background:linear-gradient(135deg, #00c853, #10b981); color:#fff; border:none; border-radius:10px; font-weight:800; font-size:13px; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+            ⚡ PAY NOW (GPay / PhonePe / Paytm)
+          </button>
+
+          <!-- UTR Verification Box -->
+          <div id="upiVerifyBox" style="margin-top:12px; text-align:left; background:#1e1e1e; padding:10px 12px; border-radius:8px; border:1px dashed #38bdf8;">
+            <label style="font-size:11px; color:#ffca42; font-weight:700; display:block; margin-bottom:4px;">
+              ⚠️ Payment ke baad 12-Digit UPI Ref / UTR Number daalein:
+            </label>
+            <input type="text" id="upiUtrInput" class="form-input" placeholder="e.g. 423589123456" maxlength="16" style="background:#0f0f0f; color:#fff; border-color:#333; margin-bottom:4px;" />
+            <small style="font-size:10px; color:#888;">Online order verification ke liye zaroori hai.</small>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="admin-btn btn-primary" style="background:#333; flex:1;" onclick="goToCheckoutStep(2)">⬅ Back</button>
+          <button class="admin-btn btn-green" style="flex:2;" onclick="placeOrder()">CONFIRM & PLACE ORDER ✅</button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- RESTAURANT ADMIN CONTROL ROOM -->
+  <!-- Admin Modal -->
   <div class="full-modal admin-modal" id="adminModal" style="display:none !important;">
     <div class="modal-header" style="background:#0f172a; border-color:#334155;">
       <h3 style="color:#f8fafc;"><i class="fa-solid fa-user-shield" style="color:#E21B24;"></i> S&A Manager Admin Room</h3>
@@ -714,6 +753,20 @@
         <button class="admin-btn btn-blue" onclick="adminCreateCoupon()">SAVE PROMO CODE</button>
       </div>
 
+      <!-- Payment Gateways & QR Control -->
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-money-check-dollar"></i> Payment Gateways & QR Control</h4>
+        <button class="admin-btn btn-green" onclick="toggleCodStatus()" id="adminCodToggleBtn" style="margin-bottom:12px;">Cash on Delivery: ENABLED</button>
+
+        <label style="font-size:11px; color:#94a3b8;">Active UPI ID:</label>
+        <input type="text" id="adminUpiInput" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155; margin-bottom:8px;" placeholder="e.g. 6000026478@okbizaxis" />
+
+        <label style="font-size:11px; color:#94a3b8;">Payee / Business Name:</label>
+        <input type="text" id="adminUpiNameInput" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155; margin-bottom:10px;" placeholder="e.g. S&A FAMILY RESTAURANT" />
+
+        <button class="admin-btn btn-blue" onclick="saveAdminPaymentSettings()">SAVE UPI & QR SETTINGS</button>
+      </div>
+
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-store"></i> Store & Carousel Control</h4>
         <button class="admin-btn btn-green" onclick="toggleStoreStatus()" id="storeStatusBtn">Restaurant is: OPEN (8am - 9:30pm)</button>
@@ -728,6 +781,74 @@
     </div>
   </div>
 
+  <!-- Order History Modal -->
+  <div class="full-modal" id="orderHistoryModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>📦 My Orders & Live Tracking</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('orderHistoryModal')"></i>
+    </div>
+    <div style="padding:16px;" id="orderHistoryContainer">
+      <p style="text-align:center; color:var(--gray); margin-top:30px;">Loading your order history...</p>
+    </div>
+  </div>
+
+  <!-- Live Tracking Modal -->
+  <div class="full-modal" id="trackingModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>Live Order Progress</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('trackingModal')"></i>
+    </div>
+    <div style="padding:20px 16px;" id="trackingContent"></div>
+  </div>
+
+  <!-- Wishlist Modal -->
+  <div class="full-modal" id="wishlistModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>❤️ Saved Dishes (Wishlist)</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('wishlistModal')"></i>
+    </div>
+    <div style="padding:16px;" id="wishlistItemsContainer">
+      <p style="text-align:center; color:var(--gray); margin-top:30px;">No saved items in your wishlist.</p>
+    </div>
+  </div>
+
+  <!-- Custom Cake Studio Modal -->
+  <div class="full-modal" id="cakeStudioModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>🎂 Custom Cake Studio</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cakeStudioModal')"></i>
+    </div>
+    <div style="padding:16px;">
+      <p style="font-size:12px; color:var(--gray); margin-bottom:12px;">Customize weight, message and design for fresh delivery in Udalguri.</p>
+
+      <label class="form-label">Select Flavor</label>
+      <select id="cakeFlavorSelect" class="form-input">
+        <option value="Black Forest Special">Black Forest Special (Fresh Cream)</option>
+        <option value="Chocolate Truffle Loaded">Chocolate Truffle Loaded</option>
+        <option value="Fresh Pineapple Delight">Fresh Pineapple Delight</option>
+        <option value="Red Velvet Heart">Red Velvet Heart</option>
+        <option value="Butterscotch Crunch">Butterscotch Crunch</option>
+      </select>
+
+      <label class="form-label">Select Weight</label>
+      <div class="weight-pills">
+        <div class="weight-pill" onclick="selectCakeWeight(0.5, 450, this)">0.5 Kg (₹450)</div>
+        <div class="weight-pill active" onclick="selectCakeWeight(1.0, 850, this)">1.0 Kg (₹850)</div>
+        <div class="weight-pill" onclick="selectCakeWeight(2.0, 1650, this)">2.0 Kg (₹1650)</div>
+      </div>
+
+      <label class="form-label">Message on Cake</label>
+      <input type="text" id="cakeCustomText" class="form-input" placeholder="e.g. Happy Birthday Rahul!" />
+
+      <label class="form-label">Upload Custom Design / Photo</label>
+      <input type="file" id="cakePhotoFile" accept="image/*" class="form-input" onchange="previewCakeUpload(this)" />
+      <img id="cakePhotoPreview" style="display:none; width:100%; height:140px; object-fit:cover; border-radius:8px; margin-bottom:12px;" />
+
+      <button class="admin-btn btn-primary" onclick="addCustomCakeToCart()">ADD CUSTOM CAKE TO BAG</button>
+    </div>
+  </div>
+
+  <!-- Customer Review Modal -->
   <div class="full-modal" id="reviewModal" style="display:none !important;">
     <div class="modal-header">
       <h3>⭐ Customer Feedback</h3>
@@ -758,6 +879,6 @@
     </div>
   </div>
 
-  <script src="app.js?v=301"></script>
+  <script src="app.js?v=305"></script>
 </body>
 </html>
