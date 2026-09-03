@@ -3,326 +3,570 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VIP Privilege Card - S&A Family Restaurant</title>
+  <title>S&A VIP Privilege Pass</title>
+  <!-- FontAwesome & html2canvas -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
-    body { background: #0a0b0d; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; color: #f3f4f6; }
-    
-    .card-wrap {
+    :root {
+      --gold: #d4af37;
+      --gold-light: #f3e5ab;
+      --gold-dark: #aa771c;
+      --bg-dark: #0a0a0c;
+      --card-bg: #141419;
+      --border-gold: rgba(212, 175, 55, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      min-height: 100vh;
+    }
+
+    .container {
       width: 100%;
-      max-width: 420px;
-      background: linear-gradient(135deg, #1e232a 0%, #12151a 50%, #0d0f12 100%);
-      border-radius: 26px;
-      border: 2px solid #d4af37;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 25px rgba(212,175,55,0.25);
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* REGISTRATION MODAL OVERLAY */
+    #regModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .reg-card {
+      background: #15151c;
+      border: 1px solid var(--gold);
+      border-radius: 16px;
       padding: 24px 20px;
+      width: 100%;
+      max-width: 340px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(212,175,55,0.2);
+    }
+
+    .reg-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background: #090a0d;
+      color: #fff;
+      margin-bottom: 12px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .reg-input:focus {
+      border-color: var(--gold);
+    }
+
+    .btn-gold {
+      width: 100%;
+      padding: 13px;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+      color: #000;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(212,175,55,0.3);
+    }
+
+    /* VIP PASS CARD */
+    .vip-card {
+      background: radial-gradient(circle at 10% 20%, #1f1f28 0%, var(--card-bg) 90%);
+      border: 1.5px solid var(--border-gold);
+      border-radius: 18px;
+      padding: 18px;
       position: relative;
-      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6), inset 0 0 15px rgba(212,175,55,0.05);
     }
 
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      border-bottom: 1px solid rgba(212,175,55,0.25);
-      padding-bottom: 14px;
-      margin-bottom: 16px;
-    }
-    .brand-title { color: #f5d77f; font-size: 17px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; }
-    .brand-sub { color: #9ca3af; font-size: 12px; margin-top: 2px; }
-    .chip {
-      width: 38px;
-      height: 28px;
-      background: linear-gradient(135deg, #e6ca65, #997819);
-      border-radius: 6px;
-      border: 1px solid #ffe885;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+      border-bottom: 1px dashed var(--border-gold);
+      padding-bottom: 12px;
     }
 
-    .offers-section {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 18px;
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      color: var(--gold-light);
     }
-    .offer-box {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(212,175,55,0.3);
-      border-radius: 12px;
-      padding: 10px 8px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+
+    .brand-sub {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 2px;
     }
-    .offer-box h4 { font-size: 11px; color: #d4af37; margin-bottom: 3px; }
-    .offer-box p { font-size: 11px; color: #e5e7eb; margin-bottom: 8px; font-weight: bold; }
-    .btn-action {
-      background: linear-gradient(135deg, #d4af37, #997819);
-      color: #0d0f12;
+
+    .vip-badge {
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      color: #000;
       font-size: 10px;
       font-weight: 800;
-      text-decoration: none;
-      padding: 5px 8px;
+      padding: 4px 8px;
       border-radius: 6px;
+      letter-spacing: 1px;
+    }
+
+    /* TOP QUICK OFFERS */
+    .quick-deals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .deal-box {
+      background: #0e0f13;
+      border: 1px solid #282832;
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .deal-box.wa-deal {
+      border-color: rgba(37, 211, 102, 0.4);
+      background: rgba(37, 211, 102, 0.05);
+    }
+
+    .deal-label {
+      font-size: 10px;
       text-transform: uppercase;
+      color: #aaa;
+      font-weight: 600;
+    }
+
+    .deal-reward {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin: 2px 0 6px 0;
+    }
+
+    .wa-deal .deal-reward {
+      color: #25d366;
+    }
+
+    .deal-btn {
+      display: inline-block;
+      width: 100%;
+      padding: 5px 0;
+      background: #20202a;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--gold);
+      border: 1px solid var(--border-gold);
+    }
+
+    .wa-deal .deal-btn {
+      background: #25d366;
+      color: #000;
+      border: none;
+    }
+
+    /* STAMP GRID */
+    .stamp-section-title {
+      text-align: center;
+      font-size: 11px;
+      color: var(--gold);
+      margin-bottom: 12px;
+      font-weight: 600;
       letter-spacing: 0.5px;
     }
 
-    .banner-reward {
-      display: none;
-      background: linear-gradient(90deg, #10b981, #059669);
-      color: #fff;
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 15px rgba(16,185,129,0.3);
-    }
-
-    .section-label {
-      font-size: 11px;
-      color: #d4af37;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      text-align: center;
+    .stamp-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
       margin-bottom: 14px;
     }
 
-    .coin-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px 8px;
-      margin-bottom: 22px;
-    }
-    .coin-slot {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .coin {
-      width: 54px;
-      height: 54px;
+    .stamp-slot {
+      aspect-ratio: 1;
       border-radius: 50%;
-      background: #181c22;
-      border: 2px dashed rgba(212,175,55,0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: bold;
-      color: #9ca3af;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .coin.active {
-      background: radial-gradient(circle, #ffe685 10%, #d4af37 60%, #8c6d12 100%);
-      border: 2px solid #fff;
-      color: #111;
-      box-shadow: 0 0 15px rgba(212,175,55,0.7);
-      transform: scale(1.08);
-    }
-    .coin.milestone {
-      border: 2px solid #d4af37;
-      background: rgba(212,175,55,0.08);
-    }
-    .coin-tag {
-      font-size: 9px;
-      font-weight: 700;
-      color: #f5d77f;
-      margin-top: 5px;
-      text-align: center;
-      line-height: 1.1;
-    }
-
-    .btn-group {
-      width: 100%;
-      max-width: 420px;
-      margin-top: 14px;
+      border: 1.5px dashed #444;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-    .btn-download {
-      background: #1e293b;
-      color: #f5d77f;
-      border: 1.5px solid #d4af37;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      text-align: center;
-      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      background: #090a0d;
+      position: relative;
+      transition: all 0.2s;
     }
-    .btn-download:active { transform: scale(0.98); }
 
-    .btn-stamp {
-      background: linear-gradient(135deg, #f5d77f 0%, #d4af37 50%, #997819 100%);
-      color: #0d0f12;
-      border: none;
-      width: 100%;
-      padding: 13px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      cursor: pointer;
+    .stamp-slot.milestone {
+      border: 1.5px solid var(--gold);
     }
-    .btn-stamp:active { transform: scale(0.98); }
+
+    .stamp-slot.stamped {
+      border-style: solid;
+      border-color: var(--gold);
+      background: radial-gradient(circle, #33280c 0%, #151208 100%);
+    }
+
+    .slot-number {
+      font-size: 10px;
+      color: #777;
+      font-weight: 700;
+    }
+
+    .slot-icon {
+      font-size: 16px;
+      color: var(--gold);
+    }
+
+    .slot-reward-text {
+      position: absolute;
+      bottom: -11px;
+      font-size: 8px;
+      font-weight: 700;
+      white-space: nowrap;
+      color: var(--gold-light);
+    }
 
     .card-footer {
       display: flex;
       justify-content: space-between;
-      margin-top: 18px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255,255,255,0.08);
-      font-size: 10px;
-      color: #6b7280;
+      align-items: center;
+      border-top: 1px dashed #282832;
+      padding-top: 10px;
+      font-size: 9px;
+      color: #888;
+      text-transform: uppercase;
     }
-    .reset-link { color: #6b7280; text-decoration: underline; cursor: pointer; text-align: center; margin-top: 8px; font-size: 11px; }
+
+    /* ACTION BUTTONS */
+    .btn-download {
+      background: #181920;
+      border: 1px solid #333;
+      color: #fff;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-punch {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--gold-dark));
+      border: none;
+      color: #000;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: none;
+      color: #555;
+      font-size: 11px;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 4px;
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Card Area -->
-  <div class="card-wrap" id="vipCardArea">
+<!-- 1. VIP REGISTRATION GATEWAY (FIRST VISIT) -->
+<div id="regModal">
+  <div class="reg-card">
+    <div style="font-size: 36px; margin-bottom: 8px;">👑</div>
+    <h3 style="color: var(--gold-light); font-size: 18px; margin-bottom: 6px;">S&A VIP Privilege Club</h3>
+    <p style="color: #aaa; font-size: 12px; margin-bottom: 16px;">अपना नाम और नंबर दर्ज करके लॉयल्टी पास अनलॉक करें और तुरंत ₹20 छूट पाएं!</p>
+    
+    <input type="text" id="custRegName" class="reg-input" placeholder="आपका पूरा नाम">
+    <input type="tel" id="custRegPhone" class="reg-input" placeholder="10 अंकों का मोबाइल नंबर" maxlength="10">
+    
+    <button onclick="registerVipCustomer()" class="btn-gold">VIP कार्ड एक्टिवेट करें ✨</button>
+  </div>
+</div>
+
+<!-- 2. MAIN CONTAINER -->
+<div class="container">
+  
+  <!-- DOWNLOADABLE CARD AREA -->
+  <div id="vipCardNode" class="vip-card">
+    
     <div class="card-header">
       <div>
         <div class="brand-title">S&A FAMILY RESTAURANT</div>
         <div class="brand-sub">Bengbari • VIP Privilege Pass</div>
       </div>
-      <div class="chip"></div>
+      <div class="vip-badge">VIP GOLD</div>
     </div>
 
-    <!-- Offers -->
-    <div class="offers-section">
-      <div class="offer-box">
-        <h4>GOOGLE REVIEW</h4>
-        <p>₹20 छूट तुरंत</p>
-        <a href="https://maps.app.goo.gl/yE4mh8BorbVaPGCL6?g_st=ac" target="_blank" class="btn-action">रिव्यू दें</a>
-      </div>
-      <div class="offer-box">
-        <h4>INSTA FOLLOW</h4>
-        <p>₹20 छूट (बिल ₹100+)</p>
-        <a href="https://instagram.com" target="_blank" class="btn-action">फॉलो करें</a>
-      </div>
+    <!-- QUICK JOIN / OFFERS -->
+    <div class="quick-deals">
+      <a href="https://maps.google.com" target="_blank" class="deal-box">
+        <div class="deal-label">Google Review</div>
+        <div class="deal-reward">₹20 छूट तुरंत</div>
+        <span class="deal-btn">रिव्यू दें</span>
+      </a>
+
+      <!-- WhatsApp Channel Direct Offer -->
+      <a href="https://whatsapp.com/channel/0029VbDQM6j6buMNKqwgom0J" target="_blank" class="deal-box wa-deal">
+        <div class="deal-label">WhatsApp Channel</div>
+        <div class="deal-reward">₹20 छूट (बिल ₹100+)</div>
+        <span class="deal-btn"><i class="fa-brands fa-whatsapp"></i> फॉलो करें</span>
+      </a>
     </div>
 
-    <div class="banner-reward" id="rewardBanner"></div>
+    <div class="stamp-section-title">✦ लॉयल्टी कॉइन्स (न्यूनतम बिल ₹299) ✦</div>
 
-    <div class="section-label">✦ लॉयल्टी कॉइन्स (न्यूनतम बिल ₹299) ✦</div>
-
-    <!-- 12 Coin Grid -->
-    <div class="coin-grid" id="coinGrid"></div>
+    <!-- 12 STAMPS GRID -->
+    <div class="stamp-grid" id="stampGrid">
+      <!-- Generated via JS -->
+    </div>
 
     <div class="card-footer">
-      <span>VIP GUEST PASS</span>
+      <span id="custDisplayTag">VIP GUEST PASS</span>
       <span>VALID AT: BENGBARI</span>
     </div>
   </div>
 
-  <!-- Action Buttons -->
-  <div class="btn-group">
-    <button class="btn-download" onclick="downloadCard()">📲 कार्ड डाउनलोड करें (फोटो सेव करें)</button>
-    <button class="btn-stamp" onclick="addStamp()">✨ कॉइन पंच करें (स्टाफ केवल)</button>
-    <span class="reset-link" onclick="resetCard()">कार्ड रीसेट करें</span>
-  </div>
+  <!-- CONTROLS -->
+  <button onclick="downloadVipCard()" class="btn-download">
+    <i class="fa-solid fa-download"></i> कार्ड डाउनलोड करें (फोटो सेव करें)
+  </button>
 
-  <script>
-    const PIN = "3699"; // आपका नया सीक्रेट स्टाफ पिन
-    const TOTAL = 12;
-    const rewards = {
-      3: { tag: "वेलकम ड्रिंक", icon: "🥤" },
-      6: { tag: "₹200 डिश", icon: "🎁" },
-      12: { tag: "₹500 दावत", icon: "👑" }
+  <button onclick="punchCoin()" class="btn-punch">
+    <i class="fa-solid fa-stamp"></i> कॉइन पंच करें (स्टाफ केवल)
+  </button>
+
+  <button onclick="resetCard()" class="btn-reset">कार्ड रीसेट करें</button>
+</div>
+
+<script>
+  // FIREBASE INITIALIZATION
+  const firebaseConfig = {
+    apiKey: "AIzaSyDDTFzD8eaxS6hsQ_W5akOWRWixyZdjkSo",
+    authDomain: "kd-ka-khana-ghar-tak.firebaseapp.com",
+    databaseURL: "https://kd-ka-khana-ghar-tak-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "kd-ka-khana-ghar-tak",
+    storageBucket: "kd-ka-khana-ghar-tak.firebasestorage.app",
+    messagingSenderId: "69933070653",
+    appId: "1:69933070653:web:f9b93ba827d794bb376d54"
+  };
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const db = firebase.database();
+
+  const STAFF_PIN = "3699";
+  const TOTAL_SLOTS = 12;
+  const WA_CHANNEL_LINK = "https://whatsapp.com/channel/0029VbDQM6j6buMNKqwgom0J";
+
+  // Check Registration Status
+  window.addEventListener('DOMContentLoaded', () => {
+    const userProfile = JSON.parse(localStorage.getItem("sa_vip_profile") || "null");
+    if (!userProfile || !userProfile.phone) {
+      document.getElementById('regModal').style.display = 'flex';
+    } else {
+      updateUserTag(userProfile.name, userProfile.phone);
+    }
+    renderGrid();
+  });
+
+  function updateUserTag(name, phone) {
+    const tag = document.getElementById('custDisplayTag');
+    if (tag && name) {
+      tag.innerText = `VIP: ${name.toUpperCase().slice(0, 12)} (${phone.slice(-4)})`;
+    }
+  }
+
+  // Register Customer & Sync to Firebase
+  function registerVipCustomer() {
+    const name = document.getElementById('custRegName').value.trim();
+    const phone = document.getElementById('custRegPhone').value.trim();
+
+    if (!name || phone.length < 10) {
+      alert("कृपया अपना सही नाम और 10 अंकों का मोबाइल नंबर दर्ज करें!");
+      return;
+    }
+
+    const profile = {
+      name: name,
+      phone: phone,
+      joinedAt: Date.now(),
+      stamps: 0,
+      vip: true
     };
 
-    function getCount() {
-      return parseInt(localStorage.getItem('sa_vip_coins') || '0');
+    // Save locally
+    localStorage.setItem("sa_vip_profile", JSON.stringify(profile));
+    localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address: "Bengbari" }));
+
+    // Sync to Firebase Database
+    if (db) {
+      db.ref("customers/" + phone).update(profile);
     }
 
-    function render() {
-      const count = getCount();
-      const grid = document.getElementById('coinGrid');
-      grid.innerHTML = '';
+    document.getElementById('regModal').style.display = 'none';
+    updateUserTag(name, phone);
 
-      for (let i = 1; i <= TOTAL; i++) {
-        const slot = document.createElement('div');
-        slot.className = 'coin-slot';
+    // Welcome Prompt with WhatsApp Channel Redirect
+    if (confirm(`🎉 बधाई ${name}! आपका VIP पास एक्टिवेट हो गया है。\n\nआज के स्पेशल कूपन और ऑफर्स पाने के लिए क्या आप हमारे WhatsApp चैनल से जुड़ना चाहते हैं?`)) {
+      window.location.href = WA_CHANNEL_LINK;
+    }
+  }
 
-        const isMilestone = rewards[i] !== undefined;
-        const isActive = i <= count;
+  // Render 12 Stamp Grid
+  function renderGrid() {
+    const currentStamps = Number(localStorage.getItem("sa_vip_stamps") || 0);
+    const grid = document.getElementById('stampGrid');
+    grid.innerHTML = '';
 
-        let icon = isActive ? '✓' : (isMilestone ? rewards[i].icon : '#' + i);
-        let tagText = isMilestone ? `<span class="coin-tag">${rewards[i].tag}</span>` : '';
+    for (let i = 1; i <= TOTAL_SLOTS; i++) {
+      const isStamped = i <= currentStamps;
+      let content = `<span class="slot-number">#${i}</span>`;
+      let milestoneClass = "";
+      let rewardText = "";
 
-        slot.innerHTML = `
-          <div class="coin ${isMilestone ? 'milestone' : ''} ${isActive ? 'active' : ''}">
-            ${icon}
-          </div>
-          ${tagText}
-        `;
-        grid.appendChild(slot);
+      if (i === 3) {
+        milestoneClass = "milestone";
+        rewardText = `<span class="slot-reward-text">वेलकम ड्रिंक</span>`;
+        if (!isStamped) content = `<i class="fa-solid fa-glass-water slot-icon" style="font-size:13px; color:#888;"></i>`;
+      } else if (i === 6) {
+        milestoneClass = "milestone";
+        rewardText = `<span class="slot-reward-text">₹200 डिश</span>`;
+        if (!isStamped) content = `<i class="fa-solid fa-gift slot-icon" style="font-size:13px; color:#888;"></i>`;
+      } else if (i === 12) {
+        milestoneClass = "milestone";
+        rewardText = `<span class="slot-reward-text" style="color:var(--gold);">₹500 दावत</span>`;
+        if (!isStamped) content = `<i class="fa-solid fa-crown slot-icon" style="font-size:14px; color:var(--gold);"></i>`;
       }
 
-      const banner = document.getElementById('rewardBanner');
-      if (count >= 12) {
-        banner.style.display = 'block';
-        banner.innerHTML = '👑 12वीं विज़िट पूरी! ₹500 की रॉयल दावत अनलॉक!';
-      } else if (count >= 6) {
-        banner.style.display = 'block';
-        banner.innerHTML = '🎁 बधाई! ₹200 की पसंदीदा डिश मुफ़्त अनलॉक!';
-      } else if (count >= 3) {
-        banner.style.display = 'block';
-        banner.innerHTML = '🥤 बधाई! मुफ़्त वेलकम ड्रिंक / शेक अनलॉक!';
+      if (isStamped) {
+        content = `<i class="fa-solid fa-circle-check slot-icon"></i>`;
+      }
+
+      grid.innerHTML += `
+        <div class="stamp-slot ${isStamped ? 'stamped' : ''} ${milestoneClass}">
+          ${content}
+          ${rewardText}
+        </div>
+      `;
+    }
+  }
+
+  // Staff Stamp Action
+  function punchCoin() {
+    const pin = prompt("स्टाफ सिक्योरिटी पिन (4-अंक) दर्ज करें:");
+    if (pin === STAFF_PIN) {
+      let currentStamps = Number(localStorage.getItem("sa_vip_stamps") || 0);
+      if (currentStamps >= TOTAL_SLOTS) {
+        alert("🎉 बधाई! यह कार्ड पहले ही 12 कॉइन्स पूरे कर चुका है। ग्राहक को ₹500 की दावत दें और नया कार्ड शुरू करें।");
+        return;
+      }
+      currentStamps += 1;
+      localStorage.setItem("sa_vip_stamps", currentStamps);
+
+      // Sync Stamps to Firebase if profile exists
+      const userProfile = JSON.parse(localStorage.getItem("sa_vip_profile") || "null");
+      if (userProfile && userProfile.phone && db) {
+        db.ref("customers/" + userProfile.phone + "/stamps").set(currentStamps);
+      }
+
+      renderGrid();
+
+      if (currentStamps === 3) {
+        alert("🎉 लेवल पूरा! ग्राहक को मुफ़्त वेलकम ड्रिंक दें!");
+      } else if (currentStamps === 6) {
+        alert("🎉 लेवल पूरा! ग्राहक को ₹200 की मनपसंद डिश मुफ़्त दें!");
+      } else if (currentStamps === 12) {
+        alert("👑 महा-बधाई! ग्राहक का 12 कॉइन्स पूरा हुआ! ₹500 का स्पेशल दावत वाउचर अनलॉक हो गया!");
       } else {
-        banner.style.display = 'none';
+        alert(`✅ कॉइन #${currentStamps} सफलतापूर्वक पंच किया गया!`);
       }
+    } else if (pin !== null) {
+      alert("❌ गलत स्टाफ पिन!");
     }
+  }
 
-    function addStamp() {
-      const p = prompt("स्टाफ सिक्योरिटी पिन दर्ज करें:");
-      if (p === PIN) {
-        let current = getCount();
-        if (current < TOTAL) {
-          localStorage.setItem('sa_vip_coins', current + 1);
-          render();
-        } else {
-          alert("12 कॉइन्स पूरे हो चुके हैं! रिवॉर्ड देने के बाद रीसेट करें।");
-        }
-      } else if (p !== null) {
-        alert("गलत पिन!");
+  // Reset Card (Staff only)
+  function resetCard() {
+    const pin = prompt("कार्ड रीसेट करने के लिए स्टाफ पिन दर्ज करें:");
+    if (pin === STAFF_PIN) {
+      if (confirm("क्या आप सचमुच सारे कॉइन्स रीसेट करना चाहते हैं?")) {
+        localStorage.setItem("sa_vip_stamps", 0);
+        renderGrid();
+        alert("कार्ड को दोबारा 0 से शुरू कर दिया गया है।");
       }
+    } else if (pin !== null) {
+      alert("❌ गलत स्टाफ पिन!");
     }
+  }
 
-    function resetCard() {
-      const p = prompt("रीसेट करने के लिए पिन डालें:");
-      if (p === PIN) {
-        localStorage.setItem('sa_vip_coins', '0');
-        render();
-      } else if (p !== null) {
-        alert("गलत पिन!");
-      }
-    }
+  // Download Card as Photo (html2canvas)
+  function downloadVipCard() {
+    const node = document.getElementById('vipCardNode');
+    html2canvas(node, {
+      backgroundColor: "#0a0a0c",
+      scale: 3,
+      useCORS: true
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'SA-Restaurant-VIP-Pass.png';
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }).catch(err => {
+      alert("फोटो डाउनलोड करने में समस्या आई, कृपया स्क्रीनशॉट ले लें!");
+    });
+  }
+</script>
 
-    function downloadCard() {
-      const target = document.getElementById('vipCardArea');
-      html2canvas(target, { scale: 2, backgroundColor: "#0a0b0d" }).then(canvas => {
-        const link = document.createElement('a');
-        link.download = 'SA-VIP-Privilege-Card.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-      });
-    }
-
-    render();
-  </script>
 </body>
 </html>
