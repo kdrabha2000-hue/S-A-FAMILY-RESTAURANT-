@@ -193,6 +193,7 @@ let cart = [];
 let wishlist = JSON.parse(localStorage.getItem("kd_wishlist") || "[]");
 let activePayment = 'COD';
 let appliedDiscount = 0;
+let appliedPromoCode = "";
 let coinsRedeemed = false;
 let currentPdpItem = null;
 let currentPortionType = 'standard';
@@ -390,7 +391,7 @@ function closeModal(id) {
   }
 }
 
-// 3-Minute Auto-Shuffle Timer (Freezes during any active modal)
+// 3-Minute Auto-Shuffle Timer
 setInterval(() => {
   if (!isAnyModalOpen && menuCatalog.length > 2) {
     const shuffled = [...menuCatalog];
@@ -745,7 +746,6 @@ function goToCheckoutStep(step) {
     const grandTotal = Math.max(0, subtotal - appliedDiscount - coinDiscount);
 
     if (currentOrderMode === 'dinein') {
-      // DINE-IN TABLE ORDER SUMMARY (NO PAYMENT DETAILS)
       if (document.getElementById('dineInBillTotal')) document.getElementById('dineInBillTotal').innerText = `₹${subtotal}`;
       if (document.getElementById('dineInGrandTotal')) document.getElementById('dineInGrandTotal').innerText = `₹${grandTotal}`;
       if (title) title.innerText = `Table #${selectedTableNumber} - Bill & Order`;
@@ -766,7 +766,6 @@ function goToCheckoutStep(step) {
     s3.style.display = 'none';
 
   } else if (step === 3) {
-    // HOME DELIVERY STEP 3 PAYMENT
     const name = document.getElementById('custName')?.value.trim();
     const phone = document.getElementById('custPhone')?.value.trim();
     const address = document.getElementById('custAddress')?.value.trim();
@@ -871,54 +870,112 @@ function toggleCoinRedemption() {
   renderCartModalItems();
 }
 
+// ==================== DYNAMIC & FLASH COUPON SYSTEM (FIRST-COME, FIRST-SERVED) ====================
+const defaultStaticCoupons = {
+  "KD20": { discount: 20, minBill: 100, maxUses: 9999, used: 0 },
+  "WELCOME": { discount: 20, minBill: 100, maxUses: 9999, used: 0 },
+  "BIKASH50": { discount: 50, minBill: 250, maxUses: 9999, used: 0 },
+  "FIRST5": { discount: 50, minBill: 299, maxUses: 5, used: 0 },
+  "BENGBARI10": { discount: 30, minBill: 199, maxUses: 10, used: 0 }
+};
+
 function applyDiscountCoupon() {
-  const codeEl = document.getElementById('couponCodeInput');
+  const codeEl = document.getElementById('couponCodeInput') || document.querySelector('input[placeholder*="Promo Code"]');
   const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
 
   if (!code) {
-    alert("Please enter a promo code!");
+    alert("Kripya promo code enter karein!");
+    return;
+  }
+
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  if (subtotal <= 0) {
+    alert("Cart khali hai! Pehle kuch item add karein.");
     return;
   }
 
   const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
   if (usedPromos.includes(code)) {
-    alert(`❌ Code "${code}" aap pehle use kar chuke hain!`);
+    alert(`❌ Code "${code}" aap pehle hi use kar chuke hain!`);
     return;
   }
 
+  // 1. Firebase Real-Time Check (Online Sync)
   if (typeof db !== 'undefined' && db) {
     db.ref("promos/" + code).once("value", snap => {
-      const disc = snap.val();
-      if (disc && Number(disc) > 0) {
-        setCouponDiscount(Number(disc), code);
-      } else if (code === "KD20" || code === "WELCOME" || code === "BIKASH50") {
-        setCouponDiscount(20, code);
+      const pData = snap.val();
+
+      if (pData) {
+        let disc = 0;
+        let minBill = 0;
+        let maxUses = 9999;
+        let usedCount = 0;
+
+        if (typeof pData === 'object') {
+          disc = Number(pData.discount || 0);
+          minBill = Number(pData.minBill || 0);
+          maxUses = Number(pData.maxUses || 9999);
+          usedCount = Number(pData.used || 0);
+        } else {
+          disc = Number(pData);
+        }
+
+        // Check Uses Limit (First-Come, First-Served)
+        if (usedCount >= maxUses) {
+          alert(`❌ Maaf kijiye! Promo Code '${code}' ki limit puri ho chuki hai. Agli baar sabse pehle order karein!`);
+          return;
+        }
+
+        // Check Min Bill
+        if (subtotal < minBill) {
+          alert(`❌ Yeh code kam se kam ₹${minBill} ke bill par hi valid hai.`);
+          return;
+        }
+
+        setCouponDiscount(disc, code);
+      } else if (defaultStaticCoupons[code]) {
+        validateStaticCoupon(code, subtotal);
       } else {
-        alert("Invalid Promo Code!");
+        alert("❌ Invalid Promo Code! Kripya sahi code enter karein.");
       }
     });
   } else {
-    if (code === "KD20" || code === "WELCOME" || code === "BIKASH50") {
-      setCouponDiscount(20, code);
+    // 2. Offline / Local Fallback
+    if (defaultStaticCoupons[code]) {
+      validateStaticCoupon(code, subtotal);
     } else {
-      alert("Invalid Promo Code!");
+      alert("❌ Invalid Promo Code!");
     }
   }
 }
 
+function validateStaticCoupon(code, subtotal) {
+  const promo = defaultStaticCoupons[code];
+  const localUsed = Number(localStorage.getItem("kd_promo_used_" + code) || promo.used);
+
+  if (localUsed >= promo.maxUses) {
+    alert(`❌ Maaf kijiye! '${code}' offer pehle hi claim ho chuka hai.`);
+    return;
+  }
+
+  if (subtotal < promo.minBill) {
+    alert(`❌ Yeh promo code kam se kam ₹${promo.minBill} ke order par hi valid hai.`);
+    return;
+  }
+
+  setCouponDiscount(promo.discount, code);
+}
+
 function setCouponDiscount(amount, code) {
   appliedDiscount = amount;
-  const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
-  if (!usedPromos.includes(code)) {
-    usedPromos.push(code);
-    try { localStorage.setItem("kd_used_promos", JSON.stringify(usedPromos)); } catch(e) {}
-  }
+  appliedPromoCode = code;
 
   const dRow = document.getElementById('discountRow');
   const bDisc = document.getElementById('billDiscount');
   if (dRow) dRow.style.display = 'flex';
   if (bDisc) bDisc.innerText = `-₹${amount}`;
-  alert(`🎉 Promo Code '${code}' Applied: ₹${amount} Discount!`);
+
+  alert(`🎉 Badhai ho! Promo Code '${code}' apply ho gaya: ₹${amount} Discount!`);
   updateCartBar();
   renderCartModalItems();
 }
@@ -975,6 +1032,32 @@ function placeOrder() {
     try { localStorage.setItem("kd_coins_used", "true"); } catch(e) {}
   }
 
+  // Record Promo Usage on Order Place
+  if (appliedPromoCode) {
+    const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
+    if (!usedPromos.includes(appliedPromoCode)) {
+      usedPromos.push(appliedPromoCode);
+      try { localStorage.setItem("kd_used_promos", JSON.stringify(usedPromos)); } catch(e) {}
+    }
+
+    // Increase Firebase Promo Usage Count
+    if (typeof db !== 'undefined' && db) {
+      db.ref("promos/" + appliedPromoCode).transaction(promo => {
+        if (promo) {
+          if (typeof promo === 'object') {
+            promo.used = (promo.used || 0) + 1;
+          } else {
+            promo = { discount: Number(promo), used: 1, maxUses: 9999, minBill: 0 };
+          }
+        }
+        return promo;
+      });
+    } else {
+      let cur = Number(localStorage.getItem("kd_promo_used_" + appliedPromoCode) || 0);
+      localStorage.setItem("kd_promo_used_" + appliedPromoCode, cur + 1);
+    }
+  }
+
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
   const deliveryCharge = (currentOrderMode === 'dinein') ? 0 : 9;
   const coinDiscount = coinsRedeemed ? 20 : 0;
@@ -990,6 +1073,8 @@ function placeOrder() {
     address: address,
     items: cart,
     grandTotal: grandTotal,
+    appliedPromo: appliedPromoCode || "None",
+    discountAmount: appliedDiscount,
     paymentMode: currentOrderMode === 'dinein' ? 'Pay at Counter' : activePayment,
     utrNumber: currentOrderMode === 'dinein' ? 'N/A (Dine-in Pay at Counter)' : (utrVal || "N/A (Cash on Delivery)"),
     coinsUsed: coinsRedeemed,
@@ -1009,6 +1094,7 @@ function placeOrder() {
 
   cart = [];
   appliedDiscount = 0;
+  appliedPromoCode = "";
   coinsRedeemed = false;
   const utrEl = document.getElementById('upiUtrInput');
   if (utrEl) utrEl.value = '';
@@ -1250,6 +1336,7 @@ function loadAdminOrdersList() {
           </div>
           <div style="font-size:12px; color:#cbd5e1; margin:6px 0;">🍲 ${itemsStr}</div>
           <div style="font-size:11px; margin-bottom:6px; color:${isCancelled ? '#ef4444' : '#38bdf8'}; font-weight:bold;">Status: ${ord.status || 'Pending'}</div>
+          ${ord.appliedPromo && ord.appliedPromo !== 'None' ? `<div style="font-size:11px; margin-bottom:6px; color:#10b981; font-weight:bold;">🎟️ Promo: ${ord.appliedPromo} (-₹${ord.discountAmount})</div>` : ''}
           ${ord.paymentMode === 'UPI' ? `<div style="font-size:11px; margin-bottom:6px; color:#ffca42; font-weight:bold;">💳 UTR / Ref: ${ord.utrNumber || 'N/A'}</div>` : ''}
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
             ${(ord.phone && ord.phone !== "DINE-IN") ? `
@@ -1501,23 +1588,34 @@ function adminSaveNewDish() {
 function adminCreateCoupon() {
   const codeEl = document.getElementById('newCouponCode');
   const discEl = document.getElementById('newCouponDiscount');
+  const maxUsesEl = document.getElementById('newCouponUses'); // Optional input for limit
 
   const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
   const disc = discEl ? Number(discEl.value) : 0;
+  const maxUses = maxUsesEl ? (Number(maxUsesEl.value) || 9999) : 9999;
 
   if (!code || !disc) {
     alert("Please enter promo code and discount amount!");
     return;
   }
 
+  const couponPayload = {
+    discount: disc,
+    minBill: 100,
+    maxUses: maxUses,
+    used: 0
+  };
+
   if (db) {
-    db.ref("promos/" + code).set(disc).then(() => {
-      alert(`🎉 Promo Code '${code}' (₹${disc} OFF) created and synced online!`);
+    db.ref("promos/" + code).set(couponPayload).then(() => {
+      alert(`🎉 Flash Promo '${code}' (₹${disc} OFF, Max Uses: ${maxUses}) created online!`);
       if (codeEl) codeEl.value = '';
       if (discEl) discEl.value = '';
+      if (maxUsesEl) maxUsesEl.value = '';
     });
   } else {
-    try { localStorage.setItem("kd_promo_" + code, disc); } catch(e) {}
+    defaultStaticCoupons[code] = couponPayload;
+    try { localStorage.setItem("kd_promo_" + code, JSON.stringify(couponPayload)); } catch(e) {}
     alert(`Promo Code '${code}' saved locally!`);
   }
 }
