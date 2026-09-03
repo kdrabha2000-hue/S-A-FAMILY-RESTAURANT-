@@ -593,7 +593,7 @@ function submitCustomerReview() {
   closeModal('reviewModal');
 }
 
-// ==================== 6. CART OPERATIONS, PLUS/MINUS & TOAST ====================
+// ==================== 6. CART OPERATIONS ====================
 function showCartToast(dishName) {
   const toast = document.getElementById('cartToast');
   if (toast) {
@@ -722,47 +722,68 @@ function renderCartModalItems() {
   if (document.getElementById('billGrandTotal')) document.getElementById('billGrandTotal').innerText = `₹${Math.max(0, subtotal + deliveryCharge - appliedDiscount - coinDiscount)}`;
 }
 
+// ==================== CHECKOUT STEP CONTROLLER ====================
 function goToCheckoutStep(step) {
   const s1 = document.getElementById('checkoutStep1');
   const s2 = document.getElementById('checkoutStep2');
   const s3 = document.getElementById('checkoutStep3');
   const title = document.getElementById('checkoutStepTitle');
+  const step2Btn = document.getElementById('step2ConfirmBtn');
 
   if (step === 2) {
     if (cart.length === 0) {
-      alert("Cart is empty!");
+      alert("Bag khali hai! Kripya pehle items add karein.");
       return;
     }
     if (currentOrderMode === 'dinein' && !selectedTableNumber) {
       openTableSelectorModal();
       return;
     }
+
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const coinDiscount = coinsRedeemed ? 20 : 0;
+    const grandTotal = Math.max(0, subtotal - appliedDiscount - coinDiscount);
+
+    if (currentOrderMode === 'dinein') {
+      // DINE-IN TABLE ORDER SUMMARY (NO PAYMENT DETAILS)
+      if (document.getElementById('dineInBillTotal')) document.getElementById('dineInBillTotal').innerText = `₹${subtotal}`;
+      if (document.getElementById('dineInGrandTotal')) document.getElementById('dineInGrandTotal').innerText = `₹${grandTotal}`;
+      if (title) title.innerText = `Table #${selectedTableNumber} - Bill & Order`;
+      if (step2Btn) {
+        step2Btn.innerText = "CONFIRM TABLE ORDER ✅";
+        step2Btn.className = "admin-btn btn-green";
+      }
+    } else {
+      if (title) title.innerText = "2. Delivery Address";
+      if (step2Btn) {
+        step2Btn.innerText = "PROCEED TO PAYMENT ➔";
+        step2Btn.className = "admin-btn btn-primary";
+      }
+    }
+
     s1.style.display = 'none';
     s2.style.display = 'block';
     s3.style.display = 'none';
-    if (title) title.innerText = (currentOrderMode === 'dinein') ? "2. Dine-in Table Details" : "2. Delivery Address";
-  } else if (step === 3) {
-    if (currentOrderMode === 'delivery') {
-      const name = document.getElementById('custName')?.value.trim();
-      const phone = document.getElementById('custPhone')?.value.trim();
-      const address = document.getElementById('custAddress')?.value.trim();
 
-      if (!name || !phone || !address) {
-        alert("Please fill Name, Phone and Complete Delivery Address!");
-        return;
-      }
-      try { localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address })); } catch(e) {}
+  } else if (step === 3) {
+    // HOME DELIVERY STEP 3 PAYMENT
+    const name = document.getElementById('custName')?.value.trim();
+    const phone = document.getElementById('custPhone')?.value.trim();
+    const address = document.getElementById('custAddress')?.value.trim();
+
+    if (!name || !phone || !address) {
+      alert("Please fill Name, Phone and Delivery Address!");
+      return;
     }
+    try { localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address })); } catch(e) {}
 
     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const deliveryCharge = (currentOrderMode === 'dinein') ? 0 : 9;
     const coinDiscount = coinsRedeemed ? 20 : 0;
-    const grandTotal = Math.max(0, subtotal + deliveryCharge - appliedDiscount - coinDiscount);
+    const grandTotal = Math.max(0, subtotal + 9 - appliedDiscount - coinDiscount);
 
     const step3Total = document.getElementById('step3GrandTotal');
     if (step3Total) step3Total.innerText = `₹${grandTotal}`;
 
-    // Dynamic QR Generator
     const qrImg = document.getElementById('checkoutQrImg');
     if (qrImg) {
       const upiUri = `upi://pay?pa=${encodeURIComponent(paymentSettings.upiId)}&pn=${encodeURIComponent(paymentSettings.payeeName)}&am=${grandTotal}&cu=INR`;
@@ -775,11 +796,20 @@ function goToCheckoutStep(step) {
     s2.style.display = 'none';
     s3.style.display = 'block';
     if (title) title.innerText = "3. Select Payment";
+
   } else {
     s1.style.display = 'block';
     s2.style.display = 'none';
     s3.style.display = 'none';
     if (title) title.innerText = "1. Review Cart & Summary";
+  }
+}
+
+function handleStep2Action() {
+  if (currentOrderMode === 'dinein') {
+    placeOrder();
+  } else {
+    goToCheckoutStep(3);
   }
 }
 
@@ -893,7 +923,7 @@ function setCouponDiscount(amount, code) {
   renderCartModalItems();
 }
 
-// ==================== 7. PLACE ORDER (DELIVERY & TABLE ORDER) ====================
+// ==================== 7. PLACE ORDER ====================
 function placeOrder() {
   if (!isStoreOpen) {
     alert("Sorry, the restaurant is currently closed!");
@@ -927,7 +957,7 @@ function placeOrder() {
 
   // Strict Online Payment Check
   let utrVal = "";
-  if (activePayment === 'UPI') {
+  if (currentOrderMode === 'delivery' && activePayment === 'UPI') {
     const utrInput = document.getElementById('upiUtrInput');
     utrVal = utrInput ? utrInput.value.trim() : '';
     if (!utrVal || utrVal.length < 10) {
@@ -960,8 +990,8 @@ function placeOrder() {
     address: address,
     items: cart,
     grandTotal: grandTotal,
-    paymentMode: activePayment,
-    utrNumber: utrVal || (activePayment === 'COD' ? "N/A (Cash)" : "Verified"),
+    paymentMode: currentOrderMode === 'dinein' ? 'Pay at Counter' : activePayment,
+    utrNumber: currentOrderMode === 'dinein' ? 'N/A (Dine-in Pay at Counter)' : (utrVal || "N/A (Cash on Delivery)"),
     coinsUsed: coinsRedeemed,
     status: "1. Order Confirmed",
     stage: 1,
@@ -1272,7 +1302,7 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== 10. FAST IMAGE COMPRESSOR & MENU EDIT ====================
+// ==================== 10. IMAGE COMPRESSOR & MENU EDIT ====================
 let adminUploadBase64 = "";
 let editUploadBase64 = "";
 
