@@ -81,7 +81,7 @@ function shareReferralLink() {
       title: "S&A Family Restaurant - Special Offer",
       text: shareText,
       url: appUrl
-    }).catch(() => console.log("Share dismissed"));
+    }).catch(() => {});
   } else {
     navigator.clipboard.writeText(shareText).then(() => {
       const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
@@ -93,7 +93,7 @@ function shareReferralLink() {
   }
 }
 
-// ==================== TABLE ORDER & MODE SYSTEM ====================
+// ==================== TABLE QR & ORDER MODE SYSTEM ====================
 let currentOrderMode = 'delivery'; // 'delivery' or 'dinein'
 let selectedTableNumber = null;
 
@@ -102,7 +102,6 @@ function detectTableFromUrl() {
   const table = params.get('table');
   if (table) {
     confirmTableNumber(table, false);
-    // Smooth scroll to menu for quick dine-in ordering
     setTimeout(() => {
       const grid = document.getElementById('foodGrid');
       if (grid) grid.scrollIntoView({ behavior: 'smooth' });
@@ -196,17 +195,24 @@ let activePayment = 'COD';
 let appliedDiscount = 0;
 let coinsRedeemed = false;
 let currentPdpItem = null;
+let currentPortionType = 'standard';
 let selectedCakeWeight = 1.0;
 let selectedCakePrice = 850;
 let isStoreOpen = true;
 
-// Firebase Cloud Sync
+// ==================== PAYMENT SETTINGS SYNC ====================
+let paymentSettings = {
+  codEnabled: true,
+  upiId: "6000026478@okbizaxis",
+  payeeName: "S&A FAMILY RESTAURANT"
+};
+
 if (db) {
   db.ref("restaurant_menu").on("value", snapshot => {
     const cloudMenu = snapshot.val();
     if (cloudMenu && Array.isArray(cloudMenu)) {
       menuCatalog = cloudMenu;
-      localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog));
+      try { localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog)); } catch(e) {}
       renderFoodItems(menuCatalog);
       if (document.getElementById('adminDashboard')?.style.display === 'block') {
         renderAdminMenuItems();
@@ -224,10 +230,76 @@ if (db) {
 
   db.ref("banner_headline").on("value", snap => {
     const headline = snap.val();
-    if (headline) {
-      updateBannerUI(headline);
+    if (headline) updateBannerUI(headline);
+  });
+
+  db.ref("payment_settings").on("value", snap => {
+    const val = snap.val();
+    if (val) {
+      paymentSettings.codEnabled = (val.codEnabled !== undefined) ? val.codEnabled : true;
+      paymentSettings.upiId = val.upiId || "6000026478@okbizaxis";
+      paymentSettings.payeeName = val.payeeName || "S&A FAMILY RESTAURANT";
+      updatePaymentSettingsUI();
     }
   });
+}
+
+function updatePaymentSettingsUI() {
+  const codBtn = document.getElementById('codBtn');
+  const adminCodBtn = document.getElementById('adminCodToggleBtn');
+  if (adminCodBtn) {
+    adminCodBtn.innerText = paymentSettings.codEnabled ? "Cash on Delivery: ENABLED" : "Cash on Delivery: DISABLED";
+    adminCodBtn.style.background = paymentSettings.codEnabled ? "#10b981" : "#ef4444";
+  }
+
+  if (codBtn) {
+    codBtn.style.display = paymentSettings.codEnabled ? 'block' : 'none';
+    if (!paymentSettings.codEnabled) {
+      setPaymentMethod('UPI');
+    }
+  }
+
+  const upiText = document.getElementById('displayUpiIdText');
+  if (upiText) upiText.innerText = paymentSettings.upiId || "6000026478@okbizaxis";
+
+  const adminUpi = document.getElementById('adminUpiInput');
+  const adminName = document.getElementById('adminUpiNameInput');
+  if (adminUpi) adminUpi.value = paymentSettings.upiId || "6000026478@okbizaxis";
+  if (adminName) adminName.value = paymentSettings.payeeName || "S&A FAMILY RESTAURANT";
+}
+
+function toggleCodStatus() {
+  paymentSettings.codEnabled = !paymentSettings.codEnabled;
+  if (db) {
+    db.ref("payment_settings/codEnabled").set(paymentSettings.codEnabled);
+  }
+  updatePaymentSettingsUI();
+}
+
+function saveAdminPaymentSettings() {
+  const newUpi = document.getElementById('adminUpiInput')?.value.trim() || "6000026478@okbizaxis";
+  const newName = document.getElementById('adminUpiNameInput')?.value.trim() || "S&A FAMILY RESTAURANT";
+
+  paymentSettings.upiId = newUpi;
+  paymentSettings.payeeName = newName;
+
+  if (db) {
+    db.ref("payment_settings").set(paymentSettings);
+  }
+  updatePaymentSettingsUI();
+  alert("UPI ID and QR settings successfully updated!");
+}
+
+function copyUpiId() {
+  navigator.clipboard.writeText(paymentSettings.upiId).then(() => {
+    alert("UPI ID copied: " + paymentSettings.upiId);
+  });
+}
+
+function launchDirectUpiPayment() {
+  const step3Total = document.getElementById('step3GrandTotal')?.innerText.replace('₹', '') || '0';
+  const upiUri = `upi://pay?pa=${encodeURIComponent(paymentSettings.upiId)}&pn=${encodeURIComponent(paymentSettings.payeeName)}&am=${step3Total}&cu=INR`;
+  window.location.href = upiUri;
 }
 
 function updateStoreStatusUI(open) {
@@ -251,15 +323,12 @@ function updateStoreStatusUI(open) {
 function updateBannerUI(headline) {
   const titles = document.querySelectorAll('.hero-title, #bannerTitle, .banner-title');
   titles.forEach(el => { el.innerText = headline; });
-  const bannerBox = document.querySelector('.promo-carousel, .hero-banner');
-  if (bannerBox) {
-    const strong = bannerBox.querySelector('h2, strong');
-    if (strong) strong.innerText = headline;
-  }
 }
 
 function saveMenuToStorageAndCloud() {
-  localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog));
+  try {
+    localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog));
+  } catch (e) {}
   if (db) {
     db.ref("restaurant_menu").set(menuCatalog);
   }
@@ -267,7 +336,9 @@ function saveMenuToStorageAndCloud() {
   renderAdminMenuItems();
 }
 
-// ==================== 3. MODAL HANDLER ====================
+// ==================== 3. MODAL STATE & AUTO-SHUFFLE ====================
+let isAnyModalOpen = false;
+
 function pushModalState(modalId) {
   window.history.pushState({ openModal: modalId }, "");
 }
@@ -297,6 +368,7 @@ window.addEventListener('popstate', function(event) {
   });
 
   if (modalClosed) {
+    isAnyModalOpen = false;
     event.preventDefault();
   }
 });
@@ -305,6 +377,7 @@ function openModal(id) {
   const m = document.getElementById(id);
   if (m) {
     m.style.setProperty('display', 'flex', 'important');
+    isAnyModalOpen = true;
     pushModalState(id);
   }
 }
@@ -313,8 +386,21 @@ function closeModal(id) {
   const m = document.getElementById(id);
   if (m) {
     m.style.setProperty('display', 'none', 'important');
+    isAnyModalOpen = false;
   }
 }
+
+// 3-Minute Auto-Shuffle Timer (Freezes during any active modal)
+setInterval(() => {
+  if (!isAnyModalOpen && menuCatalog.length > 2) {
+    const shuffled = [...menuCatalog];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    renderFoodItems(shuffled);
+  }
+}, 180000);
 
 // ==================== 4. RENDER FOOD CATALOG & SEARCH ====================
 function renderFoodItems(items) {
@@ -367,16 +453,31 @@ function triggerVoiceSearch() {
   alert("Voice Search: Say dish name (e.g. 'Pork Momo' or 'Chicken Roll')");
 }
 
-// ==================== 5. PDP & REVIEWS ====================
+// ==================== 5. PDP & DYNAMIC COMBO ====================
+function calculateDoubleCombo(basePrice) {
+  const doubleRaw = basePrice * 2;
+  const comboDiscount = Math.round(doubleRaw * 0.05);
+  return doubleRaw - comboDiscount;
+}
+
 function openProductDetail(dishId) {
   const dish = menuCatalog.find(d => d.id === dishId);
   if (!dish) return;
   currentPdpItem = dish;
+  currentPortionType = 'standard';
 
   if (document.getElementById('pdpImg')) document.getElementById('pdpImg').src = dish.img;
   if (document.getElementById('pdpTitle')) document.getElementById('pdpTitle').innerText = dish.name;
   if (document.getElementById('pdpPrice')) document.getElementById('pdpPrice').innerText = `₹${dish.price}`;
   if (document.getElementById('pdpMrp')) document.getElementById('pdpMrp').innerText = `₹${dish.mrp || (dish.price + 50)}`;
+
+  const comboPrice = calculateDoubleCombo(dish.price);
+  const pillDbl = document.getElementById('pillDouble');
+  if (pillDbl) pillDbl.innerText = `Double Combo (2 Plates - ₹${comboPrice})`;
+
+  document.querySelectorAll('#pdpVariantBox .weight-pill').forEach(p => p.classList.remove('active'));
+  const pillStd = document.getElementById('pillStandard');
+  if (pillStd) pillStd.classList.add('active');
 
   const isWished = wishlist.includes(dish.id);
   const wishBtn = document.getElementById('pdpWishBtn');
@@ -401,6 +502,20 @@ function openProductDetail(dishId) {
   openModal('productDetailModal');
 }
 
+function selectDishPortion(type) {
+  currentPortionType = type;
+  document.querySelectorAll('#pdpVariantBox .weight-pill').forEach(p => p.classList.remove('active'));
+
+  if (type === 'double') {
+    document.getElementById('pillDouble')?.classList.add('active');
+    const comboPrice = calculateDoubleCombo(currentPdpItem.price);
+    document.getElementById('pdpPrice').innerText = `₹${comboPrice}`;
+  } else {
+    document.getElementById('pillStandard')?.classList.add('active');
+    document.getElementById('pdpPrice').innerText = `₹${currentPdpItem.price}`;
+  }
+}
+
 function toggleCurrentWish() {
   if (!currentPdpItem) return;
   toggleCardWish(currentPdpItem.id);
@@ -417,27 +532,22 @@ function toggleCardWish(id, el) {
     wishlist.push(id);
     if (el) el.classList.add('active');
   }
-  localStorage.setItem("kd_wishlist", JSON.stringify(wishlist));
-}
-
-function selectDishVariant(type, extra, el) {
-  document.querySelectorAll('#pdpVariantBox .weight-pill').forEach(p => p.classList.remove('active'));
-  if (el) el.classList.add('active');
-  if (currentPdpItem) {
-    document.getElementById('pdpPrice').innerText = `₹${currentPdpItem.price + extra}`;
-  }
+  try { localStorage.setItem("kd_wishlist", JSON.stringify(wishlist)); } catch(e) {}
 }
 
 function addPdpToCart() {
   if (!currentPdpItem) return;
-  addToCart(currentPdpItem.id, currentPdpItem.name, currentPdpItem.price, currentPdpItem.img);
+  if (currentPortionType === 'double') {
+    const comboPrice = calculateDoubleCombo(currentPdpItem.price);
+    addToCart(currentPdpItem.id + "_dbl", `${currentPdpItem.name} (Double Combo - 2x)`, comboPrice, currentPdpItem.img);
+  } else {
+    addToCart(currentPdpItem.id, currentPdpItem.name, currentPdpItem.price, currentPdpItem.img);
+  }
   closeModal('productDetailModal');
 }
 
 function buyNowPdp() {
-  if (!currentPdpItem) return;
-  addToCart(currentPdpItem.id, currentPdpItem.name, currentPdpItem.price, currentPdpItem.img);
-  closeModal('productDetailModal');
+  addPdpToCart();
   openCartModal();
 }
 
@@ -475,12 +585,7 @@ function submitCustomerReview() {
   if (list) list.insertAdjacentHTML('afterbegin', reviewHtml);
 
   if (db) {
-    db.ref("customer_reviews").push({
-      author: author,
-      rating: rating,
-      message: msg,
-      timestamp: Date.now()
-    });
+    db.ref("customer_reviews").push({ author, rating, message: msg, timestamp: Date.now() });
   }
 
   alert("Thank you for your valuable review!");
@@ -488,7 +593,16 @@ function submitCustomerReview() {
   closeModal('reviewModal');
 }
 
-// ==================== 6. CART OPERATIONS ====================
+// ==================== 6. CART OPERATIONS, PLUS/MINUS & TOAST ====================
+function showCartToast(dishName) {
+  const toast = document.getElementById('cartToast');
+  if (toast) {
+    toast.innerText = `✅ ${dishName} Added to Cart!`;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 2200);
+  }
+}
+
 function addToCart(id, name, price, img) {
   if (!isStoreOpen) {
     alert("Restaurant is currently closed for new orders.");
@@ -501,6 +615,40 @@ function addToCart(id, name, price, img) {
     cart.push({ id, name, price, qty: 1, img: img || "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" });
   }
   updateCartBar();
+  showCartToast(name);
+}
+
+function changeCartQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+
+  item.qty += delta;
+  if (item.qty <= 0) {
+    cart = cart.filter(i => i.id !== id);
+  }
+  updateCartBar();
+  renderCartModalItems();
+}
+
+function removeCartItem(id) {
+  cart = cart.filter(i => i.id !== id);
+  updateCartBar();
+  renderCartModalItems();
+}
+
+function moveCartItemToSaved(id) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+
+  const rawId = id.replace('_dbl', '');
+  if (!wishlist.includes(rawId)) {
+    wishlist.push(rawId);
+    try { localStorage.setItem("kd_wishlist", JSON.stringify(wishlist)); } catch(e) {}
+  }
+  cart = cart.filter(i => i.id !== id);
+  updateCartBar();
+  renderCartModalItems();
+  alert(`❤️ "${item.name}" moved to Saved Items!`);
 }
 
 function updateCartBar() {
@@ -521,58 +669,153 @@ function updateCartBar() {
   cartBar.style.display = 'flex';
 }
 
-function openCartModal() {
+function renderCartModalItems() {
   const list = document.getElementById('cartItemsList');
   if (!list) return;
   list.innerHTML = '';
   let subtotal = 0;
 
+  if (cart.length === 0) {
+    list.innerHTML = '<p style="text-align:center; color:#888; padding:20px;">Your cart is empty.</p>';
+    goToCheckoutStep(1);
+    return;
+  }
+
   cart.forEach(item => {
     subtotal += (item.price * item.qty);
     list.innerHTML += `
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; border-bottom:1px solid #2a2a2a; padding-bottom:8px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <img src="${item.img}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;" />
-          <div>
-            <div style="font-size:13px; font-weight:600; color:#fff;">${item.name}</div>
-            <div style="font-size:11px; color:#888;">₹${item.price} x ${item.qty}</div>
+      <div style="background:#1e1e1e; border-radius:12px; padding:10px 12px; margin-bottom:10px; border:1px solid #2a2a2a; box-shadow:0 2px 6px rgba(0,0,0,0.5);">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <img src="${item.img}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;" />
+            <div>
+              <div style="font-size:13px; font-weight:700; color:#fff;">${item.name}</div>
+              <div style="font-size:12px; color:#E21B24; font-weight:700;">₹${item.price}</div>
+            </div>
+          </div>
+          <div style="font-weight:800; font-size:14px; color:#fff;">₹${item.price * item.qty}</div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px dashed #333;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <button onclick="changeCartQty('${item.id}', -1)" style="width:26px; height:26px; border-radius:6px; border:1px solid #444; background:#2a2a2a; color:#fff; font-weight:bold; cursor:pointer;">-</button>
+            <span style="font-weight:700; font-size:13px; min-width:16px; text-align:center; color:#fff;">${item.qty}</span>
+            <button onclick="changeCartQty('${item.id}', 1)" style="width:26px; height:26px; border-radius:6px; border:1px solid #444; background:#2a2a2a; color:#fff; font-weight:bold; cursor:pointer;">+</button>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button onclick="moveCartItemToSaved('${item.id}')" style="background:#261012; color:#ef4444; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;" title="Save for Later">
+              <i class="fa-solid fa-heart"></i> Save
+            </button>
+            <button onclick="removeCartItem('${item.id}')" style="background:#2a2a2a; color:#aaa; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;" title="Remove Item">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </div>
         </div>
-        <div style="font-weight:700; color:#E21B24;">₹${item.price * item.qty}</div>
       </div>
     `;
   });
+
+  const deliveryCharge = (currentOrderMode === 'dinein') ? 0 : 9;
+  const coinDiscount = coinsRedeemed ? 20 : 0;
+  if (document.getElementById('billSubtotal')) document.getElementById('billSubtotal').innerText = `₹${subtotal}`;
+  if (document.getElementById('billGrandTotal')) document.getElementById('billGrandTotal').innerText = `₹${Math.max(0, subtotal + deliveryCharge - appliedDiscount - coinDiscount)}`;
+}
+
+function goToCheckoutStep(step) {
+  const s1 = document.getElementById('checkoutStep1');
+  const s2 = document.getElementById('checkoutStep2');
+  const s3 = document.getElementById('checkoutStep3');
+  const title = document.getElementById('checkoutStepTitle');
+
+  if (step === 2) {
+    if (cart.length === 0) {
+      alert("Cart is empty!");
+      return;
+    }
+    if (currentOrderMode === 'dinein' && !selectedTableNumber) {
+      openTableSelectorModal();
+      return;
+    }
+    s1.style.display = 'none';
+    s2.style.display = 'block';
+    s3.style.display = 'none';
+    if (title) title.innerText = (currentOrderMode === 'dinein') ? "2. Dine-in Table Details" : "2. Delivery Address";
+  } else if (step === 3) {
+    if (currentOrderMode === 'delivery') {
+      const name = document.getElementById('custName')?.value.trim();
+      const phone = document.getElementById('custPhone')?.value.trim();
+      const address = document.getElementById('custAddress')?.value.trim();
+
+      if (!name || !phone || !address) {
+        alert("Please fill Name, Phone and Complete Delivery Address!");
+        return;
+      }
+      try { localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address })); } catch(e) {}
+    }
+
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const deliveryCharge = (currentOrderMode === 'dinein') ? 0 : 9;
+    const coinDiscount = coinsRedeemed ? 20 : 0;
+    const grandTotal = Math.max(0, subtotal + deliveryCharge - appliedDiscount - coinDiscount);
+
+    const step3Total = document.getElementById('step3GrandTotal');
+    if (step3Total) step3Total.innerText = `₹${grandTotal}`;
+
+    // Dynamic QR Generator
+    const qrImg = document.getElementById('checkoutQrImg');
+    if (qrImg) {
+      const upiUri = `upi://pay?pa=${encodeURIComponent(paymentSettings.upiId)}&pn=${encodeURIComponent(paymentSettings.payeeName)}&am=${grandTotal}&cu=INR`;
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUri)}`;
+    }
+
+    setPaymentMethod(paymentSettings.codEnabled ? 'COD' : 'UPI');
+
+    s1.style.display = 'none';
+    s2.style.display = 'none';
+    s3.style.display = 'block';
+    if (title) title.innerText = "3. Select Payment";
+  } else {
+    s1.style.display = 'block';
+    s2.style.display = 'none';
+    s3.style.display = 'none';
+    if (title) title.innerText = "1. Review Cart & Summary";
+  }
+}
+
+function openCartModal() {
+  renderCartModalItems();
 
   const savedProfile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
   if (savedProfile.name && document.getElementById('custName')) document.getElementById('custName').value = savedProfile.name;
   if (savedProfile.phone && document.getElementById('custPhone')) document.getElementById('custPhone').value = savedProfile.phone;
   if (savedProfile.address && document.getElementById('custAddress')) document.getElementById('custAddress').value = savedProfile.address;
 
-  const deliveryCharge = (currentOrderMode === 'dinein') ? 0 : 9;
-  const coinDiscount = coinsRedeemed ? 20 : 0;
-  const grandTotal = Math.max(0, subtotal + deliveryCharge - appliedDiscount - coinDiscount);
-
-  if (document.getElementById('billSubtotal')) document.getElementById('billSubtotal').innerText = `₹${subtotal}`;
-  if (document.getElementById('billGrandTotal')) document.getElementById('billGrandTotal').innerText = `₹${grandTotal}`;
-
   setOrderMode(currentOrderMode);
+  goToCheckoutStep(1);
   openModal('cartModal');
 }
 
 function setPaymentMethod(method) {
+  if (method === 'COD' && !paymentSettings.codEnabled) {
+    method = 'UPI';
+  }
   activePayment = method;
   const cod = document.getElementById('codBtn');
   const upi = document.getElementById('upiBtn');
-  const qr = document.getElementById('upiQrBox');
+  const qrBox = document.getElementById('upiQrBox');
+
   if (cod) {
-    cod.style.background = (method === 'COD') ? '#E21B24' : '#1e1e1e';
+    cod.style.background = (method === 'COD') ? '#E21B24' : '#1c1c1e';
     cod.style.color = (method === 'COD') ? '#fff' : '#aaa';
   }
   if (upi) {
-    upi.style.background = (method === 'UPI') ? '#E21B24' : '#1e1e1e';
+    upi.style.background = (method === 'UPI') ? '#E21B24' : '#1c1c1e';
     upi.style.color = (method === 'UPI') ? '#fff' : '#aaa';
   }
-  if (qr) qr.style.display = (method === 'UPI') ? 'block' : 'none';
+  if (qrBox) {
+    qrBox.style.display = (method === 'UPI') ? 'block' : 'none';
+  }
 }
 
 function toggleCoinRedemption() {
@@ -587,7 +830,7 @@ function toggleCoinRedemption() {
     const row = document.getElementById('coinsDiscountRow');
     if (row) row.style.display = 'none';
     updateCartBar();
-    openCartModal();
+    renderCartModalItems();
     return;
   }
 
@@ -595,11 +838,11 @@ function toggleCoinRedemption() {
   const row = document.getElementById('coinsDiscountRow');
   if (row) row.style.display = coinsRedeemed ? 'flex' : 'none';
   updateCartBar();
-  openCartModal();
+  renderCartModalItems();
 }
 
 function applyDiscountCoupon() {
-  const codeEl = document.getElementById('couponCodeInput') || document.querySelector('input[placeholder*="promo" i]');
+  const codeEl = document.getElementById('couponCodeInput');
   const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
 
   if (!code) {
@@ -635,11 +878,10 @@ function applyDiscountCoupon() {
 
 function setCouponDiscount(amount, code) {
   appliedDiscount = amount;
-
   const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
   if (!usedPromos.includes(code)) {
     usedPromos.push(code);
-    localStorage.setItem("kd_used_promos", JSON.stringify(usedPromos));
+    try { localStorage.setItem("kd_used_promos", JSON.stringify(usedPromos)); } catch(e) {}
   }
 
   const dRow = document.getElementById('discountRow');
@@ -648,18 +890,13 @@ function setCouponDiscount(amount, code) {
   if (bDisc) bDisc.innerText = `-₹${amount}`;
   alert(`🎉 Promo Code '${code}' Applied: ₹${amount} Discount!`);
   updateCartBar();
-  openCartModal();
+  renderCartModalItems();
 }
 
-// ==================== 7. PLACE ORDER (HOME DELIVERY OR DINE-IN) ====================
+// ==================== 7. PLACE ORDER (DELIVERY & TABLE ORDER) ====================
 function placeOrder() {
   if (!isStoreOpen) {
     alert("Sorry, the restaurant is currently closed!");
-    return;
-  }
-
-  if (cart.length === 0) {
-    alert("Your bag is empty! Add food items first.");
     return;
   }
 
@@ -686,11 +923,26 @@ function placeOrder() {
       alert("Please fill Name, Phone and Complete Delivery Address.");
       return;
     }
-    localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address }));
+  }
+
+  // Strict Online Payment Check
+  let utrVal = "";
+  if (activePayment === 'UPI') {
+    const utrInput = document.getElementById('upiUtrInput');
+    utrVal = utrInput ? utrInput.value.trim() : '';
+    if (!utrVal || utrVal.length < 10) {
+      alert("⚠️ Kripya pehle PAY NOW dabakar payment karein aur receipt ka 12-digit UTR/UPI Ref number yahan daalein!");
+      if (utrInput) utrInput.focus();
+      return;
+    }
+  }
+
+  if (currentOrderMode === 'delivery') {
+    try { localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address })); } catch(e) {}
   }
 
   if (coinsRedeemed) {
-    localStorage.setItem("kd_coins_used", "true");
+    try { localStorage.setItem("kd_coins_used", "true"); } catch(e) {}
   }
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
@@ -709,6 +961,7 @@ function placeOrder() {
     items: cart,
     grandTotal: grandTotal,
     paymentMode: activePayment,
+    utrNumber: utrVal || (activePayment === 'COD' ? "N/A (Cash)" : "Verified"),
     coinsUsed: coinsRedeemed,
     status: "1. Order Confirmed",
     stage: 1,
@@ -727,13 +980,16 @@ function placeOrder() {
   cart = [];
   appliedDiscount = 0;
   coinsRedeemed = false;
+  const utrEl = document.getElementById('upiUtrInput');
+  if (utrEl) utrEl.value = '';
+
   updateCartBar();
   closeModal('cartModal');
 
   const animModal = document.getElementById("order-success-modal");
   const succSub = document.getElementById("orderSuccessSub");
   if (succSub) {
-    succSub.innerText = (currentOrderMode === 'dinein') 
+    succSub.innerText = (currentOrderMode === 'dinein')
       ? `Table #${selectedTableNumber} ke liye order kitchen me bhej diya gaya hai!`
       : `Aapka swadist khana taiyar ho raha hai!`;
   }
@@ -909,6 +1165,7 @@ function unlockAdminWithPin() {
 
     loadAdminOrdersList();
     renderAdminMenuItems();
+    updatePaymentSettingsUI();
   } else {
     alert("Access Denied! Incorrect Password.");
     if (pinInput) pinInput.value = '';
@@ -963,6 +1220,7 @@ function loadAdminOrdersList() {
           </div>
           <div style="font-size:12px; color:#cbd5e1; margin:6px 0;">🍲 ${itemsStr}</div>
           <div style="font-size:11px; margin-bottom:6px; color:${isCancelled ? '#ef4444' : '#38bdf8'}; font-weight:bold;">Status: ${ord.status || 'Pending'}</div>
+          ${ord.paymentMode === 'UPI' ? `<div style="font-size:11px; margin-bottom:6px; color:#ffca42; font-weight:bold;">💳 UTR / Ref: ${ord.utrNumber || 'N/A'}</div>` : ''}
           <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
             ${(ord.phone && ord.phone !== "DINE-IN") ? `
               <a href="tel:${ord.phone}" class="admin-btn" style="background:#0284c7; color:#fff; text-decoration:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:bold;">📞 Call</a>
@@ -1014,9 +1272,29 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== 10. MENU MANAGEMENT ====================
+// ==================== 10. FAST IMAGE COMPRESSOR & MENU EDIT ====================
 let adminUploadBase64 = "";
 let editUploadBase64 = "";
+
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  reader.readAsDataURL(file);
+  reader.onload = function (event) {
+    const img = new Image();
+    img.src = event.target.result;
+    img.onload = function () {
+      const canvas = document.createElement('canvas');
+      const max_width = 450;
+      const scaleSize = max_width / img.width;
+      canvas.width = max_width;
+      canvas.height = img.height * scaleSize;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const compressedUrl = canvas.toDataURL('image/jpeg', 0.7);
+      callback(compressedUrl);
+    };
+  };
+}
 
 function renderAdminMenuItems() {
   const container = document.getElementById('adminMenuItemsList');
@@ -1090,13 +1368,11 @@ function closeDishEditBox(id) {
 
 function previewEditImage(input, id) {
   if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      editUploadBase64 = e.target.result;
+    compressImage(input.files[0], (compressed) => {
+      editUploadBase64 = compressed;
       const preview = document.getElementById(`editPreviewImg_${id}`);
-      if (preview) preview.src = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
+      if (preview) preview.src = compressed;
+    });
   }
 }
 
@@ -1140,6 +1416,19 @@ function deleteMenuItem(id) {
   }
 }
 
+function previewAdminDishUpload(input) {
+  if (input.files && input.files[0]) {
+    compressImage(input.files[0], (compressed) => {
+      adminUploadBase64 = compressed;
+      const prev = document.getElementById('adminDishPreview');
+      if (prev) {
+        prev.src = compressed;
+        prev.style.display = 'block';
+      }
+    });
+  }
+}
+
 function adminSaveNewDish() {
   const nameInput = document.getElementById('newDishName');
   const priceInput = document.getElementById('newDishPrice');
@@ -1149,7 +1438,7 @@ function adminSaveNewDish() {
   const name = nameInput ? nameInput.value.trim() : '';
   const price = priceInput ? Number(priceInput.value) : 0;
   const cat = catSelect ? catSelect.value : 'momos';
-  const imgUrl = (urlInput ? urlInput.value.trim() : '') || adminUploadBase64 || "https://images.unsplash.com/photo-1544025162-d76694265947?w=500";
+  const imgUrl = adminUploadBase64 || (urlInput ? urlInput.value.trim() : '') || "https://images.unsplash.com/photo-1544025162-d76694265947?w=500";
 
   if (!name || !price) {
     alert("Please enter both dish name and price.");
@@ -1173,24 +1462,10 @@ function adminSaveNewDish() {
   if (nameInput) nameInput.value = '';
   if (priceInput) priceInput.value = '';
   if (urlInput) urlInput.value = '';
+  const prev = document.getElementById('adminDishPreview');
+  if (prev) prev.style.display = 'none';
   adminUploadBase64 = '';
 }
-
-function previewAdminDishUpload(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      adminUploadBase64 = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
-
-document.addEventListener('change', function(e) {
-  if (e.target && e.target.type === 'file' && e.target.closest('#adminModal, #adminDashboard')) {
-    previewAdminDishUpload(e.target);
-  }
-});
 
 // ==================== 11. CONTROLS ====================
 function adminCreateCoupon() {
@@ -1212,7 +1487,7 @@ function adminCreateCoupon() {
       if (discEl) discEl.value = '';
     });
   } else {
-    localStorage.setItem("kd_promo_" + code, disc);
+    try { localStorage.setItem("kd_promo_" + code, disc); } catch(e) {}
     alert(`Promo Code '${code}' saved locally!`);
   }
 }
@@ -1261,13 +1536,13 @@ function setupBannerSlider() {
     { title: "MOMO CELEBRATION 🥟", sub: "Fresh Steamed & Fried Momo starting at ₹120 only!" }
   ];
   let curr = 0;
-  const bannerBox = document.querySelector('.promo-carousel');
+  const bannerBox = document.querySelector('.promo-carousel, .hero-banner');
   if (!bannerBox) return;
 
   setInterval(() => {
     curr = (curr + 1) % deals.length;
-    const titleEl = bannerBox.querySelector('h2, #bannerTitle');
-    const subEl = bannerBox.querySelector('p, #bannerSub');
+    const titleEl = document.getElementById('bannerTitle');
+    const subEl = document.getElementById('bannerSub');
     if (titleEl) titleEl.innerText = deals[curr].title;
     if (subEl) subEl.innerText = deals[curr].sub;
   }, 4000);
@@ -1305,15 +1580,13 @@ function addCustomCakeToCart() {
 
 function previewCakeUpload(input) {
   if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
+    compressImage(input.files[0], (compressed) => {
       const p = document.getElementById('cakePhotoPreview');
       if (p) {
-        p.src = e.target.result;
+        p.src = compressed;
         p.style.display = 'block';
       }
-    };
-    reader.readAsDataURL(input.files[0]);
+    });
   }
 }
 
@@ -1352,7 +1625,7 @@ function saveCustomerAccount() {
   }
 
   const profile = { name, phone, address };
-  localStorage.setItem("kd_cust_profile", JSON.stringify(profile));
+  try { localStorage.setItem("kd_cust_profile", JSON.stringify(profile)); } catch(e) {}
 
   if (document.getElementById('accNameDisplay') && name) document.getElementById('accNameDisplay').innerText = name;
   if (document.getElementById('accPhoneDisplay') && phone) document.getElementById('accPhoneDisplay').innerText = "+91 " + phone;
@@ -1367,18 +1640,16 @@ function saveCustomerAccount() {
 
 function uploadCustomerAvatar(input) {
   if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
+    compressImage(input.files[0], (compressed) => {
       const img = document.getElementById('userAvatarImg');
-      if (img) img.src = e.target.result;
-    };
-    reader.readAsDataURL(input.files[0]);
+      if (img) img.src = compressed;
+    });
   }
 }
 
 // ==================== 13. NAVIGATION TABS ====================
 function switchNavTab(tab) {
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav .nav-tab').forEach(t => t.classList.remove('active'));
 
   if (tab === 'home') {
     document.getElementById('tabHome')?.classList.add('active');
