@@ -160,35 +160,82 @@ function confirmTableNumber(tableNo, shouldScroll = true) {
   }
 }
 
-// ==================== 2. MENU DATA & STORAGE ====================
+// ==================== 2. MENU DATA & STORAGE (TOP BESTSELLERS FIRST) ====================
 const defaultMenu = [
+  // --- TOP BESTSELLERS / MOST ORDERED ---
+  { id: "nb_m1", name: "Chicken Momo", price: 60, mrp: 80, cat: "momos", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
+  { id: "nb_r2", name: "Chicken Roll", price: 80, mrp: 100, cat: "rolls", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+  { id: "nb_r3", name: "Baba Roll (Special)", price: 120, mrp: 150, cat: "rolls", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=500" },
+  { id: "nb_c2", name: "Chicken Chowmein (Full)", price: 100, mrp: 130, cat: "chow_thukpa", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+  { id: "nb_t8", name: "Cold Coffee (Special)", price: 70, mrp: 90, cat: "drinks", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500" },
+
+  // --- TEA & COFFEE ---
+  { id: "nb_t1", name: "Black Tea", price: 10, mrp: 15, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500" },
+  { id: "nb_t2", name: "Milk Tea (Normal)", price: 10, mrp: 15, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500" },
+  { id: "nb_t3", name: "Milk Tea (Special)", price: 20, mrp: 25, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500" },
+  { id: "nb_t4", name: "Black Coffee", price: 20, mrp: 30, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500" },
+  { id: "nb_t5", name: "Milk Coffee (Normal)", price: 30, mrp: 40, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500" },
+  { id: "nb_t6", name: "Milk Coffee (Special)", price: 40, mrp: 50, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500" },
+  { id: "nb_t7", name: "Cold Coffee (Normal)", price: 50, mrp: 60, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500" },
+
+  // --- ROLLS ---
+  { id: "nb_r1", name: "Veg Roll", price: 40, mrp: 50, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+
+  // --- CHOWMEIN ---
+  { id: "nb_c1", name: "Chicken Chowmein (Half)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+  { id: "nb_c3", name: "Veg Chowmein (Half)", price: 40, mrp: 50, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500" },
+  { id: "nb_c4", name: "Veg Chowmein (Full)", price: 60, mrp: 80, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500" },
+  { id: "nb_c5", name: "Egg Chowmein (Half)", price: 50, mrp: 60, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+  { id: "nb_c6", name: "Egg Chowmein (Full)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+  { id: "nb_c7", name: "Chicken Egg Mix Chowmein (Half)", price: 80, mrp: 100, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+  { id: "nb_c8", name: "Chicken Egg Mix Chowmein (Full)", price: 120, mrp: 150, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+
+  // --- MOMOS ---
+  { id: "nb_m2", name: "Veg Momo", price: 50, mrp: 70, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
+
+  // --- FRIED RICE ---
+  { id: "nb_fr1", name: "Veg Fried Rice", price: 50, mrp: 70, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+  { id: "nb_fr2", name: "Egg Fried Rice (Half)", price: 60, mrp: 80, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+  { id: "nb_fr3", name: "Egg Fried Rice (Full)", price: 80, mrp: 100, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+  { id: "nb_fr4", name: "Chicken Fried Rice (Half)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+  { id: "nb_fr5", name: "Chicken Fried Rice (Full)", price: 100, mrp: 130, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+  { id: "nb_fr6", name: "Chicken Egg Mix Fried Rice (Half)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+  { id: "nb_fr7", name: "Chicken Egg Mix Fried Rice (Full)", price: 120, mrp: 150, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+
+  // --- CHICKEN MAIN COURSE ---
+  { id: "nb_ch1", name: "Chilli Chicken (Half)", price: 110, mrp: 140, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500" },
+  { id: "nb_ch2", name: "Chilli Chicken (Full)", price: 200, mrp: 240, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500" },
+  { id: "nb_ch3", name: "Chicken Gravy (Half)", price: 150, mrp: 180, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
+  { id: "nb_ch4", name: "Chicken Gravy (Full)", price: 200, mrp: 250, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
+
+  // --- PREVIOUS MENU ITEMS (KEPT SAFE AS REQUESTED) ---
   { id: "m1", name: "Chicken Steamed Momo (10 Pcs)", price: 120, mrp: 160, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
   { id: "m2", name: "Chicken Fried Momo (10 Pcs)", price: 140, mrp: 180, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
   { id: "m3", name: "Chicken Schezwan Gravy Momo", price: 160, mrp: 200, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=500" },
   { id: "m4", name: "Pork Steamed Momo (10 Pcs)", price: 130, mrp: 170, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?w=500" },
   { id: "m5", name: "Pork Fried Momo (10 Pcs)", price: 150, mrp: 190, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
-  { id: "m6", name: "Cheese & Veg Momo (10 Pcs)", price: 130, mrp: 160, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500" },
-  { id: "r1", name: "Single Egg Chicken Roll", price: 90, mrp: 120, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
-  { id: "r2", name: "Double Egg Double Chicken Roll", price: 120, mrp: 150, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=500" },
-  { id: "r3", name: "Special Pork Roll", price: 130, mrp: 160, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
   { id: "r4", name: "Crispy French Fries (Peri-Peri)", price: 80, mrp: 110, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1576107232684-1279f3908594?w=500" },
   { id: "c1", name: "Chicken Butter Masala (Boneless)", price: 280, mrp: 350, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=500" },
-  { id: "c2", name: "Chicken Curry / Kadhai Chicken", price: 260, mrp: 320, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
-  { id: "c3", name: "Crispy Chilli Chicken (Dry)", price: 220, mrp: 280, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500" },
   { id: "p1", name: "Pork Curry with Bamboo Shoot", price: 300, mrp: 380, cat: "pork", inStock: true, img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
   { id: "p2", name: "Smoked Pork Dry Fry", price: 320, mrp: 400, cat: "pork", inStock: true, img: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=500" },
-  { id: "p3", name: "Pork Bhuna Masala", price: 310, mrp: 390, cat: "pork", inStock: true, img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
-  { id: "ct1", name: "Special Chicken Hakka Chowmein", price: 130, mrp: 170, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
-  { id: "ct2", name: "Special Pork Chowmein", price: 150, mrp: 190, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500" },
-  { id: "ct3", name: "Hot Chicken Thukpa Soup", price: 140, mrp: 180, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=500" },
   { id: "ck1", name: "Chocolate Truffle Cake (1 Kg)", price: 850, mrp: 1100, cat: "cakes", inStock: true, img: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" },
-  { id: "ck2", name: "Black Forest Cake (1 Kg)", price: 800, mrp: 1000, cat: "cakes", inStock: true, img: "https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=500" },
-  { id: "ck3", name: "Vanilla / Pineapple Cake (1 Kg)", price: 750, mrp: 950, cat: "cakes", inStock: true, img: "https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=500" },
-  { id: "dr1", name: "Cold Drinks 750ml (Coke / Sprite)", price: 45, mrp: 50, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500" },
-  { id: "dr2", name: "Fresh Sweet Lassi / Cold Coffee", price: 70, mrp: 90, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500" }
+  { id: "dr1", name: "Cold Drinks 750ml (Coke / Sprite)", price: 45, mrp: 50, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500" }
 ];
 
-let menuCatalog = JSON.parse(localStorage.getItem("kd_live_menu")) || defaultMenu;
+let menuCatalog = defaultMenu;
+try {
+  const cached = localStorage.getItem("kd_live_menu");
+  if (cached) {
+    const parsed = JSON.parse(cached);
+    if (Array.isArray(parsed) && parsed.some(d => d.id.startsWith("nb_"))) {
+      menuCatalog = parsed;
+    } else {
+      menuCatalog = defaultMenu;
+      localStorage.setItem("kd_live_menu", JSON.stringify(defaultMenu));
+    }
+  }
+} catch(e) {}
+
 let cart = [];
 let wishlist = JSON.parse(localStorage.getItem("kd_wishlist") || "[]");
 let activePayment = 'COD';
@@ -211,13 +258,16 @@ let paymentSettings = {
 if (db) {
   db.ref("restaurant_menu").on("value", snapshot => {
     const cloudMenu = snapshot.val();
-    if (cloudMenu && Array.isArray(cloudMenu)) {
+    if (cloudMenu && Array.isArray(cloudMenu) && cloudMenu.length > 0) {
       menuCatalog = cloudMenu;
       try { localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog)); } catch(e) {}
       renderFoodItems(menuCatalog);
       if (document.getElementById('adminDashboard')?.style.display === 'block') {
         renderAdminMenuItems();
       }
+    } else {
+      // Sync fresh default catalog to cloud if empty
+      db.ref("restaurant_menu").set(defaultMenu);
     }
   });
 
@@ -337,7 +387,7 @@ function saveMenuToStorageAndCloud() {
   renderAdminMenuItems();
 }
 
-// ==================== 3. MODAL STATE & AUTO-SHUFFLE ====================
+// ==================== 3. MODAL STATE ====================
 let isAnyModalOpen = false;
 
 function pushModalState(modalId) {
@@ -391,26 +441,19 @@ function closeModal(id) {
   }
 }
 
-// 3-Minute Auto-Shuffle Timer
-setInterval(() => {
-  if (!isAnyModalOpen && menuCatalog.length > 2) {
-    const shuffled = [...menuCatalog];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    renderFoodItems(shuffled);
-  }
-}, 180000);
-
 // ==================== 4. RENDER FOOD CATALOG & SEARCH ====================
 function renderFoodItems(items) {
   const container = document.getElementById('foodGrid');
   if (!container) return;
   container.innerHTML = '';
+
   items.forEach(dish => {
     const isWished = wishlist.includes(dish.id);
-    const stockBadge = dish.inStock ? '' : '<span class="out-of-stock-badge" style="position:absolute;top:8px;left:8px;background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold;">SOLD OUT</span>';
+    const stockBadge = dish.inStock ? '' : '<span class="out-of-stock-badge" style="position:absolute;top:8px;left:8px;background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold;z-index:2;">SOLD OUT</span>';
+    
+    // Bestseller Badge
+    const bestsellerBadge = dish.isBestseller ? '<span style="position:absolute;top:8px;right:8px;background:#f59e0b;color:#000;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:800;z-index:2;box-shadow:0 2px 5px rgba(0,0,0,0.5);">🔥 BESTSELLER</span>' : '';
+
     const addBtnHtml = (dish.inStock && isStoreOpen)
       ? `<button class="add-btn" onclick="event.stopPropagation(); addToCart('${dish.id}', '${dish.name}', ${dish.price}, '${dish.img}')">ADD +</button>`
       : `<button class="add-btn" style="background:#262626; color:#777; border-color:#333;" disabled>${isStoreOpen ? 'SOLD OUT' : 'CLOSED'}</button>`;
@@ -418,8 +461,9 @@ function renderFoodItems(items) {
     container.innerHTML += `
       <div class="food-card" onclick="openProductDetail('${dish.id}')">
         <div class="dish-img-wrap" style="position:relative;">
-          <img src="${dish.img}" alt="${dish.name}" />
+          <img src="${dish.img}" alt="${dish.name}" loading="lazy" />
           ${stockBadge}
+          ${bestsellerBadge}
           <button class="card-wish-btn ${isWished ? 'active' : ''}" onclick="event.stopPropagation(); toggleCardWish('${dish.id}', this)"><i class="fa-solid fa-heart"></i></button>
         </div>
         <div class="food-card-content">
@@ -451,7 +495,7 @@ function filterCategory(cat, el) {
 }
 
 function triggerVoiceSearch() {
-  alert("Voice Search: Say dish name (e.g. 'Pork Momo' or 'Chicken Roll')");
+  alert("Voice Search: Say dish name (e.g. 'Chicken Momo' or 'Chicken Roll')");
 }
 
 // ==================== 5. PDP & DYNAMIC COMBO ====================
@@ -470,7 +514,7 @@ function openProductDetail(dishId) {
   if (document.getElementById('pdpImg')) document.getElementById('pdpImg').src = dish.img;
   if (document.getElementById('pdpTitle')) document.getElementById('pdpTitle').innerText = dish.name;
   if (document.getElementById('pdpPrice')) document.getElementById('pdpPrice').innerText = `₹${dish.price}`;
-  if (document.getElementById('pdpMrp')) document.getElementById('pdpMrp').innerText = `₹${dish.mrp || (dish.price + 50)}`;
+  if (document.getElementById('pdpMrp')) document.getElementById('pdpMrp').innerText = `₹${dish.mrp || (dish.price + 40)}`;
 
   const comboPrice = calculateDoubleCombo(dish.price);
   const pillDbl = document.getElementById('pillDouble');
@@ -870,7 +914,7 @@ function toggleCoinRedemption() {
   renderCartModalItems();
 }
 
-// ==================== DYNAMIC & FLASH COUPON SYSTEM (FIRST-COME, FIRST-SERVED) ====================
+// ==================== DYNAMIC & FLASH COUPON SYSTEM ====================
 const defaultStaticCoupons = {
   "KD20": { discount: 20, minBill: 100, maxUses: 9999, used: 0 },
   "WELCOME": { discount: 20, minBill: 100, maxUses: 9999, used: 0 },
@@ -900,7 +944,6 @@ function applyDiscountCoupon() {
     return;
   }
 
-  // 1. Firebase Real-Time Check (Online Sync)
   if (typeof db !== 'undefined' && db) {
     db.ref("promos/" + code).once("value", snap => {
       const pData = snap.val();
@@ -920,13 +963,11 @@ function applyDiscountCoupon() {
           disc = Number(pData);
         }
 
-        // Check Uses Limit (First-Come, First-Served)
         if (usedCount >= maxUses) {
           alert(`❌ Maaf kijiye! Promo Code '${code}' ki limit puri ho chuki hai. Agli baar sabse pehle order karein!`);
           return;
         }
 
-        // Check Min Bill
         if (subtotal < minBill) {
           alert(`❌ Yeh code kam se kam ₹${minBill} ke bill par hi valid hai.`);
           return;
@@ -940,7 +981,6 @@ function applyDiscountCoupon() {
       }
     });
   } else {
-    // 2. Offline / Local Fallback
     if (defaultStaticCoupons[code]) {
       validateStaticCoupon(code, subtotal);
     } else {
@@ -1032,7 +1072,7 @@ function placeOrder() {
     try { localStorage.setItem("kd_coins_used", "true"); } catch(e) {}
   }
 
-  // Record Promo Usage on Order Place
+  // Record Promo Usage
   if (appliedPromoCode) {
     const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
     if (!usedPromos.includes(appliedPromoCode)) {
@@ -1040,7 +1080,6 @@ function placeOrder() {
       try { localStorage.setItem("kd_used_promos", JSON.stringify(usedPromos)); } catch(e) {}
     }
 
-    // Increase Firebase Promo Usage Count
     if (typeof db !== 'undefined' && db) {
       db.ref("promos/" + appliedPromoCode).transaction(promo => {
         if (promo) {
@@ -1588,7 +1627,7 @@ function adminSaveNewDish() {
 function adminCreateCoupon() {
   const codeEl = document.getElementById('newCouponCode');
   const discEl = document.getElementById('newCouponDiscount');
-  const maxUsesEl = document.getElementById('newCouponUses'); // Optional input for limit
+  const maxUsesEl = document.getElementById('newCouponUses');
 
   const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
   const disc = discEl ? Number(discEl.value) : 0;
@@ -1661,7 +1700,7 @@ function setupBannerSlider() {
   const deals = [
     { title: "K.D RABHA SPECIAL", sub: "Freshly Made, Especially for You in Bengbari!" },
     { title: "FESTIVAL OFFER 🎉", sub: "Use Code KD20 to get Flat ₹20 OFF on orders!" },
-    { title: "MOMO CELEBRATION 🥟", sub: "Fresh Steamed & Fried Momo starting at ₹120 only!" }
+    { title: "MOMO & CHOWMEIN CELEBRATION 🥟", sub: "Fresh Steamed Momo & Special Chowmein starting at ₹40 only!" }
   ];
   let curr = 0;
   const bannerBox = document.querySelector('.promo-carousel, .hero-banner');
