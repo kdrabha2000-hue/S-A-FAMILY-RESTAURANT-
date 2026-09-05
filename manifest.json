@@ -1,8 +1,8 @@
 {
   "name": "S&A FAMILY RESTAURANT",
   "short_name": "S&A Food",
-  "start_url": "/S-A-FAMILY-RESTAURANT-/",
-  "scope": "/S-A-FAMILY-RESTAURANT-/",
+  "start_url": "index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0a0a0c",
   "theme_color": "#E21B24",
@@ -18,13 +18,7 @@
       "src": "https://img.icons8.com/color/512/restaurant.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://img.icons8.com/color/512/restaurant.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ]
 }
