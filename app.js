@@ -160,7 +160,7 @@ function confirmTableNumber(tableNo, shouldScroll = true) {
   }
 }
 
-// ==================== 2. MENU DATA & STORAGE (TOP BESTSELLERS FIRST) ====================
+// ==================== 2. MENU DATA & STORAGE ====================
 const defaultMenu = [
   // --- TOP BESTSELLERS / MOST ORDERED ---
   { id: "nb_m1", name: "Chicken Momo", price: 60, mrp: 80, cat: "momos", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
@@ -208,7 +208,7 @@ const defaultMenu = [
   { id: "nb_ch3", name: "Chicken Gravy (Half)", price: 150, mrp: 180, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
   { id: "nb_ch4", name: "Chicken Gravy (Full)", price: 200, mrp: 250, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
 
-  // --- PREVIOUS MENU ITEMS (KEPT SAFE AS REQUESTED) ---
+  // --- PREVIOUS MENU ITEMS ---
   { id: "m1", name: "Chicken Steamed Momo (10 Pcs)", price: 120, mrp: 160, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
   { id: "m2", name: "Chicken Fried Momo (10 Pcs)", price: 140, mrp: 180, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
   { id: "m3", name: "Chicken Schezwan Gravy Momo", price: 160, mrp: 200, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=500" },
@@ -222,19 +222,8 @@ const defaultMenu = [
   { id: "dr1", name: "Cold Drinks 750ml (Coke / Sprite)", price: 45, mrp: 50, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500" }
 ];
 
-let menuCatalog = defaultMenu;
-try {
-  const cached = localStorage.getItem("kd_live_menu");
-  if (cached) {
-    const parsed = JSON.parse(cached);
-    if (Array.isArray(parsed) && parsed.some(d => d.id.startsWith("nb_"))) {
-      menuCatalog = parsed;
-    } else {
-      menuCatalog = defaultMenu;
-      localStorage.setItem("kd_live_menu", JSON.stringify(defaultMenu));
-    }
-  }
-} catch(e) {}
+let menuCatalog = [...defaultMenu];
+try { localStorage.setItem("kd_live_menu", JSON.stringify(defaultMenu)); } catch(e) {}
 
 let cart = [];
 let wishlist = JSON.parse(localStorage.getItem("kd_wishlist") || "[]");
@@ -248,7 +237,7 @@ let selectedCakeWeight = 1.0;
 let selectedCakePrice = 850;
 let isStoreOpen = true;
 
-// ==================== PAYMENT SETTINGS SYNC ====================
+// ==================== PAYMENT & FIREBASE MENU SYNC ====================
 let paymentSettings = {
   codEnabled: true,
   upiId: "6000026478@okbizaxis",
@@ -256,18 +245,21 @@ let paymentSettings = {
 };
 
 if (db) {
+  // Sync Cloud Menu Without Overwriting Top Items
   db.ref("restaurant_menu").on("value", snapshot => {
     const cloudMenu = snapshot.val();
-    if (cloudMenu && Array.isArray(cloudMenu) && cloudMenu.length > 0) {
+    if (cloudMenu && Array.isArray(cloudMenu) && cloudMenu.some(d => d.id && d.id.startsWith("nb_"))) {
       menuCatalog = cloudMenu;
       try { localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog)); } catch(e) {}
-      renderFoodItems(menuCatalog);
-      if (document.getElementById('adminDashboard')?.style.display === 'block') {
-        renderAdminMenuItems();
-      }
     } else {
-      // Sync fresh default catalog to cloud if empty
+      // Auto-update cloud if cloud holds old menu
+      menuCatalog = [...defaultMenu];
       db.ref("restaurant_menu").set(defaultMenu);
+      try { localStorage.setItem("kd_live_menu", JSON.stringify(defaultMenu)); } catch(e) {}
+    }
+    renderFoodItems(menuCatalog);
+    if (document.getElementById('adminDashboard')?.style.display === 'block') {
+      renderAdminMenuItems();
     }
   });
 
@@ -447,12 +439,15 @@ function renderFoodItems(items) {
   if (!container) return;
   container.innerHTML = '';
 
-  items.forEach(dish => {
+  // Sort: Bestsellers Always on Top
+  const sorted = [...items].sort((a, b) => (b.isBestseller ? 1 : 0) - (a.isBestseller ? 1 : 0));
+
+  sorted.forEach(dish => {
     const isWished = wishlist.includes(dish.id);
     const stockBadge = dish.inStock ? '' : '<span class="out-of-stock-badge" style="position:absolute;top:8px;left:8px;background:#ef4444;color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:bold;z-index:2;">SOLD OUT</span>';
     
-    // Bestseller Badge
-    const bestsellerBadge = dish.isBestseller ? '<span style="position:absolute;top:8px;right:8px;background:#f59e0b;color:#000;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:800;z-index:2;box-shadow:0 2px 5px rgba(0,0,0,0.5);">🔥 BESTSELLER</span>' : '';
+    // Glowing Bestseller Badge
+    const bestsellerBadge = dish.isBestseller ? '<span style="position:absolute;top:8px;right:8px;background:#f59e0b;color:#000;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:800;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,0.6);">🔥 BESTSELLER</span>' : '';
 
     const addBtnHtml = (dish.inStock && isStoreOpen)
       ? `<button class="add-btn" onclick="event.stopPropagation(); addToCart('${dish.id}', '${dish.name}', ${dish.price}, '${dish.img}')">ADD +</button>`
@@ -1052,7 +1047,6 @@ function placeOrder() {
     }
   }
 
-  // Strict Online Payment Check
   let utrVal = "";
   if (currentOrderMode === 'delivery' && activePayment === 'UPI') {
     const utrInput = document.getElementById('upiUtrInput');
@@ -1072,7 +1066,6 @@ function placeOrder() {
     try { localStorage.setItem("kd_coins_used", "true"); } catch(e) {}
   }
 
-  // Record Promo Usage
   if (appliedPromoCode) {
     const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
     if (!usedPromos.includes(appliedPromoCode)) {
