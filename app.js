@@ -29,14 +29,21 @@ document.addEventListener('click', () => {
   }
 }, { once: true });
 
-// ==================== SMART PWA INSTALL & UPDATE LOGIC ====================
-let deferredPrompt;
+// ==================== SMART 1-CLICK PWA INSTALL & UPDATE ====================
+let deferredPrompt = null;
 const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   updateInstallButtonUI(false);
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  updateInstallButtonUI(true);
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) banner.style.display = 'none';
 });
 
 function updateInstallButtonUI(installed) {
@@ -66,9 +73,28 @@ function triggerPwaInstall() {
       }
       deferredPrompt = null;
     });
-  } else {
-    alert("📲 ऐप इंस्टॉल करने के लिए:\n1. ऊपर दाईं तरफ 3 डॉट्स (⋮) दबाएं।\n2. 'Add to Home screen' या 'Install app' चुनें।");
+    return;
   }
+
+  if (isAppInstalled) {
+    triggerAppUpdate();
+    return;
+  }
+
+  showInstallGuideToast();
+}
+
+function showInstallGuideToast() {
+  let guide = document.getElementById('pwaGuideToast');
+  if (!guide) {
+    guide = document.createElement('div');
+    guide.id = 'pwaGuideToast';
+    guide.style.cssText = "position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1e1e1e; color:#fff; border:1px solid #E21B24; padding:12px 18px; border-radius:12px; font-size:12px; z-index:9999999; box-shadow:0 10px 25px rgba(0,0,0,0.8); text-align:center; max-width:90%;";
+    guide.innerHTML = "📲 <strong>App Ready:</strong> ऊपर 3 डॉट्स (⋮) दबाकर <b>'Add to Home screen'</b> चुनें।";
+    document.body.appendChild(guide);
+  }
+  guide.style.display = 'block';
+  setTimeout(() => { guide.style.display = 'none'; }, 4000);
 }
 
 function triggerAppUpdate() {
@@ -83,6 +109,10 @@ function triggerAppUpdate() {
   alert("⚡ ऐप सफलतापूर्वक नए मेनू और ऑफर्स के साथ अपडेट हो गया है!");
   window.location.reload(true);
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  updateInstallButtonUI(isAppInstalled);
+});
 
 // ==================== LANGUAGE MODAL ====================
 function openLanguageModal() {
@@ -234,7 +264,7 @@ const defaultMenu = [
   { id: "nb_ch3", name: "Chicken Gravy (Half)", price: 150, mrp: 180, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
   { id: "nb_ch4", name: "Chicken Gravy (Full)", price: 200, mrp: 250, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
 
-  // --- PREVIOUS ITEMS ---
+  // --- PREVIOUS ITEMS (KEPT SAFE) ---
   { id: "m1", name: "Chicken Steamed Momo (10 Pcs)", price: 120, mrp: 160, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
   { id: "m2", name: "Chicken Fried Momo (10 Pcs)", price: 140, mrp: 180, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
   { id: "m3", name: "Chicken Schezwan Gravy Momo", price: 160, mrp: 200, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=500" },
@@ -408,7 +438,7 @@ function closeModal(id) {
   }
 }
 
-// ==================== 4. RENDER CATALOG (ROBUST & DIRECT) ====================
+// ==================== 4. RENDER CATALOG ====================
 function renderFoodItems(items) {
   const container = document.getElementById('foodGrid');
   if (!container) return;
