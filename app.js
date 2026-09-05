@@ -14,10 +14,11 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 const db = (typeof firebase !== 'undefined') ? firebase.database() : null;
 
-// ==================== LIVE RINGER SETUP ====================
-const adminRingerAudio = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
+// ==================== LIVE RINGER & ALARM SETUP ====================
+const adminRingerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
 adminRingerAudio.loop = true;
 let isAudioUnlocked = false;
+let lastKnownOrdersCount = -1;
 
 document.addEventListener('click', () => {
   if (!isAudioUnlocked) {
@@ -28,6 +29,19 @@ document.addEventListener('click', () => {
     }).catch(() => {});
   }
 }, { once: true });
+
+function playAdminAlarm() {
+  const stopBtn = document.getElementById('stopAlarmBtn');
+  if (stopBtn) stopBtn.style.display = 'inline-block';
+  adminRingerAudio.play().catch(() => {});
+}
+
+function stopAdminAlarm() {
+  adminRingerAudio.pause();
+  adminRingerAudio.currentTime = 0;
+  const stopBtn = document.getElementById('stopAlarmBtn');
+  if (stopBtn) stopBtn.style.display = 'none';
+}
 
 // ==================== SMART 1-CLICK PWA INSTALL & UPDATE ====================
 let deferredPrompt = null;
@@ -65,7 +79,6 @@ function triggerPwaInstall() {
   }
 }
 
-// Global click event to ensure install touch works everywhere instantly
 document.addEventListener('click', (e) => {
   const target = e.target.closest('#smartMainBtn, #pwaInstallBtn, .install-app-btn');
   if (target) {
@@ -305,6 +318,21 @@ if (db) {
       paymentSettings.payeeName = val.payeeName || "S&A FAMILY RESTAURANT";
       updatePaymentSettingsUI();
     }
+  });
+
+  // Admin Realtime Order Ringer & Tracker Listener
+  db.ref("orders").on("value", snap => {
+    const orders = snap.val();
+    if (orders) {
+      const count = Object.keys(orders).length;
+      if (lastKnownOrdersCount !== -1 && count > lastKnownOrdersCount) {
+        playAdminAlarm();
+      }
+      lastKnownOrdersCount = count;
+    } else {
+      lastKnownOrdersCount = 0;
+    }
+    loadAdminOrdersList();
   });
 }
 
@@ -1011,7 +1039,7 @@ function setCouponDiscount(amount, code) {
   renderCartModalItems();
 }
 
-// ==================== 7. PLACE ORDER ====================
+// ==================== 7. PLACE ORDER & LIVE TRACKING REDIRECT ====================
 function placeOrder() {
   if (!isStoreOpen) {
     alert("Sorry, the restaurant is currently closed!");
@@ -1103,17 +1131,19 @@ function placeOrder() {
     paymentMode: currentOrderMode === 'dinein' ? 'Pay at Counter' : activePayment,
     utrNumber: currentOrderMode === 'dinein' ? 'N/A (Dine-in)' : (utrVal || "N/A (COD)"),
     coinsUsed: coinsRedeemed,
-    status: "1. Order Confirmed",
+    status: "Order Confirmed",
     stage: 1,
     eta: (currentOrderMode === 'dinein') ? 15 : 30,
     timestamp: Date.now()
   };
 
+  let newOrderKey = null;
   if (typeof db !== 'undefined' && db) {
     const newOrderRef = db.ref("orders").push();
+    newOrderKey = newOrderRef.key;
     newOrderRef.set(orderPayload);
     if (phone !== "DINE-IN") {
-      db.ref("customer_history/" + phone + "/" + newOrderRef.key).set(orderPayload);
+      db.ref("customer_history/" + phone + "/" + newOrderKey).set(orderPayload);
     }
   }
 
@@ -1134,14 +1164,117 @@ function placeOrder() {
       ? `Table #${selectedTableNumber} ke liye order kitchen me bhej diya gaya hai!`
       : `Aapka swadist khana taiyar ho raha hai!`;
   }
+
+  const trackBtn = document.getElementById('successViewOrderBtn');
+  if (trackBtn) {
+    trackBtn.onclick = function() {
+      animModal.style.display = 'none';
+      if (newOrderKey) {
+        trackLiveOrder(newOrderKey, generatedId);
+      } else {
+        openOrderHistoryModal();
+      }
+    };
+  }
+
   if (animModal) {
     animModal.style.display = "flex";
   } else {
-    openOrderHistoryModal();
+    trackLiveOrder(newOrderKey, generatedId);
   }
 }
 
-// ==================== 8. ORDERS HISTORY ====================
+// ==================== 8. LIVE ORDER TRACKING (CUSTOMER) ====================
+let trackingListener = null;
+
+function trackLiveOrder(orderKey, orderId) {
+  openModal('trackingModal');
+  const container = document.getElementById('trackingContent');
+  if (!container) return;
+
+  container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Connecting to Live Kitchen Tracking...</p>`;
+
+  if (trackingListener && db) {
+    db.ref("orders/" + trackingListener).off();
+  }
+  trackingListener = orderKey;
+
+  if (db && orderKey) {
+    db.ref("orders/" + orderKey).on("value", snapshot => {
+      const ord = snapshot.val();
+      if (!ord) {
+        container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Order details not found.</p>`;
+        return;
+      }
+      renderLiveTrackerUI(ord, container);
+    });
+  } else {
+    container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Tracking offline.</p>`;
+  }
+}
+
+function renderLiveTrackerUI(ord, container) {
+  const stage = Number(ord.stage || 1);
+  const itemsText = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Food Items";
+
+  const s1Class = stage >= 1 ? (stage === 1 ? "active" : "done") : "";
+  const s2Class = stage >= 2 ? (stage === 2 ? "active" : "done") : "";
+  const s3Class = stage >= 3 ? (stage === 3 ? "active" : "done") : "";
+  const s4Class = stage >= 4 ? "done" : "";
+
+  container.innerHTML = `
+    <div style="background:#1c1c1e; border-radius:14px; padding:16px; border:1px solid #333; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span style="font-size:13px; font-weight:800; color:#E21B24;">#${ord.orderId}</span>
+        <span style="font-size:11px; background:#261012; color:#ff6b6b; padding:3px 8px; border-radius:6px; font-weight:bold;">${ord.orderType || 'Home Delivery'}</span>
+      </div>
+      <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:4px;">${itemsText}</div>
+      <div style="font-size:12px; color:#10b981; font-weight:800;">Total: ₹${ord.grandTotal} (${ord.paymentMode})</div>
+    </div>
+
+    <div style="background:#141416; border-radius:14px; padding:18px 16px; border:1px solid #222;">
+      <h4 style="font-size:14px; color:#38bdf8; margin-bottom:18px;"><i class="fa-solid fa-clock-rotate-left"></i> Live Status Timeline</h4>
+      
+      <div class="track-step ${s1Class}">
+        <div class="track-icon"><i class="fa-solid fa-receipt"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">1. Order Confirmed</div>
+          <small style="color:#888; font-size:11px;">Restaurant received your order</small>
+        </div>
+      </div>
+
+      <div class="track-step ${s2Class}">
+        <div class="track-icon"><i class="fa-solid fa-fire-burner"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">2. Preparing Your Food</div>
+          <small style="color:#888; font-size:11px;">Chef is cooking fresh & hot dishes</small>
+        </div>
+      </div>
+
+      <div class="track-step ${s3Class}">
+        <div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">3. Out for Delivery / Table Serving</div>
+          <small style="color:#888; font-size:11px;">On the way to your doorstep or table</small>
+        </div>
+      </div>
+
+      <div class="track-step ${s4Class}">
+        <div class="track-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">4. Delivered / Served</div>
+          <small style="color:#888; font-size:11px;">Enjoy your delicious meal!</small>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="window.open('tel:8453270362')" style="width:100%; margin-top:16px; background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:12px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer;">
+      <i class="fa-solid fa-phone"></i> Call Restaurant Support (8453270362)
+    </button>
+  `;
+}
+
+// ==================== 9. ORDERS HISTORY (CUSTOMER) ====================
 function openOrderHistoryModal() {
   const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
   const phone = profile.phone;
@@ -1152,7 +1285,7 @@ function openOrderHistoryModal() {
   container.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Fetching orders...</p>';
 
   if (!phone || !db) {
-    container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">Please save phone in Account tab.</p>`;
+    container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">Please enter phone number in Account tab to sync order history.</p>`;
     return;
   }
 
@@ -1172,7 +1305,7 @@ function openOrderHistoryModal() {
           <div class="order-history-card" style="background:#1e1e1e; border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid #2a2a2a;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
               <span style="font-size:12px; font-weight:700; color:#E21B24;">#${ord.orderId}</span>
-              <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#372213; color:#f97316;">${ord.status || 'Pending'}</span>
+              <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#372213; color:#f97316;">${ord.status || 'Confirmed'}</span>
             </div>
             <div style="display:flex; gap:10px; align-items:center;">
               <img src="${primaryImg}" style="width:48px; height:48px; border-radius:8px; object-fit:cover;" />
@@ -1181,6 +1314,11 @@ function openOrderHistoryModal() {
                 <div style="font-size:12px; font-weight:700; color:#E21B24; margin-top:2px;">₹${ord.grandTotal} (${ord.paymentMode})</div>
               </div>
             </div>
+            <div style="margin-top:10px; border-top:1px dashed #333; padding-top:8px; display:flex; justify-content:flex-end;">
+              <button onclick="trackLiveOrder('${key}', '${ord.orderId}')" style="background:#E21B24; color:#fff; border:none; padding:6px 14px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">
+                🛵 Track Live Status
+              </button>
+            </div>
           </div>
         `;
       });
@@ -1188,7 +1326,7 @@ function openOrderHistoryModal() {
   });
 }
 
-// ==================== 9. ADMIN PANEL & COMPLETE MENU EDITOR ====================
+// ==================== 10. ADMIN PANEL & LIVE ORDER KOT MANAGEMENT ====================
 function openAdminGateway() {
   openModal('adminModal');
   const lock = document.getElementById('adminLockScreen');
@@ -1221,7 +1359,7 @@ function loadAdminOrdersList() {
   const container = document.getElementById('adminLiveOrdersList');
   if (!container || !db) return;
 
-  db.ref("orders").on("value", snapshot => {
+  db.ref("orders").once("value", snapshot => {
     const data = snapshot.val();
     container.innerHTML = '';
     let count = 0;
@@ -1237,18 +1375,29 @@ function loadAdminOrdersList() {
       count++;
       rev += Number(ord.grandTotal || 0);
       const itemsStr = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Items";
+      const currentStage = Number(ord.stage || 1);
 
       container.innerHTML += `
-        <div style="background:#1e293b; border-radius:12px; padding:12px; margin-bottom:10px; border:1px solid #334155; color:#fff;">
+        <div style="background:#1e293b; border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid #334155; color:#fff;">
           <div style="display:flex; justify-content:space-between;">
-            <strong>${ord.customerName} (₹${ord.grandTotal})</strong>
-            <span style="color:#E21B24;">#${ord.orderId}</span>
+            <strong>${ord.customerName} (${ord.orderType || 'Home Delivery'})</strong>
+            <span style="color:#E21B24; font-weight:800;">#${ord.orderId}</span>
           </div>
           <div style="font-size:12px; color:#cbd5e1; margin:6px 0;">🍲 ${itemsStr}</div>
-          <div style="font-size:11px; margin-bottom:6px; color:#38bdf8;">Status: ${ord.status || 'Pending'}</div>
-          <div style="display:flex; gap:6px;">
-            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 4, 'Delivered')" style="background:#10b981; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px;">✅ Done</button>
-            <button onclick="deleteAdminOrder('${k}')" style="background:#475569; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px;">🗑️</button>
+          <div style="font-size:12px; color:#10b981; font-weight:700;">₹${ord.grandTotal} | Pay: ${ord.paymentMode}</div>
+          <div style="font-size:11px; color:#94a3b8; margin-top:2px;">📍 ${ord.address}</div>
+
+          <!-- ADMIN LIVE STAGE BUTTONS -->
+          <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; margin:10px 0 6px;">
+            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 1, 'Order Confirmed')" style="background:${currentStage === 1 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">1. Confirmed</button>
+            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 2, 'Preparing Food')" style="background:${currentStage === 2 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">2. Kitchen</button>
+            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 3, 'Out for Delivery')" style="background:${currentStage === 3 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">3. Delivery</button>
+            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 4, 'Delivered')" style="background:${currentStage === 4 ? '#10b981' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">4. Done ✅</button>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+            <span style="font-size:11px; color:#38bdf8;">Stage: <strong>${ord.status || 'Confirmed'}</strong></span>
+            <button onclick="deleteAdminOrder('${k}')" style="background:#475569; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; cursor:pointer;">🗑️ Delete</button>
           </div>
         </div>
       `;
@@ -1260,6 +1409,7 @@ function loadAdminOrdersList() {
 }
 
 function setAdminOrderStatus(key, orderId, phone, stage, statusText) {
+  stopAdminAlarm();
   const updates = { stage: Number(stage), status: statusText };
   if (db) {
     db.ref("orders/" + key).update(updates);
@@ -1281,7 +1431,7 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== FULL DISH EDIT SYSTEM ====================
+// ==================== 11. FULL DISH EDIT SYSTEM ====================
 let adminDishUploadBase64 = "";
 let editDishUploadBase64 = "";
 
@@ -1469,7 +1619,7 @@ function assignVipBadge() {
   document.getElementById('vipCustPhone').value = '';
 }
 
-// ==================== 10. NAVIGATION & INITIALIZATION ====================
+// ==================== 12. NAVIGATION & INITIALIZATION ====================
 function switchNavTab(tab) {
   document.querySelectorAll('.bottom-nav .nav-tab').forEach(t => t.classList.remove('active'));
 
@@ -1477,6 +1627,7 @@ function switchNavTab(tab) {
     document.getElementById('tabHome')?.classList.add('active');
     closeModal('orderHistoryModal');
     closeModal('accountModal');
+    closeModal('trackingModal');
     renderFoodItems(menuCatalog);
   } else if (tab === 'cakes') {
     document.getElementById('tabCakes')?.classList.add('active');
