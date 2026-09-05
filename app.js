@@ -40,9 +40,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
   if (topBanner) topBanner.style.display = 'flex';
   
   const btn = document.getElementById('smartMainBtn');
-  if (btn) {
-    btn.innerHTML = '📲 Install App';
-  }
+  if (btn) btn.innerHTML = '📲 Install App';
 });
 
 window.addEventListener('appinstalled', () => {
@@ -62,10 +60,18 @@ function triggerPwaInstall() {
       deferredPrompt = null;
     });
   } else {
-    // अगर ऐप पहले से इंस्टॉल है या ब्राउज़र रेडी है तो ताज़ा रीफ़्रेश करें
     triggerAppUpdate();
   }
 }
+
+// Global click event to ensure install touch works everywhere
+document.addEventListener('click', (e) => {
+  const target = e.target.closest('#smartMainBtn, #pwaInstallBtn, .install-app-btn');
+  if (target) {
+    e.preventDefault();
+    triggerPwaInstall();
+  }
+});
 
 function triggerAppUpdate() {
   if ('serviceWorker' in navigator) {
@@ -76,7 +82,7 @@ function triggerAppUpdate() {
     });
   }
   localStorage.removeItem("kd_live_menu");
-  alert("⚡ ऐप सफलतापूर्वक नए मेनू और ऑफर्स के साथ अपडेट हो गया है!");
+  alert("⚡ ऐप नए मेनू और ऑफर्स के साथ अपडेट हो गया है!");
   window.location.reload(true);
 }
 
@@ -1181,7 +1187,7 @@ function openOrderHistoryModal() {
   });
 }
 
-// ==================== 9. ADMIN PANEL & MENU MANAGEMENT ====================
+// ==================== 9. ADMIN PANEL & COMPLETE MENU EDITOR ====================
 function openAdminGateway() {
   openModal('adminModal');
   const lock = document.getElementById('adminLockScreen');
@@ -1274,7 +1280,7 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== DISH ADD & EDIT SYSTEM ====================
+// ==================== FULL MENU ITEM EDITING (NAME, PRICE, CAT, IMG) ====================
 let adminDishUploadBase64 = "";
 
 function previewAdminDishUpload(input) {
@@ -1331,18 +1337,18 @@ function renderAdminMenuItems() {
   if (!container) return;
   container.innerHTML = '';
 
-  menuCatalog.forEach((item, index) => {
+  menuCatalog.forEach((item) => {
     container.innerHTML += `
       <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #334155; color:#fff;">
         <div style="display:flex; align-items:center; gap:8px;">
-          <img src="${item.img}" style="width:36px; height:36px; border-radius:6px; object-fit:cover;" />
+          <img src="${item.img}" style="width:38px; height:38px; border-radius:6px; object-fit:cover;" />
           <div>
             <div style="font-weight:600; font-size:13px;">${item.name}</div>
-            <div style="font-size:11px; color:#38bdf8;">₹${item.price}</div>
+            <div style="font-size:11px; color:#38bdf8;">₹${item.price} • <span style="text-transform:uppercase; color:#94a3b8;">${item.cat}</span></div>
           </div>
         </div>
         <div style="display:flex; gap:6px;">
-          <button onclick="editDishPrice('${item.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;" title="Edit Price">✏️ Edit</button>
+          <button onclick="openFullDishEditor('${item.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;" title="Full Edit">✏️ Edit</button>
           <button onclick="toggleDishStock('${item.id}')" style="background:${item.inStock !== false ? '#10b981' : '#ef4444'}; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">${item.inStock !== false ? 'In Stock' : 'Sold Out'}</button>
           <button onclick="deleteDish('${item.id}')" style="background:#334155; color:#ff6b6b; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">🗑️</button>
         </div>
@@ -1351,17 +1357,30 @@ function renderAdminMenuItems() {
   });
 }
 
-function editDishPrice(id) {
+// FULL DISH EDITOR (Allows changing Name, Price, Category, and Image URL)
+function openFullDishEditor(id) {
   const item = menuCatalog.find(d => d.id === id);
   if (!item) return;
 
-  const newPrice = prompt(`Enter new price for "${item.name}":`, item.price);
-  if (newPrice !== null && !isNaN(newPrice) && Number(newPrice) > 0) {
-    item.price = Number(newPrice);
-    item.mrp = Math.round(item.price * 1.3);
-    saveMenuToStorageAndCloud();
-    alert(`Price updated to ₹${item.price}!`);
-  }
+  const newName = prompt("1. Enter Dish Name:", item.name);
+  if (newName === null) return;
+
+  const newPrice = prompt("2. Enter Price (₹):", item.price);
+  if (newPrice === null || isNaN(newPrice) || Number(newPrice) <= 0) return;
+
+  const newCat = prompt("3. Enter Category (momos, rolls, chicken, pork, chow_thukpa, cakes, drinks):", item.cat);
+  if (newCat === null) return;
+
+  const newImg = prompt("4. Enter Image URL (Press OK to keep current):", item.img);
+
+  item.name = newName.trim() || item.name;
+  item.price = Number(newPrice);
+  item.mrp = Math.round(item.price * 1.3);
+  item.cat = newCat.trim().toLowerCase() || item.cat;
+  item.img = (newImg && newImg.trim()) ? newImg.trim() : item.img;
+
+  saveMenuToStorageAndCloud();
+  alert(`✅ "${item.name}" updated successfully!`);
 }
 
 function toggleDishStock(id) {
