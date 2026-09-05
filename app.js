@@ -31,6 +31,7 @@ document.addEventListener('click', () => {
 
 // ==================== SMART 1-CLICK PWA INSTALL & UPDATE ====================
 let deferredPrompt = null;
+const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
@@ -64,7 +65,7 @@ function triggerPwaInstall() {
   }
 }
 
-// Global click event to ensure install touch works everywhere
+// Global click event to ensure install touch works everywhere instantly
 document.addEventListener('click', (e) => {
   const target = e.target.closest('#smartMainBtn, #pwaInstallBtn, .install-app-btn');
   if (target) {
@@ -1280,8 +1281,9 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== FULL MENU ITEM EDITING (NAME, PRICE, CAT, IMG) ====================
+// ==================== FULL DISH EDIT SYSTEM ====================
 let adminDishUploadBase64 = "";
+let editDishUploadBase64 = "";
 
 function previewAdminDishUpload(input) {
   if (input.files && input.files[0]) {
@@ -1295,6 +1297,71 @@ function previewAdminDishUpload(input) {
       }
     };
     reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function previewEditDishUpload(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      editDishUploadBase64 = e.target.result;
+      const prev = document.getElementById('editDishPreview');
+      if (prev) {
+        prev.src = editDishUploadBase64;
+        prev.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function openFullDishEditor(id) {
+  const item = menuCatalog.find(d => d.id === id);
+  if (!item) return;
+
+  document.getElementById('editDishId').value = item.id;
+  document.getElementById('editDishName').value = item.name;
+  document.getElementById('editDishPrice').value = item.price;
+  document.getElementById('editDishCat').value = item.cat || 'momos';
+  document.getElementById('editDishImgUrl').value = item.img || '';
+
+  const prev = document.getElementById('editDishPreview');
+  if (prev) {
+    prev.src = item.img || '';
+    prev.style.display = item.img ? 'block' : 'none';
+  }
+  editDishUploadBase64 = "";
+
+  openModal('editDishModal');
+}
+
+function saveEditedDishDetails() {
+  const id = document.getElementById('editDishId')?.value;
+  const name = document.getElementById('editDishName')?.value.trim();
+  const price = Number(document.getElementById('editDishPrice')?.value);
+  const cat = document.getElementById('editDishCat')?.value;
+  const urlImg = document.getElementById('editDishImgUrl')?.value.trim();
+
+  if (!name || !price) {
+    alert("Dish name aur price enter kijiye!");
+    return;
+  }
+
+  const item = menuCatalog.find(d => d.id === id);
+  if (item) {
+    item.name = name;
+    item.price = price;
+    item.mrp = Math.round(price * 1.3);
+    item.cat = cat;
+    if (editDishUploadBase64) {
+      item.img = editDishUploadBase64;
+    } else if (urlImg) {
+      item.img = urlImg;
+    }
+
+    saveMenuToStorageAndCloud();
+    closeModal('editDishModal');
+    alert(`✅ "${name}" update ho gaya!`);
   }
 }
 
@@ -1348,39 +1415,13 @@ function renderAdminMenuItems() {
           </div>
         </div>
         <div style="display:flex; gap:6px;">
-          <button onclick="openFullDishEditor('${item.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;" title="Full Edit">✏️ Edit</button>
+          <button onclick="openFullDishEditor('${item.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">✏️ Edit</button>
           <button onclick="toggleDishStock('${item.id}')" style="background:${item.inStock !== false ? '#10b981' : '#ef4444'}; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">${item.inStock !== false ? 'In Stock' : 'Sold Out'}</button>
           <button onclick="deleteDish('${item.id}')" style="background:#334155; color:#ff6b6b; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">🗑️</button>
         </div>
       </div>
     `;
   });
-}
-
-// FULL DISH EDITOR (Allows changing Name, Price, Category, and Image URL)
-function openFullDishEditor(id) {
-  const item = menuCatalog.find(d => d.id === id);
-  if (!item) return;
-
-  const newName = prompt("1. Enter Dish Name:", item.name);
-  if (newName === null) return;
-
-  const newPrice = prompt("2. Enter Price (₹):", item.price);
-  if (newPrice === null || isNaN(newPrice) || Number(newPrice) <= 0) return;
-
-  const newCat = prompt("3. Enter Category (momos, rolls, chicken, pork, chow_thukpa, cakes, drinks):", item.cat);
-  if (newCat === null) return;
-
-  const newImg = prompt("4. Enter Image URL (Press OK to keep current):", item.img);
-
-  item.name = newName.trim() || item.name;
-  item.price = Number(newPrice);
-  item.mrp = Math.round(item.price * 1.3);
-  item.cat = newCat.trim().toLowerCase() || item.cat;
-  item.img = (newImg && newImg.trim()) ? newImg.trim() : item.img;
-
-  saveMenuToStorageAndCloud();
-  alert(`✅ "${item.name}" updated successfully!`);
 }
 
 function toggleDishStock(id) {
