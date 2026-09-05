@@ -36,32 +36,32 @@ const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches |
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+  
+  const topBanner = document.getElementById('smartPwaBanner');
+  if (topBanner && !isAppInstalled) {
+    topBanner.style.display = 'flex';
+  }
   updateInstallButtonUI(false);
 });
 
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
   updateInstallButtonUI(true);
-  const banner = document.getElementById('pwaInstallBanner');
-  if (banner) banner.style.display = 'none';
+  const topBanner = document.getElementById('smartPwaBanner');
+  if (topBanner) topBanner.style.display = 'none';
 });
 
 function updateInstallButtonUI(installed) {
-  const installBtns = document.querySelectorAll('#pwaInstallBtn, .install-app-btn');
+  const installBtns = document.querySelectorAll('#pwaInstallBtn, .install-app-btn, #smartMainBtn');
   installBtns.forEach(btn => {
     if (installed || isAppInstalled) {
-      btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Check for App Update`;
+      btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Update Menu`;
       btn.onclick = triggerAppUpdate;
     } else {
-      btn.innerHTML = `<i class="fa-solid fa-download"></i> Install Mobile App`;
+      btn.innerHTML = `📲 Install App`;
       btn.onclick = triggerPwaInstall;
     }
   });
-
-  const banner = document.getElementById('pwaInstallBanner');
-  if (banner && (installed || isAppInstalled)) {
-    banner.style.display = 'none';
-  }
 }
 
 function triggerPwaInstall() {
@@ -69,32 +69,17 @@ function triggerPwaInstall() {
     deferredPrompt.prompt();
     deferredPrompt.userChoice.then((choiceResult) => {
       if (choiceResult.outcome === 'accepted') {
-        updateInstallButtonUI(true);
+        const topBanner = document.getElementById('smartPwaBanner');
+        if (topBanner) topBanner.style.display = 'none';
       }
       deferredPrompt = null;
     });
-    return;
-  }
-
-  if (isAppInstalled) {
+  } else if (isAppInstalled) {
     triggerAppUpdate();
-    return;
+  } else {
+    // अगर ब्राउज़र प्रॉम्प्ट तैयार कर रहा हो तो सीधा नेटिव ट्रिगर करें (कोई अलर्ट या टोस्ट नहीं)
+    console.log("Install prompt pending browser readiness...");
   }
-
-  showInstallGuideToast();
-}
-
-function showInstallGuideToast() {
-  let guide = document.getElementById('pwaGuideToast');
-  if (!guide) {
-    guide = document.createElement('div');
-    guide.id = 'pwaGuideToast';
-    guide.style.cssText = "position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:#1e1e1e; color:#fff; border:1px solid #E21B24; padding:12px 18px; border-radius:12px; font-size:12px; z-index:9999999; box-shadow:0 10px 25px rgba(0,0,0,0.8); text-align:center; max-width:90%;";
-    guide.innerHTML = "📲 <strong>App Ready:</strong> ऊपर 3 डॉट्स (⋮) दबाकर <b>'Add to Home screen'</b> चुनें।";
-    document.body.appendChild(guide);
-  }
-  guide.style.display = 'block';
-  setTimeout(() => { guide.style.display = 'none'; }, 4000);
 }
 
 function triggerAppUpdate() {
@@ -264,7 +249,7 @@ const defaultMenu = [
   { id: "nb_ch3", name: "Chicken Gravy (Half)", price: 150, mrp: 180, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
   { id: "nb_ch4", name: "Chicken Gravy (Full)", price: 200, mrp: 250, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
 
-  // --- PREVIOUS ITEMS (KEPT SAFE) ---
+  // --- PREVIOUS ITEMS ---
   { id: "m1", name: "Chicken Steamed Momo (10 Pcs)", price: 120, mrp: 160, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
   { id: "m2", name: "Chicken Fried Momo (10 Pcs)", price: 140, mrp: 180, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
   { id: "m3", name: "Chicken Schezwan Gravy Momo", price: 160, mrp: 200, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=500" },
@@ -1176,8 +1161,6 @@ function openOrderHistoryModal() {
         const ord = data[key];
         const primaryImg = (ord.items && ord.items[0] && ord.items[0].img) ? ord.items[0].img : "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
         const itemsList = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Items";
-        const isDelivered = ord.stage === 4 || (ord.status && ord.status.includes("Delivered"));
-        const isCancelled = ord.stage === 0 || (ord.status && ord.status.includes("Cancelled"));
 
         container.innerHTML += `
           <div class="order-history-card" style="background:#1e1e1e; border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid #2a2a2a;">
