@@ -11,16 +11,20 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=310" />
+  <link rel="stylesheet" href="style.css?v=700" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
+  <!-- SMART AUTO SERVICE WORKER -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('SW Registered:', reg.scope))
+        navigator.serviceWorker.register('./sw.js?v=700')
+          .then(reg => {
+            reg.update();
+            console.log('SW Auto-Updated:', reg.scope);
+          })
           .catch(err => console.log('SW Error:', err));
       });
     }
@@ -28,6 +32,7 @@
 </head>
 <body>
 
+<!-- === FULL SPLASH SCREEN START === -->
 <style>
   #custom-splash-screen {
     position: fixed;
@@ -126,27 +131,21 @@
     100% { transform: translateX(100%); }
   }
 
-  /* PWA Install Banner */
-  #pwaInstallBanner {
+  /* AUTO SMART TOP POPUP BANNER */
+  #smartPwaBanner {
     display: none;
-    position: fixed;
-    bottom: 65px;
-    left: 12px;
-    right: 12px;
-    background: #1e1e1e;
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #1c1c1e, #111113);
     color: #fff;
     padding: 10px 14px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.7);
-    z-index: 99999;
+    z-index: 999999;
+    border-bottom: 2px solid #E21B24;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.8);
     align-items: center;
     justify-content: space-between;
-    border: 1px solid #E21B24;
-    animation: bounceIn 0.5s ease;
-  }
-  @keyframes bounceIn {
-    0% { transform: translateY(50px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
   }
 
   /* Floating Toast Alert */
@@ -171,7 +170,7 @@
     100% { transform: translate(-50%, 0); opacity: 1; }
   }
 
-  /* Order Mode Switcher (Delivery vs Table) */
+  /* Order Mode Switcher */
   .order-mode-toggle {
     display: flex;
     background: #1c1c1e;
@@ -250,21 +249,27 @@
     window.addEventListener("load", dismissSplash);
   })();
 </script>
-<div id="cartToast">✅ Added to Cart!</div>
+<!-- === FULL SPLASH SCREEN END === -->
 
-  <div id="pwaInstallBanner">
+  <!-- SMART AUTO TOP POPUP (AUTO POPUP FOR NEW & OLD USERS) -->
+  <div id="smartPwaBanner">
     <div style="display:flex; align-items:center; gap:10px;">
-      <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:36px; height:36px; border-radius:50%; border:1px solid #E21B24;" />
+      <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:34px; height:34px; border-radius:50%; border:1.5px solid #E21B24;" />
       <div>
-        <div style="font-weight:700; font-size:13px; color:#E21B24;">S&A RESTAURANT APP</div>
-        <div style="font-size:10px; color:#94a3b8;">Install for instant ordering & offers</div>
+        <div id="smartBannerTitle" style="font-weight:700; font-size:12px; color:#fff;">S&A Mobile App</div>
+        <div id="smartBannerSub" style="font-size:10px; color:#94a3b8;">1-Click Fast Ordering</div>
       </div>
     </div>
-    <div style="display:flex; gap:6px;">
-      <button id="pwaInstallBtn" style="background:#E21B24; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-weight:700; font-size:12px; cursor:pointer;"><i class="fa-solid fa-download"></i> Install</button>
-      <button onclick="document.getElementById('pwaInstallBanner').style.display='none'" style="background:transparent; color:#94a3b8; border:none; font-size:16px; cursor:pointer;">✕</button>
+    <div style="display:flex; gap:6px; align-items:center;">
+      <button id="smartMainBtn" onclick="triggerPwaInstall()" style="background:linear-gradient(135deg, #E21B24, #b91c1c); color:#fff; border:none; padding:7px 14px; border-radius:8px; font-weight:700; font-size:11px; cursor:pointer; box-shadow:0 2px 8px rgba(226,27,36,0.4);">
+        📲 Install App
+      </button>
+      <button onclick="document.getElementById('smartPwaBanner').style.display='none'" style="background:transparent; color:#666; border:none; font-size:16px; cursor:pointer; padding:0 4px;">✕</button>
     </div>
   </div>
+
+  <!-- Toast Notification -->
+  <div id="cartToast">✅ Added to Cart!</div>
 
   <header class="app-header">
     <div class="top-bar">
@@ -282,6 +287,7 @@
       </div>
     </div>
 
+    <!-- ORDER MODE SWITCHER -->
     <div class="order-mode-toggle">
       <button class="order-mode-btn active" id="modeDeliveryBtn" onclick="setOrderMode('delivery')">
         <i class="fa-solid fa-motorcycle"></i> Home Delivery
@@ -291,6 +297,7 @@
       </button>
     </div>
 
+    <!-- ACTIVE TABLE BADGE -->
     <div class="table-banner" id="activeTableBanner">
       <span><i class="fa-solid fa-utensils"></i> Dine-in: <strong id="activeTableLabel" style="color:#ff6b6b;">Table #1</strong></span>
       <button onclick="openTableSelectorModal()" style="background:transparent; color:#ff6b6b; border:1px solid #ff6b6b; padding:2px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change</button>
@@ -351,6 +358,7 @@
 
   <div class="food-grid" id="foodGrid"></div>
 
+  <!-- FLOATING CART BAR -->
   <div class="floating-cart-bar" id="floatingCart" onclick="openCartModal()">
     <div>
       <span id="cartCount" style="font-weight:700;">1 Item</span> | <span id="cartTotal">₹0</span>
@@ -359,6 +367,7 @@
     <div style="font-weight:700;">View Cart <i class="fa-solid fa-arrow-right"></i></div>
   </div>
 
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <div class="nav-tab active" id="tabHome" onclick="switchNavTab('home')"><i class="fa-solid fa-house"></i>Home</div>
     <div class="nav-tab" id="tabCakes" onclick="openCakeStudio()"><i class="fa-solid fa-cake-candles"></i>Cakes</div>
@@ -367,6 +376,7 @@
     <div class="nav-tab" id="tabAccount" onclick="switchNavTab('account')"><i class="fa-solid fa-circle-user"></i>Account</div>
   </nav>
 
+  <!-- TABLE SELECTION MODAL -->
   <div class="full-modal" id="tableSelectorModal" style="display:none !important;">
     <div class="modal-header">
       <h3>Select Your Table</h3>
@@ -392,6 +402,7 @@
     </div>
   </div>
 
+  <!-- Product Detail Modal -->
   <div class="full-modal" id="productDetailModal" style="display:none !important;">
     <div class="modal-header">
       <i class="fa-solid fa-arrow-left close-btn" onclick="closeModal('productDetailModal')"></i>
@@ -462,6 +473,7 @@
     </div>
   </div>
 
+  <!-- Account Modal -->
   <div class="full-modal" id="accountModal" style="display:none !important;">
     <div class="modal-header">
       <h3>My Account</h3>
@@ -519,7 +531,7 @@
 
       <div class="acc-menu-list">
         <div class="acc-menu-row" onclick="triggerPwaInstall()">
-          <div><i class="fa-solid fa-mobile-screen-button" style="color:#38bdf8;"></i> Install Mobile App</div>
+          <div><i class="fa-solid fa-mobile-screen-button" style="color:#38bdf8;"></i> <span id="accInstallBtnText">Install Mobile App</span></div>
           <i class="fa-solid fa-chevron-right"></i>
         </div>
         <div class="acc-menu-row" onclick="shareReferralLink()">
@@ -538,6 +550,7 @@
     </div>
   </div>
 
+  <!-- Language Selection Modal -->
   <div class="full-modal" id="languageModal" style="display:none !important;">
     <div class="modal-header">
       <h3>🌐 Select Language</h3>
@@ -561,12 +574,14 @@
     </div>
   </div>
 
+  <!-- Cart & Checkout Modal -->
   <div class="full-modal" id="cartModal" style="display:none !important;">
     <div class="modal-header">
       <h3 id="checkoutStepTitle">1. Review Cart & Summary</h3>
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cartModal')"></i>
     </div>
     <div style="padding:16px;">
+      <!-- STEP 1: CART ITEMS & PLUS/MINUS -->
       <div id="checkoutStep1">
         <div id="cartItemsList"></div>
 
@@ -593,7 +608,9 @@
         <button class="admin-btn btn-primary" style="margin-top:14px;" onclick="goToCheckoutStep(2)">PROCEED ➔</button>
       </div>
 
+      <!-- STEP 2: DINE-IN BILL / HOME DELIVERY ADDRESS -->
       <div id="checkoutStep2" style="display:none;">
+        <!-- DINE-IN TABLE ORDER SUMMARY (PAY AT COUNTER) -->
         <div id="dineInOrderSection" style="display:none; background:#1c1c1e; border:1px solid #E21B24; border-radius:12px; padding:16px; margin-bottom:14px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <h4 style="font-size:15px; color:#E21B24; margin:0;"><i class="fa-solid fa-chair"></i> Dine-in Table Order</h4>
@@ -607,6 +624,7 @@
           <label style="font-size:11px; color:#aaa; margin-bottom:4px; display:block;">Customer Name (Optional):</label>
           <input type="text" id="custTableGuestName" class="form-input" placeholder="e.g. Rahul" />
 
+          <!-- TABLE BILL SUMMARY -->
           <div class="bill-box" style="margin:12px 0 6px; background:#141414; border-color:#333;">
             <div class="bill-row"><span>Items Bill Total:</span><span id="dineInBillTotal" style="color:#fff; font-weight:700;">₹0</span></div>
             <div class="bill-row"><span>Delivery Charges:</span><span style="color:#10b981; font-weight:700;">₹0 (Dine-in)</span></div>
@@ -616,6 +634,7 @@
           <p style="font-size:11px; color:#888; text-align:center; margin-top:8px;">💡 Khana khane ke baad bill counter par cash ya scanner se pay karein.</p>
         </div>
 
+        <!-- HOME DELIVERY DETAILS -->
         <div id="deliveryOrderSection">
           <h4 style="font-size:14px; margin-bottom:12px; color:#fff;"><i class="fa-solid fa-motorcycle" style="color:#E21B24;"></i> Delivery Address</h4>
           <label style="font-size:11px; color:#888;">Full Name</label>
@@ -628,12 +647,14 @@
           <textarea id="custAddress" class="form-input" placeholder="House no, Street name, Landmark in Bengbari/Udalguri"></textarea>
         </div>
 
+        <!-- ACTION BUTTONS -->
         <div style="display:flex; gap:10px; margin-top:14px;">
           <button class="admin-btn btn-primary" style="background:#333; flex:1;" onclick="goToCheckoutStep(1)">⬅ Back</button>
           <button id="step2ConfirmBtn" class="admin-btn btn-green" style="flex:2;" onclick="handleStep2Action()">CONFIRM TABLE ORDER ✅</button>
         </div>
       </div>
 
+      <!-- STEP 3: ONLINE PAYMENT ONLY FOR HOME DELIVERY -->
       <div id="checkoutStep3" style="display:none;">
         <div class="bill-box" style="margin-bottom:14px;">
           <div class="bill-row" style="font-weight:700;"><span>Total Amount to Pay:</span><span id="step3GrandTotal" style="color:#E21B24; font-size:16px;">₹0</span></div>
@@ -645,6 +666,7 @@
           <button class="add-btn" id="upiBtn" style="flex:1; padding:12px 8px; background:#E21B24; color:#fff;" onclick="setPaymentMethod('UPI')">📱 Online / UPI</button>
         </div>
 
+        <!-- ONLINE PAYMENT CONTAINER -->
         <div id="upiQrBox" class="upi-box" style="display:block; text-align:center; padding:16px; background:#141414; border-radius:12px; border:1px solid #2a2a2a; margin-bottom:14px;">
           <p style="font-size:13px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Scan & Pay via Any UPI App</p>
 
@@ -678,6 +700,7 @@
     </div>
   </div>
 
+  <!-- Admin Modal -->
   <div class="full-modal admin-modal" id="adminModal" style="display:none !important;">
     <div class="modal-header" style="background:#0f172a; border-color:#334155;">
       <h3 style="color:#f8fafc;"><i class="fa-solid fa-user-shield" style="color:#E21B24;"></i> S&A Manager Admin Room</h3>
@@ -752,6 +775,7 @@
         <button class="admin-btn btn-blue" onclick="adminCreateCoupon()">SAVE PROMO CODE</button>
       </div>
 
+      <!-- Payment Settings & QR Control -->
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-money-check-dollar"></i> Payment Gateways & QR Control</h4>
         <button class="admin-btn btn-green" onclick="toggleCodStatus()" id="adminCodToggleBtn" style="margin-bottom:12px;">Cash on Delivery: ENABLED</button>
@@ -779,6 +803,7 @@
     </div>
   </div>
 
+  <!-- Order History Modal -->
   <div class="full-modal" id="orderHistoryModal" style="display:none !important;">
     <div class="modal-header">
       <h3>📦 My Orders & Live Tracking</h3>
@@ -789,6 +814,7 @@
     </div>
   </div>
 
+  <!-- Tracking Modal -->
   <div class="full-modal" id="trackingModal" style="display:none !important;">
     <div class="modal-header">
       <h3>Live Order Progress</h3>
@@ -797,6 +823,7 @@
     <div style="padding:20px 16px;" id="trackingContent"></div>
   </div>
 
+  <!-- Wishlist Modal -->
   <div class="full-modal" id="wishlistModal" style="display:none !important;">
     <div class="modal-header">
       <h3>❤️ Saved Dishes (Wishlist)</h3>
@@ -807,6 +834,7 @@
     </div>
   </div>
 
+  <!-- Custom Cake Studio Modal -->
   <div class="full-modal" id="cakeStudioModal" style="display:none !important;">
     <div class="modal-header">
       <h3>🎂 Custom Cake Studio</h3>
@@ -842,6 +870,7 @@
     </div>
   </div>
 
+  <!-- Review Modal -->
   <div class="full-modal" id="reviewModal" style="display:none !important;">
     <div class="modal-header">
       <h3>⭐ Customer Feedback</h3>
@@ -862,6 +891,7 @@
 
   <audio id="orderAudioAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
 
+  <!-- Celebration Popup -->
   <div id="order-success-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999999; align-items:center; justify-content:center; text-align:center; padding:20px;">
     <div style="background:#141a24; border:1px solid #E21B24; border-radius:24px; padding:30px 20px; width:100%; max-width:320px; color:#fff; box-shadow:0 0 25px rgba(226,27,36,0.4);">
       <div style="font-size:50px; margin-bottom:10px;">🎉</div>
@@ -871,6 +901,41 @@
     </div>
   </div>
 
-  <script src="app.js?v=310"></script>
+  <!-- CACHE BUSTER V700 -->
+  <script src="app.js?v=700"></script>
+
+  <!-- AUTO TOP POPUP LOGIC SCRIPT -->
+  <script>
+    (function() {
+      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+      const banner = document.getElementById('smartPwaBanner');
+      const title = document.getElementById('smartBannerTitle');
+      const sub = document.getElementById('smartBannerSub');
+      const btn = document.getElementById('smartMainBtn');
+
+      if (!banner || !btn) return;
+
+      if (isStandalone) {
+        // अगर ग्राहक ने पहले से ऐप इंस्टॉल किया हुआ है
+        title.innerText = "S&A Family Restaurant";
+        sub.innerText = "App is Installed & Ready";
+        btn.innerHTML = "🔄 Update Menu";
+        btn.onclick = function() {
+          if (typeof triggerAppUpdate === 'function') {
+            triggerAppUpdate();
+          } else {
+            window.location.reload(true);
+          }
+        };
+        banner.style.display = "flex";
+      } else {
+        // नए ग्राहक के लिए ऊपर पॉपअप दिखाओ
+        title.innerText = "S&A Restaurant App";
+        sub.innerText = "Install for fast orders & discounts";
+        btn.innerHTML = "📲 Install App";
+        banner.style.display = "flex";
+      }
+    })();
+  </script>
 </body>
 </html>
