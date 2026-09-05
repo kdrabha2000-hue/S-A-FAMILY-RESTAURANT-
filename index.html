@@ -11,16 +11,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=700" />
+  <link rel="stylesheet" href="style.css?v=950" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-  <!-- SMART AUTO SERVICE WORKER -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=700')
+        navigator.serviceWorker.register('./sw.js?v=950')
           .then(reg => {
             reg.update();
             console.log('SW Auto-Updated:', reg.scope);
@@ -251,7 +250,7 @@
 </script>
 <!-- === FULL SPLASH SCREEN END === -->
 
-  <!-- SMART AUTO TOP POPUP (AUTO POPUP FOR NEW & OLD USERS) -->
+  <!-- SMART AUTO TOP POPUP -->
   <div id="smartPwaBanner">
     <div style="display:flex; align-items:center; gap:10px;">
       <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:34px; height:34px; border-radius:50%; border:1.5px solid #E21B24;" />
@@ -763,6 +762,7 @@
         <button class="admin-btn btn-green" onclick="adminSaveNewDish()">SAVE DISH TO MENU</button>
       </div>
 
+      <!-- COMPLETE MENU ITEMS LIST WITH FULL EDIT -->
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-list-check"></i> Manage Existing Menu Items</h4>
         <div id="adminMenuItemsList"></div>
@@ -799,6 +799,46 @@
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-crown"></i> Customer VIP Badge</h4>
         <input type="tel" id="vipCustPhone" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Customer Mobile Number" />
         <button class="admin-btn btn-primary" onclick="assignVipBadge()">ACTIVATE VIP GOLD BADGE</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPLETE DISH EDIT POPUP MODAL (FULL CONTROLS) -->
+  <div class="full-modal" id="editDishModal" style="display:none !important; z-index:99999999;">
+    <div class="modal-header" style="background:#0f172a; border-color:#334155;">
+      <h3 style="color:#f8fafc;"><i class="fa-solid fa-pen-to-square" style="color:#38bdf8;"></i> Edit Dish Details</h3>
+      <i class="fa-solid fa-xmark close-btn" style="color:#f8fafc;" onclick="closeModal('editDishModal')"></i>
+    </div>
+    <div style="padding:16px;">
+      <input type="hidden" id="editDishId" />
+
+      <label class="form-label" style="color:#94a3b8;">Dish Name</label>
+      <input type="text" id="editDishName" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" />
+
+      <label class="form-label" style="color:#94a3b8;">Price (₹)</label>
+      <input type="number" id="editDishPrice" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" />
+
+      <label class="form-label" style="color:#94a3b8;">Category</label>
+      <select id="editDishCat" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;">
+        <option value="momos">Momos</option>
+        <option value="rolls">Rolls</option>
+        <option value="chicken">Chicken</option>
+        <option value="pork">Pork</option>
+        <option value="chow_thukpa">Chow / Soup</option>
+        <option value="cakes">Cakes</option>
+        <option value="drinks">Drinks</option>
+      </select>
+
+      <label class="form-label" style="color:#94a3b8;">Change Photo (Camera / Gallery)</label>
+      <input type="file" id="editDishPhotoFile" accept="image/*" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" onchange="previewEditDishUpload(this)" />
+      
+      <label class="form-label" style="color:#94a3b8;">Or Change Image URL</label>
+      <input type="text" id="editDishImgUrl" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" />
+      <img id="editDishPreview" style="display:none; width:100%; height:130px; object-fit:cover; border-radius:8px; margin:10px 0;" />
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button class="admin-btn btn-primary" style="background:#334155; flex:1;" onclick="closeModal('editDishModal')">Cancel</button>
+        <button class="admin-btn btn-green" style="flex:2;" onclick="saveEditedDishDetails()">UPDATE & SAVE ✅</button>
       </div>
     </div>
   </div>
@@ -901,41 +941,7 @@
     </div>
   </div>
 
-  <!-- CACHE BUSTER V700 -->
-  <script src="app.js?v=700"></script>
-
-  <!-- AUTO TOP POPUP LOGIC SCRIPT -->
-  <script>
-    (function() {
-      const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-      const banner = document.getElementById('smartPwaBanner');
-      const title = document.getElementById('smartBannerTitle');
-      const sub = document.getElementById('smartBannerSub');
-      const btn = document.getElementById('smartMainBtn');
-
-      if (!banner || !btn) return;
-
-      if (isStandalone) {
-        // अगर ग्राहक ने पहले से ऐप इंस्टॉल किया हुआ है
-        title.innerText = "S&A Family Restaurant";
-        sub.innerText = "App is Installed & Ready";
-        btn.innerHTML = "🔄 Update Menu";
-        btn.onclick = function() {
-          if (typeof triggerAppUpdate === 'function') {
-            triggerAppUpdate();
-          } else {
-            window.location.reload(true);
-          }
-        };
-        banner.style.display = "flex";
-      } else {
-        // नए ग्राहक के लिए ऊपर पॉपअप दिखाओ
-        title.innerText = "S&A Restaurant App";
-        sub.innerText = "Install for fast orders & discounts";
-        btn.innerHTML = "📲 Install App";
-        banner.style.display = "flex";
-      }
-    })();
-  </script>
+  <!-- CACHE BUSTER V950 -->
+  <script src="app.js?v=950"></script>
 </body>
 </html>
