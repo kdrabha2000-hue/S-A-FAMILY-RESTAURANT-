@@ -31,38 +31,25 @@ document.addEventListener('click', () => {
 
 // ==================== SMART 1-CLICK PWA INSTALL & UPDATE ====================
 let deferredPrompt = null;
-const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   
   const topBanner = document.getElementById('smartPwaBanner');
-  if (topBanner && !isAppInstalled) {
-    topBanner.style.display = 'flex';
+  if (topBanner) topBanner.style.display = 'flex';
+  
+  const btn = document.getElementById('smartMainBtn');
+  if (btn) {
+    btn.innerHTML = '📲 Install App';
   }
-  updateInstallButtonUI(false);
 });
 
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
-  updateInstallButtonUI(true);
   const topBanner = document.getElementById('smartPwaBanner');
   if (topBanner) topBanner.style.display = 'none';
 });
-
-function updateInstallButtonUI(installed) {
-  const installBtns = document.querySelectorAll('#pwaInstallBtn, .install-app-btn, #smartMainBtn');
-  installBtns.forEach(btn => {
-    if (installed || isAppInstalled) {
-      btn.innerHTML = `<i class="fa-solid fa-arrows-rotate"></i> Update Menu`;
-      btn.onclick = triggerAppUpdate;
-    } else {
-      btn.innerHTML = `📲 Install App`;
-      btn.onclick = triggerPwaInstall;
-    }
-  });
-}
 
 function triggerPwaInstall() {
   if (deferredPrompt) {
@@ -74,11 +61,9 @@ function triggerPwaInstall() {
       }
       deferredPrompt = null;
     });
-  } else if (isAppInstalled) {
-    triggerAppUpdate();
   } else {
-    // अगर ब्राउज़र प्रॉम्प्ट तैयार कर रहा हो तो सीधा नेटिव ट्रिगर करें (कोई अलर्ट या टोस्ट नहीं)
-    console.log("Install prompt pending browser readiness...");
+    // अगर ऐप पहले से इंस्टॉल है या ब्राउज़र रेडी है तो ताज़ा रीफ़्रेश करें
+    triggerAppUpdate();
   }
 }
 
@@ -94,10 +79,6 @@ function triggerAppUpdate() {
   alert("⚡ ऐप सफलतापूर्वक नए मेनू और ऑफर्स के साथ अपडेट हो गया है!");
   window.location.reload(true);
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  updateInstallButtonUI(isAppInstalled);
-});
 
 // ==================== LANGUAGE MODAL ====================
 function openLanguageModal() {
@@ -293,6 +274,7 @@ if (db) {
       db.ref("restaurant_menu").set(defaultMenu);
     }
     renderFoodItems(menuCatalog);
+    renderAdminMenuItems();
   });
 
   db.ref("store_status").on("value", snap => {
@@ -395,9 +377,26 @@ function updateStoreStatusUI(open) {
   closedAlert.style.display = open ? "none" : "block";
 }
 
+function toggleStoreStatus() {
+  isStoreOpen = !isStoreOpen;
+  if (db) {
+    db.ref("store_status").set(isStoreOpen);
+  }
+  updateStoreStatusUI(isStoreOpen);
+}
+
 function updateBannerUI(headline) {
   const titles = document.querySelectorAll('.hero-title, #bannerTitle, .banner-title');
   titles.forEach(el => { el.innerText = headline; });
+}
+
+function editPromoBanner() {
+  const currentText = document.getElementById('bannerTitle')?.innerText || "";
+  const newText = prompt("Enter new banner headline:", currentText);
+  if (newText && newText.trim() !== "") {
+    if (db) db.ref("banner_headline").set(newText.trim());
+    updateBannerUI(newText.trim());
+  }
 }
 
 function saveMenuToStorageAndCloud() {
@@ -1182,7 +1181,7 @@ function openOrderHistoryModal() {
   });
 }
 
-// ==================== 9. ADMIN PANEL ====================
+// ==================== 9. ADMIN PANEL & MENU MANAGEMENT ====================
 function openAdminGateway() {
   openModal('adminModal');
   const lock = document.getElementById('adminLockScreen');
@@ -1275,19 +1274,94 @@ function deleteAdminOrder(key) {
   }
 }
 
+// ==================== DISH ADD & EDIT SYSTEM ====================
+let adminDishUploadBase64 = "";
+
+function previewAdminDishUpload(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      adminDishUploadBase64 = e.target.result;
+      const prev = document.getElementById('adminDishPreview');
+      if (prev) {
+        prev.src = adminDishUploadBase64;
+        prev.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function adminSaveNewDish() {
+  const name = document.getElementById('newDishName')?.value.trim();
+  const price = Number(document.getElementById('newDishPrice')?.value);
+  const cat = document.getElementById('newDishCat')?.value || 'momos';
+  const urlImg = document.getElementById('newDishImgUrl')?.value.trim();
+  const finalImg = adminDishUploadBase64 || urlImg || "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
+
+  if (!name || !price) {
+    alert("Please enter dish name and price!");
+    return;
+  }
+
+  const newDish = {
+    id: "kd_" + Date.now(),
+    name: name,
+    price: price,
+    mrp: Math.round(price * 1.3),
+    cat: cat,
+    inStock: true,
+    img: finalImg
+  };
+
+  menuCatalog.unshift(newDish);
+  saveMenuToStorageAndCloud();
+
+  alert(`✅ "${name}" added to menu!`);
+  document.getElementById('newDishName').value = '';
+  document.getElementById('newDishPrice').value = '';
+  document.getElementById('newDishImgUrl').value = '';
+  adminDishUploadBase64 = "";
+  const prev = document.getElementById('adminDishPreview');
+  if (prev) prev.style.display = 'none';
+}
+
 function renderAdminMenuItems() {
   const container = document.getElementById('adminMenuItemsList');
   if (!container) return;
   container.innerHTML = '';
 
-  menuCatalog.forEach((item) => {
+  menuCatalog.forEach((item, index) => {
     container.innerHTML += `
       <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:10px; margin-bottom:8px; border-radius:8px; border:1px solid #334155; color:#fff;">
-        <div>${item.name} - ₹${item.price}</div>
-        <button onclick="toggleDishStock('${item.id}')" style="background:${item.inStock !== false ? '#10b981' : '#ef4444'}; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px;">${item.inStock !== false ? 'In Stock' : 'Sold Out'}</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <img src="${item.img}" style="width:36px; height:36px; border-radius:6px; object-fit:cover;" />
+          <div>
+            <div style="font-weight:600; font-size:13px;">${item.name}</div>
+            <div style="font-size:11px; color:#38bdf8;">₹${item.price}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px;">
+          <button onclick="editDishPrice('${item.id}')" style="background:#0284c7; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;" title="Edit Price">✏️ Edit</button>
+          <button onclick="toggleDishStock('${item.id}')" style="background:${item.inStock !== false ? '#10b981' : '#ef4444'}; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">${item.inStock !== false ? 'In Stock' : 'Sold Out'}</button>
+          <button onclick="deleteDish('${item.id}')" style="background:#334155; color:#ff6b6b; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">🗑️</button>
+        </div>
       </div>
     `;
   });
+}
+
+function editDishPrice(id) {
+  const item = menuCatalog.find(d => d.id === id);
+  if (!item) return;
+
+  const newPrice = prompt(`Enter new price for "${item.name}":`, item.price);
+  if (newPrice !== null && !isNaN(newPrice) && Number(newPrice) > 0) {
+    item.price = Number(newPrice);
+    item.mrp = Math.round(item.price * 1.3);
+    saveMenuToStorageAndCloud();
+    alert(`Price updated to ₹${item.price}!`);
+  }
 }
 
 function toggleDishStock(id) {
@@ -1296,6 +1370,43 @@ function toggleDishStock(id) {
     item.inStock = (item.inStock === false);
     saveMenuToStorageAndCloud();
   }
+}
+
+function deleteDish(id) {
+  if (confirm("Are you sure you want to remove this dish from the menu?")) {
+    menuCatalog = menuCatalog.filter(d => d.id !== id);
+    saveMenuToStorageAndCloud();
+  }
+}
+
+function adminCreateCoupon() {
+  const code = document.getElementById('newCouponCode')?.value.trim().toUpperCase();
+  const disc = Number(document.getElementById('newCouponDiscount')?.value);
+
+  if (!code || !disc) {
+    alert("Please enter both promo code and discount amount.");
+    return;
+  }
+
+  if (db) {
+    db.ref("promos/" + code).set({ discount: disc, minBill: 100, maxUses: 9999, used: 0 });
+  }
+  alert(`Promo code ${code} (₹${disc} OFF) created!`);
+  document.getElementById('newCouponCode').value = '';
+  document.getElementById('newCouponDiscount').value = '';
+}
+
+function assignVipBadge() {
+  const phone = document.getElementById('vipCustPhone')?.value.trim();
+  if (!phone) {
+    alert("Please enter customer phone number.");
+    return;
+  }
+  if (db) {
+    db.ref("vip_customers/" + phone).set(true);
+  }
+  alert(`VIP Gold Badge activated for ${phone}!`);
+  document.getElementById('vipCustPhone').value = '';
 }
 
 // ==================== 10. NAVIGATION & INITIALIZATION ====================
@@ -1332,6 +1443,32 @@ function selectCakeWeight(weight, price, el) {
   selectedCakePrice = price;
   document.querySelectorAll('#cakeStudioModal .weight-pill').forEach(p => p.classList.remove('active'));
   if (el) el.classList.add('active');
+}
+
+let customCakePhotoBase64 = "";
+function previewCakeUpload(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      customCakePhotoBase64 = e.target.result;
+      const prev = document.getElementById('cakePhotoPreview');
+      if (prev) {
+        prev.src = customCakePhotoBase64;
+        prev.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function addCustomCakeToCart() {
+  const flavor = document.getElementById('cakeFlavorSelect')?.value || "Fresh Cream Cake";
+  const text = document.getElementById('cakeCustomText')?.value.trim();
+  const cakeTitle = `${flavor} (${selectedCakeWeight} Kg)${text ? ' - "' + text + '"' : ''}`;
+  const cakeImg = customCakePhotoBase64 || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500";
+
+  addToCart("cake_" + Date.now(), cakeTitle, selectedCakePrice, cakeImg);
+  closeModal('cakeStudioModal');
 }
 
 function saveCustomerAccount() {
