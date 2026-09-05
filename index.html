@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=950" />
+  <link rel="stylesheet" href="style.css?v=1100" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -19,7 +19,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=950')
+        navigator.serviceWorker.register('./sw.js?v=1100')
           .then(reg => {
             reg.update();
             console.log('SW Auto-Updated:', reg.scope);
@@ -167,6 +167,50 @@
   @keyframes fadeInDown {
     0% { transform: translate(-50%, -20px); opacity: 0; }
     100% { transform: translate(-50%, 0); opacity: 1; }
+  }
+
+  /* Tracking Timeline Styles */
+  .track-step {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .track-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    bottom: 0;
+    width: 2px;
+    background: #333;
+  }
+  .track-step.done:not(:last-child)::after {
+    background: #10b981;
+  }
+  .track-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #222;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    border: 1px solid #444;
+    z-index: 1;
+  }
+  .track-step.done .track-icon {
+    background: #10b981;
+    color: #fff;
+    border-color: #10b981;
+  }
+  .track-step.active .track-icon {
+    background: #E21B24;
+    color: #fff;
+    border-color: #E21B24;
+    box-shadow: 0 0 10px rgba(226,27,36,0.6);
   }
 
   /* Order Mode Switcher */
@@ -732,10 +776,11 @@
         </div>
       </div>
 
+      <!-- LIVE ORDERS & KOT WITH STAGE CONTROLS & ALARM -->
       <div class="admin-card">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-          <h4 style="font-size:14px; color:#38bdf8;"><i class="fa-solid fa-bell"></i> Live Orders & KOT Control</h4>
-          <span class="vip-pill" style="background:#10b981; color:#fff;">Live Ringer Active</span>
+          <h4 style="font-size:14px; color:#38bdf8; margin:0;"><i class="fa-solid fa-bell"></i> Live Orders & KOT Control</h4>
+          <button onclick="stopAdminAlarm()" id="stopAlarmBtn" style="background:#ef4444; color:#fff; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer; display:none;">🔕 STOP SOUND</button>
         </div>
         <div id="adminLiveOrdersList"></div>
       </div>
@@ -762,7 +807,7 @@
         <button class="admin-btn btn-green" onclick="adminSaveNewDish()">SAVE DISH TO MENU</button>
       </div>
 
-      <!-- COMPLETE MENU ITEMS LIST WITH FULL EDIT -->
+      <!-- COMPLETE MENU ITEMS LIST -->
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-list-check"></i> Manage Existing Menu Items</h4>
         <div id="adminMenuItemsList"></div>
@@ -803,7 +848,7 @@
     </div>
   </div>
 
-  <!-- COMPLETE DISH EDIT POPUP MODAL (FULL CONTROLS) -->
+  <!-- COMPLETE DISH EDIT POPUP MODAL -->
   <div class="full-modal" id="editDishModal" style="display:none !important; z-index:99999999;">
     <div class="modal-header" style="background:#0f172a; border-color:#334155;">
       <h3 style="color:#f8fafc;"><i class="fa-solid fa-pen-to-square" style="color:#38bdf8;"></i> Edit Dish Details</h3>
@@ -846,7 +891,7 @@
   <!-- Order History Modal -->
   <div class="full-modal" id="orderHistoryModal" style="display:none !important;">
     <div class="modal-header">
-      <h3>📦 My Orders & Live Tracking</h3>
+      <h3>📦 My Orders</h3>
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('orderHistoryModal')"></i>
     </div>
     <div style="padding:16px;" id="orderHistoryContainer">
@@ -854,8 +899,8 @@
     </div>
   </div>
 
-  <!-- Tracking Modal -->
-  <div class="full-modal" id="trackingModal" style="display:none !important;">
+  <!-- LIVE TRACKING MODAL (FULL VISUAL TRACKER) -->
+  <div class="full-modal" id="trackingModal" style="display:none !important; z-index:999999999;">
     <div class="modal-header">
       <h3>Live Order Progress</h3>
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('trackingModal')"></i>
@@ -929,19 +974,17 @@
     </div>
   </div>
 
-  <audio id="orderAudioAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
   <!-- Celebration Popup -->
   <div id="order-success-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999999; align-items:center; justify-content:center; text-align:center; padding:20px;">
     <div style="background:#141a24; border:1px solid #E21B24; border-radius:24px; padding:30px 20px; width:100%; max-width:320px; color:#fff; box-shadow:0 0 25px rgba(226,27,36,0.4);">
       <div style="font-size:50px; margin-bottom:10px;">🎉</div>
       <h2 style="color:#E21B24; margin:0 0 8px 0; font-size:22px;">Order Successful!</h2>
       <p style="color:#94a3b8; font-size:13px; margin:0 0 20px 0;" id="orderSuccessSub">Aapka swadist khana taiyar ho raha hai!</p>
-      <button onclick="document.getElementById('order-success-modal').style.display='none'; openOrderHistoryModal();" style="background:linear-gradient(135deg, #E21B24, #b91c1c); color:#fff; border:none; padding:12px 20px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; font-size:14px;">View My Orders 🛵</button>
+      <button id="successViewOrderBtn" style="background:linear-gradient(135deg, #E21B24, #b91c1c); color:#fff; border:none; padding:12px 20px; border-radius:12px; font-weight:bold; cursor:pointer; width:100%; font-size:14px;">Track Order Live 🛵</button>
     </div>
   </div>
 
-  <!-- CACHE BUSTER V950 -->
-  <script src="app.js?v=950"></script>
+  <!-- CACHE BUSTER V1100 -->
+  <script src="app.js?v=1100"></script>
 </body>
 </html>
