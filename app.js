@@ -19,7 +19,7 @@ const adminRingerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/
 adminRingerAudio.loop = true;
 let isAudioUnlocked = false;
 let lastKnownOrdersCount = -1;
-let isAdminLoggedIn = false; // Verified Admin hone par hi bajegi
+let isAdminLoggedIn = false;
 
 function unlockAudioDirect() {
   if (!isAudioUnlocked) {
@@ -34,7 +34,7 @@ function unlockAudioDirect() {
 document.addEventListener('click', unlockAudioDirect, { once: true });
 
 function playAdminAlarm() {
-  if (!isAdminLoggedIn) return; // Customer par sound band
+  if (!isAdminLoggedIn) return; // Sirf admin device par sound bajega
   const stopBtn = document.getElementById('stopAlarmBtn');
   if (stopBtn) stopBtn.style.display = 'inline-block';
   adminRingerAudio.play().catch(() => {});
@@ -231,7 +231,7 @@ let currentPdpItem = null;
 let currentPortionType = 'standard';
 let selectedCakeWeight = 1.0;
 let selectedCakePrice = 850;
-let customCakePhotoBase64 = ""; // Custom photo variable
+let customCakePhotoBase64 = "";
 let isStoreOpen = true;
 
 // ==================== PAYMENT & FIREBASE SYNC ====================
@@ -272,7 +272,6 @@ if (db) {
     }
   });
 
-  // Realtime Order Listener (Admin Alarm Trigger)
   db.ref("orders").on("value", snap => {
     const orders = snap.val();
     if (orders) {
@@ -774,7 +773,7 @@ function applyDiscountCoupon() {
   renderCartModalItems();
 }
 
-// ==================== 7. PLACE ORDER ====================
+// ==================== 7. PLACE ORDER (WITH PERSISTENT TRACKING) ====================
 function placeOrder() {
   if (!isStoreOpen) {
     alert("Sorry, the restaurant is currently closed!");
@@ -849,6 +848,10 @@ function placeOrder() {
     newOrderKey = newOrderRef.key;
     newOrderRef.set(orderPayload);
 
+    // Active order key save karein taaki refresh karne par bhi customer ko tracking dikhe
+    localStorage.setItem("kd_active_order_key", newOrderKey);
+    localStorage.setItem("kd_active_order_id", generatedId);
+
     if (phone !== "DINE-IN") {
       db.ref("customer_history/" + phone + "/" + newOrderKey).set(orderPayload);
     }
@@ -863,6 +866,9 @@ function placeOrder() {
 
   updateCartBar();
   closeModal('cartModal');
+
+  // Customer ke home screen par persistent live tracking bar dikhao
+  showFloatingLiveTrackingBar(newOrderKey, generatedId, "Order Confirmed", 1);
 
   const animModal = document.getElementById("order-success-modal");
   const succSub = document.getElementById("orderSuccessSub");
@@ -887,7 +893,7 @@ function placeOrder() {
   if (animModal) animModal.style.display = "flex";
 }
 
-// ==================== 8. LIVE ORDER TRACKING ====================
+// ==================== 8. LIVE ORDER TRACKING (REALTIME COLORS & INSTANT SYNC) ====================
 let trackingListener = null;
 
 function trackLiveOrder(orderKey, orderId) {
@@ -895,7 +901,7 @@ function trackLiveOrder(orderKey, orderId) {
   const container = document.getElementById('trackingContent');
   if (!container) return;
 
-  container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Connecting to Live Kitchen Tracking...</p>`;
+  container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Connecting to Kitchen...</p>`;
 
   if (trackingListener && db) {
     db.ref("orders/" + trackingListener).off();
@@ -903,21 +909,26 @@ function trackLiveOrder(orderKey, orderId) {
   trackingListener = orderKey;
 
   if (db && orderKey) {
+    // REALTIME LISTENER: Admin jab bhi status badlega turant UI update hogi
     db.ref("orders/" + orderKey).on("value", snapshot => {
       const ord = snapshot.val();
       if (!ord) {
         container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Order details not found.</p>`;
         return;
       }
-      renderLiveTrackerUI(ord, container);
+      renderLiveTrackerUI(ord, container, orderKey);
     });
   }
 }
 
-function renderLiveTrackerUI(ord, container) {
+function renderLiveTrackerUI(ord, container, orderKey) {
   const stage = Number(ord.stage !== undefined ? ord.stage : 1);
   const itemsText = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Food Items";
 
+  // Persistent bar ko bhi saath hi saath sync rakhein
+  showFloatingLiveTrackingBar(orderKey, ord.orderId, ord.status || 'Active', stage);
+
+  // AGAR ADMIN NE ORDER CANCEL KIYA
   if (stage === 0 || ord.status === "Cancelled") {
     container.innerHTML = `
       <div style="background:#2d1215; border-radius:14px; padding:18px; border:1px solid #ef4444; margin-bottom:16px; text-align:center;">
@@ -925,14 +936,14 @@ function renderLiveTrackerUI(ord, container) {
         <h3 style="color:#ef4444; font-size:16px; margin-bottom:6px;">Order Cancelled</h3>
         <p style="color:#fff; font-size:13px; font-weight:600; margin-bottom:8px;">#${ord.orderId} (${ord.orderType || 'Table Order'})</p>
         <div style="background:#1a1012; border-radius:8px; padding:12px; margin:12px 0; border:1px dashed #ef4444;">
-          <p style="color:#ff8b8b; font-size:12px; line-height:1.5; margin:0;">
+          <p style="color:#ff8b8b; font-size:13px; line-height:1.5; margin:0; font-weight:bold;">
             Maaf kijiye! ${ord.cancelReason || "Aapka chuna hua item kitchen mein out of stock ho chuka hai."}
           </p>
           <p style="color:#aaa; font-size:11px; margin-top:6px;">
-            Kripya waiter se baat karein ya koi doosra item order karein.
+            Kripya waiter se baat karein ya koi doosra item menu se order karein.
           </p>
         </div>
-        <button onclick="closeModal('trackingModal')" style="background:#E21B24; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%;">
+        <button onclick="closeModal('trackingModal'); removeFloatingLiveTrackingBar();" style="background:#E21B24; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%;">
           Naya Order Karein ➔
         </button>
       </div>
@@ -940,33 +951,185 @@ function renderLiveTrackerUI(ord, container) {
     return;
   }
 
-  const s1Class = stage >= 1 ? (stage === 1 ? "active" : "done") : "";
-  const s2Class = stage >= 2 ? (stage === 2 ? "active" : "done") : "";
-  const s3Class = stage >= 3 ? (stage === 3 ? "active" : "done") : "";
-  const s4Class = stage >= 4 ? "done" : "";
+  // Helper for Glowing Realtime Step styling
+  function getStepStyle(stepNum, currentStage) {
+    if (currentStage > stepNum) {
+      // Completed (Green)
+      return {
+        bg: '#064e3b',
+        border: '1px solid #10b981',
+        iconBg: '#10b981',
+        iconColor: '#fff',
+        titleColor: '#10b981',
+        badge: '✅ Done'
+      };
+    } else if (currentStage === stepNum) {
+      // Active In-Progress (Glowing Red/Orange)
+      return {
+        bg: '#3b1216',
+        border: '2px solid #E21B24',
+        iconBg: '#E21B24',
+        iconColor: '#fff',
+        titleColor: '#fca5a5',
+        badge: '⏳ In-Progress (Live)'
+      };
+    } else {
+      // Pending
+      return {
+        bg: '#18181b',
+        border: '1px solid #27272a',
+        iconBg: '#27272a',
+        iconColor: '#71717a',
+        titleColor: '#71717a',
+        badge: 'Pending'
+      };
+    }
+  }
+
+  const s1 = getStepStyle(1, stage);
+  const s2 = getStepStyle(2, stage);
+  const s3 = getStepStyle(3, stage);
+  const s4 = getStepStyle(4, stage);
+
+  const step3Label = (ord.orderType && ord.orderType.includes('Table')) ? '3. Serving to Table' : '3. Out for Delivery';
 
   container.innerHTML = `
-    <div style="background:#1c1c1e; border-radius:14px; padding:16px; border:1px solid #333; margin-bottom:16px;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span style="font-size:13px; font-weight:800; color:#E21B24;">#${ord.orderId}</span>
-        <span style="font-size:11px; background:#261012; color:#ff6b6b; padding:3px 8px; border-radius:6px; font-weight:bold;">${ord.orderType || 'Home Delivery'}</span>
+    <div style="background:#1c1c1e; border-radius:14px; padding:14px; border:1px solid #333; margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-size:14px; font-weight:800; color:#E21B24;">#${ord.orderId}</span>
+        <span style="font-size:11px; background:#261012; color:#ff6b6b; padding:3px 8px; border-radius:6px; font-weight:bold;">${ord.orderType || 'Order'}</span>
       </div>
-      <div style="font-size:14px; font-weight:700; color:#fff; margin-bottom:4px;">${itemsText}</div>
+      <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:4px;">${itemsText}</div>
       <div style="font-size:12px; color:#10b981; font-weight:800;">Total: ₹${ord.grandTotal} (${ord.paymentMode})</div>
     </div>
 
-    <div style="background:#141416; border-radius:14px; padding:18px 16px; border:1px solid #222;">
-      <h4 style="font-size:14px; color:#38bdf8; margin-bottom:18px;"><i class="fa-solid fa-clock-rotate-left"></i> Live Status Timeline</h4>
-      <div class="track-step ${s1Class}"><div class="track-icon"><i class="fa-solid fa-receipt"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">1. Order Confirmed</div><small style="color:#888; font-size:11px;">Restaurant received your order</small></div></div>
-      <div class="track-step ${s2Class}"><div class="track-icon"><i class="fa-solid fa-fire-burner"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">2. Preparing Your Food</div><small style="color:#888; font-size:11px;">Chef is cooking fresh & hot dishes</small></div></div>
-      <div class="track-step ${s3Class}"><div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">3. Serving / Out for Delivery</div><small style="color:#888; font-size:11px;">On the way to your table or doorstep</small></div></div>
-      <div class="track-step ${s4Class}"><div class="track-icon"><i class="fa-solid fa-circle-check"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">4. Served / Delivered</div><small style="color:#888; font-size:11px;">Enjoy your meal!</small></div></div>
+    <div style="background:#141416; border-radius:14px; padding:14px; border:1px solid #222;">
+      <h4 style="font-size:13px; color:#38bdf8; margin:0 0 14px;"><i class="fa-solid fa-clock-rotate-left"></i> Live Kitchen Status Timeline</h4>
+
+      <!-- STEP 1 -->
+      <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; margin-bottom:8px; background:${s1.bg}; border:${s1.border};">
+        <div style="width:34px; height:34px; border-radius:50%; background:${s1.iconBg}; color:${s1.iconColor}; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+          <i class="fa-solid fa-receipt"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:800; font-size:13px; color:${s1.titleColor};">1. Order Confirmed</div>
+          <small style="color:#aaa; font-size:11px;">Restaurant received your order</small>
+        </div>
+        <span style="font-size:10px; font-weight:bold; color:${s1.titleColor};">${s1.badge}</span>
+      </div>
+
+      <!-- STEP 2 -->
+      <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; margin-bottom:8px; background:${s2.bg}; border:${s2.border};">
+        <div style="width:34px; height:34px; border-radius:50%; background:${s2.iconBg}; color:${s2.iconColor}; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+          <i class="fa-solid fa-fire-burner"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:800; font-size:13px; color:${s2.titleColor};">2. Preparing Food</div>
+          <small style="color:#aaa; font-size:11px;">Chef is cooking fresh & hot meal</small>
+        </div>
+        <span style="font-size:10px; font-weight:bold; color:${s2.titleColor};">${s2.badge}</span>
+      </div>
+
+      <!-- STEP 3 -->
+      <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; margin-bottom:8px; background:${s3.bg}; border:${s3.border};">
+        <div style="width:34px; height:34px; border-radius:50%; background:${s3.iconBg}; color:${s3.iconColor}; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+          <i class="fa-solid fa-motorcycle"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:800; font-size:13px; color:${s3.titleColor};">${step3Label}</div>
+          <small style="color:#aaa; font-size:11px;">On the way to your table or doorstep</small>
+        </div>
+        <span style="font-size:10px; font-weight:bold; color:${s3.titleColor};">${s3.badge}</span>
+      </div>
+
+      <!-- STEP 4 -->
+      <div style="display:flex; align-items:center; gap:12px; padding:10px; border-radius:10px; background:${s4.bg}; border:${s4.border};">
+        <div style="width:34px; height:34px; border-radius:50%; background:${s4.iconBg}; color:${s4.iconColor}; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-weight:800; font-size:13px; color:${s4.titleColor};">4. Completed / Served</div>
+          <small style="color:#aaa; font-size:11px;">Enjoy your meal!</small>
+        </div>
+        <span style="font-size:10px; font-weight:bold; color:${s4.titleColor};">${s4.badge}</span>
+      </div>
     </div>
 
-    <button onclick="window.open('tel:8453270362')" style="width:100%; margin-top:16px; background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:12px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer;">
+    <button onclick="window.open('tel:8453270362')" style="width:100%; margin-top:14px; background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:11px; border-radius:10px; font-weight:700; font-size:12px; cursor:pointer;">
       <i class="fa-solid fa-phone"></i> Call Restaurant Support (8453270362)
     </button>
   `;
+}
+
+// ==================== HOME SCREEN PERSISTENT LIVE TRACKER BAR ====================
+function showFloatingLiveTrackingBar(orderKey, orderId, statusText, stage) {
+  if (stage >= 4 || stage === 0) {
+    removeFloatingLiveTrackingBar();
+    return;
+  }
+
+  let bar = document.getElementById('kdPersistentTrackBar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'kdPersistentTrackBar';
+    bar.style.cssText = `
+      position: fixed;
+      top: 65px;
+      left: 14px;
+      right: 14px;
+      background: linear-gradient(135deg, #1e1b4b, #7f1d1d);
+      border: 1px solid #ef4444;
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+      z-index: 998;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+      cursor: pointer;
+    `;
+    document.body.appendChild(bar);
+  }
+
+  bar.onclick = () => {
+    trackLiveOrder(orderKey, orderId);
+  };
+
+  bar.innerHTML = `
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span style="font-size:16px; animation:pulse 1s infinite;">🔥</span>
+      <div>
+        <div style="font-size:12px; font-weight:800; color:#fff;">Live Order #${orderId}</div>
+        <small style="color:#fca5a5; font-size:11px;">Status: <strong>${statusText}</strong></small>
+      </div>
+    </div>
+    <div style="background:#E21B24; color:#fff; font-size:11px; font-weight:bold; padding:4px 10px; border-radius:6px;">
+      TRACK ➔
+    </div>
+  `;
+}
+
+function removeFloatingLiveTrackingBar() {
+  const bar = document.getElementById('kdPersistentTrackBar');
+  if (bar) bar.remove();
+  localStorage.removeItem("kd_active_order_key");
+  localStorage.removeItem("kd_active_order_id");
+}
+
+function restoreLiveTrackingOnLoad() {
+  const savedKey = localStorage.getItem("kd_active_order_key");
+  const savedId = localStorage.getItem("kd_active_order_id");
+  if (savedKey && db) {
+    db.ref("orders/" + savedKey).once("value", snap => {
+      const ord = snap.val();
+      if (ord && Number(ord.stage) < 4 && ord.status !== "Cancelled") {
+        showFloatingLiveTrackingBar(savedKey, savedId, ord.status || 'In-Progress', Number(ord.stage || 1));
+      } else {
+        removeFloatingLiveTrackingBar();
+      }
+    });
+  }
 }
 
 // ==================== 9. ORDERS HISTORY ====================
@@ -1031,7 +1194,7 @@ function unlockAdminWithPin() {
 
   if (pin === MASTER_KEY) {
     isAdminLoggedIn = true;
-    unlockAudioDirect(); // Audio permission permanently unlock karein
+    unlockAudioDirect();
     const lock = document.getElementById('adminLockScreen');
     const dash = document.getElementById('adminDashboard');
     if (lock) lock.style.display = 'none';
@@ -1079,7 +1242,7 @@ function loadAdminOrdersList() {
           <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; margin:10px 0 6px;">
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 1, 'Order Confirmed')" style="background:${currentStage === 1 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">1. Confirmed</button>
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 2, 'Preparing Food')" style="background:${currentStage === 2 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">2. Kitchen</button>
-            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 3, 'Out for Delivery')" style="background:${currentStage === 3 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">3. Serving</button>
+            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 3, 'Out for Delivery / Serving')" style="background:${currentStage === 3 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">3. Serving</button>
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 4, 'Delivered')" style="background:${currentStage === 4 ? '#10b981' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">4. Done ✅</button>
             <button onclick="cancelOrderByAdmin('${k}', '${ord.orderId}', '${ord.phone}')" style="background:#ef4444; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">❌ Cancel</button>
           </div>
@@ -1148,7 +1311,7 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== 11. MENU DISH MANAGEMENT ====================
+// ==================== 11. FULL DISH MANAGEMENT ====================
 let adminDishUploadBase64 = "";
 let editDishUploadBase64 = "";
 
@@ -1357,7 +1520,6 @@ function selectCakeWeight(weight, price, el) {
   if (el) el.classList.add('active');
 }
 
-// CAKE PHOTO PREVIEW & UPLOAD LOGIC
 function previewCakeUpload(input) {
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -1403,6 +1565,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderFoodItems(menuCatalog);
   detectTableFromUrl();
   startHeroBannerSlider();
+  restoreLiveTrackingOnLoad();
   const splash = document.getElementById("custom-splash-screen");
   if (splash) splash.style.display = "none";
 });
