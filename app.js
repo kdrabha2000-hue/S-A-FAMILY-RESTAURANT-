@@ -14,7 +14,7 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 const db = (typeof firebase !== 'undefined') ? firebase.database() : null;
 
-// ==================== LIVE RINGER SETUP ====================
+// ==================== LIVE RINGER SETUP (ADMIN ONLY) ====================
 const adminRingerAudio = new Audio('https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg');
 adminRingerAudio.loop = true;
 let isAudioUnlocked = false;
@@ -58,6 +58,80 @@ document.addEventListener('DOMContentLoaded', () => {
   if (installBtn) installBtn.addEventListener('click', triggerPwaInstall);
 });
 
+// ==================== PUSH NOTIFICATIONS SYSTEM ====================
+function checkNotificationSupport() {
+  if (!("Notification" in window)) return;
+  const dismissed = localStorage.getItem("kd_push_dismissed");
+  if (Notification.permission === "default" && !dismissed) {
+    const bar = document.getElementById('pushNotifyBar');
+    if (bar) bar.style.display = 'flex';
+  }
+}
+
+function requestNotificationAccess() {
+  if (!("Notification" in window)) {
+    alert("This browser does not support push notifications.");
+    return;
+  }
+  Notification.requestPermission().then(permission => {
+    const bar = document.getElementById('pushNotifyBar');
+    if (bar) bar.style.display = 'none';
+    if (permission === "granted") {
+      new Notification("S&A Family Restaurant 🥟", {
+        body: "Offer notifications enabled! Saste deals aur tasty food updates ab aapko milenge.",
+        icon: "logo.png"
+      });
+    }
+  });
+}
+
+function dismissNotificationPrompt() {
+  const bar = document.getElementById('pushNotifyBar');
+  if (bar) bar.style.display = 'none';
+  localStorage.setItem("kd_push_dismissed", "true");
+}
+
+function sendAdminPushNotification() {
+  const title = document.getElementById('adminPushTitle')?.value.trim();
+  const msg = document.getElementById('adminPushMsg')?.value.trim();
+  const img = document.getElementById('adminPushImg')?.value.trim();
+
+  if (!title || !msg) {
+    alert("Please enter both Title and Offer details!");
+    return;
+  }
+
+  if (db) {
+    db.ref("public_notifications").set({
+      title: title,
+      message: msg,
+      image: img || "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500",
+      timestamp: Date.now()
+    });
+    alert("Offer Broadcasted! Notification will be sent to subscribed customers.");
+    if (document.getElementById('adminPushTitle')) document.getElementById('adminPushTitle').value = '';
+    if (document.getElementById('adminPushMsg')) document.getElementById('adminPushMsg').value = '';
+    if (document.getElementById('adminPushImg')) document.getElementById('adminPushImg').value = '';
+  }
+}
+
+function listenForOfferNotifications() {
+  if (!db || !("Notification" in window) || Notification.permission !== "granted") return;
+  db.ref("public_notifications").on("value", snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+    const lastSeen = localStorage.getItem("kd_last_seen_push") || 0;
+    if (data.timestamp && data.timestamp > Number(lastSeen)) {
+      localStorage.setItem("kd_last_seen_push", data.timestamp);
+      new Notification(data.title, {
+        body: data.message,
+        icon: "logo.png",
+        image: data.image || undefined
+      });
+    }
+  });
+}
+
 // ==================== LANGUAGE MODAL ====================
 function openLanguageModal() {
   openModal('languageModal');
@@ -94,7 +168,7 @@ function shareReferralLink() {
 }
 
 // ==================== TABLE QR & ORDER MODE SYSTEM ====================
-let currentOrderMode = 'delivery'; // 'delivery' or 'dinein'
+let currentOrderMode = 'delivery';
 let selectedTableNumber = null;
 
 function detectTableFromUrl() {
@@ -118,6 +192,7 @@ function setOrderMode(mode) {
   const dineSection = document.getElementById('dineInOrderSection');
   const delFeeRow = document.getElementById('deliveryFeeRow');
   const floatDelTag = document.getElementById('floatingDeliveryTag');
+  const spinBtn = document.getElementById('spinWheelEntryBtn');
 
   if (mode === 'delivery') {
     if (delBtn) delBtn.classList.add('active');
@@ -127,6 +202,7 @@ function setOrderMode(mode) {
     if (dineSection) dineSection.style.display = 'none';
     if (delFeeRow) delFeeRow.style.display = 'flex';
     if (floatDelTag) floatDelTag.innerText = '+ ₹9 Fixed Delivery';
+    if (spinBtn) spinBtn.style.display = 'none';
     selectedTableNumber = null;
   } else {
     if (delBtn) delBtn.classList.remove('active');
@@ -136,6 +212,7 @@ function setOrderMode(mode) {
     if (dineSection) dineSection.style.display = 'block';
     if (delFeeRow) delFeeRow.style.display = 'none';
     if (floatDelTag) floatDelTag.innerText = '🍽️ Dine-in (₹0 Delivery)';
+    if (spinBtn) spinBtn.style.display = 'block';
   }
   updateCartBar();
 }
@@ -214,6 +291,7 @@ if (db) {
       menuCatalog = cloudMenu;
       try { localStorage.setItem("kd_live_menu", JSON.stringify(menuCatalog)); } catch(e) {}
       renderFoodItems(menuCatalog);
+      initZomatoFoodBanner();
       if (document.getElementById('adminDashboard')?.style.display === 'block') {
         renderAdminMenuItems();
       }
@@ -226,11 +304,6 @@ if (db) {
       isStoreOpen = val;
       updateStoreStatusUI(isStoreOpen);
     }
-  });
-
-  db.ref("banner_headline").on("value", snap => {
-    const headline = snap.val();
-    if (headline) updateBannerUI(headline);
   });
 
   db.ref("payment_settings").on("value", snap => {
@@ -333,6 +406,7 @@ function saveMenuToStorageAndCloud() {
     db.ref("restaurant_menu").set(menuCatalog);
   }
   renderFoodItems(menuCatalog);
+  initZomatoFoodBanner();
   renderAdminMenuItems();
 }
 
@@ -355,7 +429,8 @@ window.addEventListener('popstate', function(event) {
     'adminModal',
     'reviewModal',
     'languageModal',
-    'tableSelectorModal'
+    'tableSelectorModal',
+    'spinWheelModal'
   ];
 
   let modalClosed = false;
@@ -390,7 +465,6 @@ function closeModal(id) {
   }
 }
 
-// 3-Minute Auto-Shuffle Timer (Freezes during any active modal)
 setInterval(() => {
   if (!isAnyModalOpen && menuCatalog.length > 2) {
     const shuffled = [...menuCatalog];
@@ -401,6 +475,57 @@ setInterval(() => {
     renderFoodItems(shuffled);
   }
 }, 180000);
+
+// ==================== AUTO-SLIDING ZOMATO FOOD BANNER ====================
+let sliderActiveDishId = null;
+let currentSlideIndex = 0;
+let sliderInterval = null;
+
+function initZomatoFoodBanner() {
+  const container = document.getElementById('zomatoFoodSlider');
+  if (!container) return;
+
+  const featured = menuCatalog.filter(d => d.inStock).slice(0, 6);
+  if (featured.length === 0) return;
+
+  container.innerHTML = '';
+  featured.forEach((dish, idx) => {
+    const slide = document.createElement('div');
+    slide.className = `zomato-slide ${idx === 0 ? 'active' : ''}`;
+    slide.dataset.dishId = dish.id;
+    slide.innerHTML = `
+      <div class="zomato-slide-content">
+        <span class="zomato-tag">⚡ Bestseller Offer</span>
+        <div class="zomato-slide-title">${dish.name}</div>
+        <div class="zomato-price-tag">Just ₹${dish.price} <small style="font-size:11px; color:#aaa; text-decoration:line-through;">₹${dish.mrp}</small></div>
+      </div>
+      <img src="${dish.img}" class="zomato-slide-img" alt="${dish.name}" />
+    `;
+    container.appendChild(slide);
+  });
+
+  sliderActiveDishId = featured[0].id;
+  currentSlideIndex = 0;
+
+  if (sliderInterval) clearInterval(sliderInterval);
+  sliderInterval = setInterval(rotateSliderBanner, 3500);
+}
+
+function rotateSliderBanner() {
+  const slides = document.querySelectorAll('.zomato-slide');
+  if (slides.length <= 1) return;
+
+  slides[currentSlideIndex].classList.remove('active');
+  currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+  slides[currentSlideIndex].classList.add('active');
+  sliderActiveDishId = slides[currentSlideIndex].dataset.dishId;
+}
+
+function onSliderBannerClick() {
+  if (sliderActiveDishId) {
+    openProductDetail(sliderActiveDishId);
+  }
+}
 
 // ==================== 4. RENDER FOOD CATALOG & SEARCH ====================
 function renderFoodItems(items) {
@@ -745,7 +870,6 @@ function goToCheckoutStep(step) {
     const grandTotal = Math.max(0, subtotal - appliedDiscount - coinDiscount);
 
     if (currentOrderMode === 'dinein') {
-      // DINE-IN TABLE ORDER SUMMARY (NO PAYMENT DETAILS)
       if (document.getElementById('dineInBillTotal')) document.getElementById('dineInBillTotal').innerText = `₹${subtotal}`;
       if (document.getElementById('dineInGrandTotal')) document.getElementById('dineInGrandTotal').innerText = `₹${grandTotal}`;
       if (title) title.innerText = `Table #${selectedTableNumber} - Bill & Order`;
@@ -766,7 +890,6 @@ function goToCheckoutStep(step) {
     s3.style.display = 'none';
 
   } else if (step === 3) {
-    // HOME DELIVERY STEP 3 PAYMENT
     const name = document.getElementById('custName')?.value.trim();
     const phone = document.getElementById('custPhone')?.value.trim();
     const address = document.getElementById('custAddress')?.value.trim();
@@ -923,7 +1046,7 @@ function setCouponDiscount(amount, code) {
   renderCartModalItems();
 }
 
-// ==================== 7. PLACE ORDER ====================
+// ==================== 7. PLACE ORDER (NO SOUND FOR CUSTOMER) ====================
 function placeOrder() {
   if (!isStoreOpen) {
     alert("Sorry, the restaurant is currently closed!");
@@ -955,7 +1078,6 @@ function placeOrder() {
     }
   }
 
-  // Strict Online Payment Check
   let utrVal = "";
   if (currentOrderMode === 'delivery' && activePayment === 'UPI') {
     const utrInput = document.getElementById('upiUtrInput');
@@ -999,12 +1121,17 @@ function placeOrder() {
     timestamp: Date.now()
   };
 
+  if (currentOrderMode === 'dinein') {
+    sessionStorage.setItem("last_table_order_total", grandTotal);
+  }
+
   if (typeof db !== 'undefined' && db) {
     const newOrderRef = db.ref("orders").push();
     newOrderRef.set(orderPayload);
     if (phone !== "DINE-IN") {
       db.ref("customer_history/" + phone + "/" + newOrderRef.key).set(orderPayload);
     }
+    listenForCustomerOrderCancelled(newOrderRef.key);
   }
 
   cart = [];
@@ -1016,6 +1143,7 @@ function placeOrder() {
   updateCartBar();
   closeModal('cartModal');
 
+  // CUSTOMER PHONE SOUND BAND HAI - Only visuals shown
   const animModal = document.getElementById("order-success-modal");
   const succSub = document.getElementById("orderSuccessSub");
   if (succSub) {
@@ -1028,6 +1156,24 @@ function placeOrder() {
   } else {
     openOrderHistoryModal();
   }
+}
+
+// LISTEN IF ADMIN CANCELLED CURRENT ORDER (OUT OF STOCK NOTICE)
+function listenForCustomerOrderCancelled(orderDbKey) {
+  if (!db || !orderDbKey) return;
+  db.ref("orders/" + orderDbKey).on("value", snapshot => {
+    const data = snapshot.val();
+    if (data && Number(data.stage) === 0) {
+      const cancelModal = document.getElementById('outOfStockNoticeModal');
+      const cancelMsg = document.getElementById('outOfStockCustomText');
+      if (cancelModal) {
+        if (cancelMsg && data.cancelReason) {
+          cancelMsg.innerText = data.cancelReason;
+        }
+        cancelModal.style.display = 'flex';
+      }
+    }
+  });
 }
 
 // ==================== 8. ORDERS HISTORY & LIVE TRACKING ====================
@@ -1118,8 +1264,9 @@ function openLiveTrackingPopup(key, phone) {
         </div>
 
         ${stage === 0 ? `
-          <div style="background:#fee2e2; border:1px solid #f87171; border-radius:12px; padding:14px; text-align:center; color:#991b1b; font-weight:700; margin-bottom:16px;">
-            ⚠️ This order has been cancelled.
+          <div style="background:#2a1517; border:1px solid #ef4444; border-radius:12px; padding:14px; text-align:center; color:#fca5a5; font-weight:600; margin-bottom:16px; font-size:13px; line-height:1.4;">
+            🍲 <strong>शेफ का संदेश:</strong><br>
+            ${ord.cancelReason || 'आज इस डिश की ताज़ा सामग्री समाप्त हो गई है! कृपया हमारे अन्य लज़ीज़ आइटम आज़माएँ।'}
           </div>
         ` : `
           <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px; background:#1e1e1e; padding:14px; border-radius:14px; border:1px solid #333;">
@@ -1165,7 +1312,7 @@ function openLiveTrackingPopup(key, phone) {
   }
 }
 
-// ==================== 9. ADMIN PANEL & MASTER PIN ====================
+// ==================== 9. ADMIN PANEL (OUT OF STOCK CANCEL BUTTON) ====================
 function openAdminGateway() {
   openModal('adminModal');
   const lock = document.getElementById('adminLockScreen');
@@ -1260,7 +1407,7 @@ function loadAdminOrdersList() {
               <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 2, '2. In Kitchen')" style="background:#e11d48; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">🍳 Kitchen</button>
               <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 3, '3. Serving / Out')" style="background:#f59e0b; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">🛵 Serve/Out</button>
               <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 4, '4. Delivered / Done')" style="background:#10b981; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">✅ Done</button>
-              <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 0, 'Cancelled by Restaurant')" style="background:#dc2626; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">❌ Cancel</button>
+              <button onclick="adminCancelOutOfStock('${k}', '${ord.orderId}', '${ord.phone}')" style="background:#ef4444; color:#fff; border:none; padding:5px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">⚠️ Out of Stock (Polite Cancel)</button>
             ` : '')}
             <button onclick="deleteAdminOrder('${k}')" style="background:#475569; color:#fff; border:none; padding:5px 8px; border-radius:6px; font-size:11px; cursor:pointer;">🗑️</button>
           </div>
@@ -1278,6 +1425,29 @@ function loadAdminOrdersList() {
     if (document.getElementById('statTotalSales')) document.getElementById('statTotalSales').innerText = `₹${rev}`;
     if (document.getElementById('statOrderCount')) document.getElementById('statOrderCount').innerText = count;
   });
+}
+
+function adminCancelOutOfStock(key, orderId, phone) {
+  const customReason = "अरे माफ़ी चाहते हैं! आज इस डिश की ताज़ा सामग्री समाप्त हो गई है। लेकिन आपके लिए हमारे मेनू में कई और भी लाजवाब डिश तैयार हैं, कृपया कुछ और ऑर्डर करें!";
+  if (confirm("Cancel this order with polite Out-of-Stock message to customer?")) {
+    const updates = {
+      stage: 0,
+      status: "Out of Stock (Cancelled)",
+      cancelReason: customReason
+    };
+    if (db) {
+      db.ref("orders/" + key).update(updates);
+      if (phone && phone !== "DINE-IN") {
+        db.ref("customer_history/" + phone).once("value", snap => {
+          snap.forEach(child => {
+            if (child.val().orderId === orderId) {
+              child.ref.update(updates);
+            }
+          });
+        });
+      }
+    }
+  }
 }
 
 function setAdminOrderStatus(key, orderId, phone, stage, statusText) {
@@ -1302,7 +1472,149 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== 10. IMAGE COMPRESSOR & MENU EDIT ====================
+// ==================== 10. LUCKY SPIN WHEEL (TABLE ONLY, MIN ₹100, 20-MIN COOLDOWN) ====================
+const wheelSegments = [
+  { text: "Hard Luck! 😢", win: false, count: 0, color: "#1f2937" },
+  { text: "5 Chocolates 🍫", win: true, count: 5, color: "#e11d48" },
+  { text: "Try Again! ❌", win: false, count: 0, color: "#374151" },
+  { text: "8 Chocolates 🍫", win: true, count: 8, color: "#d97706" },
+  { text: "Better Luck! 🍀", win: false, count: 0, color: "#1f2937" },
+  { text: "10 Chocolates 🍫", win: true, count: 10, color: "#059669" },
+  { text: "Oops, Missed! 🥲", win: false, count: 0, color: "#374151" },
+  { text: "Hard Luck! 🍀", win: false, count: 0, color: "#4b5563" }
+];
+
+let isWheelSpinning = false;
+let wheelCurrentAngle = 0;
+
+function drawWheel() {
+  const canvas = document.getElementById('wheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const numSeg = wheelSegments.length;
+  const arc = 2 * Math.PI / numSeg;
+  const radius = canvas.width / 2;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let i = 0; i < numSeg; i++) {
+    const angle = i * arc;
+    ctx.beginPath();
+    ctx.fillStyle = wheelSegments[i].color;
+    ctx.moveTo(radius, radius);
+    ctx.arc(radius, radius, radius - 4, angle, angle + arc);
+    ctx.lineTo(radius, radius);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.rotate(angle + arc / 2);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 11px Poppins, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(wheelSegments[i].text, radius - 20, 4);
+    ctx.restore();
+  }
+}
+
+function openSpinWheelModal() {
+  const lastTotal = Number(sessionStorage.getItem("last_table_order_total") || 0);
+
+  if (currentOrderMode !== 'dinein') {
+    alert("Yeh lucky wheel game sirf dukaan ke Table customers ke liye hai!");
+    return;
+  }
+
+  if (lastTotal < 100) {
+    alert("Spin unlock karne ke liye kam se kam ₹100 ka table order confirm karein!");
+    return;
+  }
+
+  openModal('spinWheelModal');
+  setTimeout(drawWheel, 100);
+  updateSpinCooldownUI();
+}
+
+function updateSpinCooldownUI() {
+  const lastSpin = Number(localStorage.getItem("kd_last_wheel_spin") || 0);
+  const diff = Date.now() - lastSpin;
+  const cooldown = 20 * 60 * 1000;
+  const timerEl = document.getElementById('spinCooldownTimer');
+  const btn = document.getElementById('spinWheelBtn');
+
+  if (diff < cooldown) {
+    const remainingMins = Math.ceil((cooldown - diff) / 60000);
+    if (timerEl) timerEl.innerText = `⏳ Next spin available in: ${remainingMins} minute(s)`;
+    if (btn) {
+      btn.disabled = true;
+      btn.style.opacity = "0.5";
+    }
+  } else {
+    if (timerEl) timerEl.innerText = "✅ Wheel unlocked! Good luck!";
+    if (btn) {
+      btn.disabled = false;
+      btn.style.opacity = "1";
+    }
+  }
+}
+
+function triggerSpinWheel() {
+  if (isWheelSpinning) return;
+
+  const lastSpin = Number(localStorage.getItem("kd_last_wheel_spin") || 0);
+  const cooldown = 20 * 60 * 1000;
+  if (Date.now() - lastSpin < cooldown) {
+    alert("Aap har 20 minute me sirf 1 baar spin kar sakte hain!");
+    return;
+  }
+
+  isWheelSpinning = true;
+  document.getElementById('spinResultBox').innerText = "Wheel is spinning... 🤞";
+
+  // 80% CHANCE TO LOSE, 20% CHANCE TO WIN (5, 8, OR 10 CHOCOLATES)
+  const isWinner = Math.random() < 0.20;
+  let targetIndex = 0;
+
+  if (isWinner) {
+    const winIndices = [1, 3, 5]; // 5, 8, 10 Chocolates
+    targetIndex = winIndices[Math.floor(Math.random() * winIndices.length)];
+  } else {
+    const loseIndices = [0, 2, 4, 6, 7];
+    targetIndex = loseIndices[Math.floor(Math.random() * loseIndices.length)];
+  }
+
+  const numSeg = wheelSegments.length;
+  const segAngle = 360 / numSeg;
+  const targetAngleDegrees = 360 - (targetIndex * segAngle + segAngle / 2) + 270;
+  const fullRounds = 5 * 360;
+  const finalDegree = fullRounds + (targetAngleDegrees % 360);
+
+  const canvas = document.getElementById('wheelCanvas');
+  canvas.style.transform = `rotate(${finalDegree}deg)`;
+
+  setTimeout(() => {
+    isWheelSpinning = false;
+    localStorage.setItem("kd_last_wheel_spin", Date.now());
+    updateSpinCooldownUI();
+
+    const selected = wheelSegments[targetIndex];
+    if (selected.win) {
+      document.getElementById('spinResultBox').innerHTML = `
+        <span style="color:#10b981; font-size:16px;">🎉 BADHAI HO! Aap jeet gaye:</span><br>
+        <strong style="color:#ffca42; font-size:18px;">${selected.text}</strong><br>
+        <small style="color:#aaa;">Apna Table number bata kar counter se claim karein!</small>
+      `;
+    } else {
+      document.getElementById('spinResultBox').innerHTML = `
+        <span style="color:#ef4444; font-size:15px;">Koi nahi! Iss baar luck sath nahi tha.</span><br>
+        <small style="color:#aaa;">Agla spin 20 minute baad try karein!</small>
+      `;
+    }
+  }, 4200);
+}
+
+// ==================== 11. IMAGE COMPRESSOR & MENU EDIT ====================
 let adminUploadBase64 = "";
 let editUploadBase64 = "";
 
@@ -1497,7 +1809,7 @@ function adminSaveNewDish() {
   adminUploadBase64 = '';
 }
 
-// ==================== 11. CONTROLS ====================
+// ==================== 12. CONTROLS ====================
 function adminCreateCoupon() {
   const codeEl = document.getElementById('newCouponCode');
   const discEl = document.getElementById('newCouponDiscount');
@@ -1559,26 +1871,7 @@ function assignVipBadge() {
   }
 }
 
-function setupBannerSlider() {
-  const deals = [
-    { title: "K.D RABHA SPECIAL", sub: "Freshly Made, Especially for You in Bengbari!" },
-    { title: "FESTIVAL OFFER 🎉", sub: "Use Code KD20 to get Flat ₹20 OFF on orders!" },
-    { title: "MOMO CELEBRATION 🥟", sub: "Fresh Steamed & Fried Momo starting at ₹120 only!" }
-  ];
-  let curr = 0;
-  const bannerBox = document.querySelector('.promo-carousel, .hero-banner');
-  if (!bannerBox) return;
-
-  setInterval(() => {
-    curr = (curr + 1) % deals.length;
-    const titleEl = document.getElementById('bannerTitle');
-    const subEl = document.getElementById('bannerSub');
-    if (titleEl) titleEl.innerText = deals[curr].title;
-    if (subEl) subEl.innerText = deals[curr].sub;
-  }, 4000);
-}
-
-// ==================== 12. CAKE STUDIO & ACCOUNT ====================
+// ==================== 13. CAKE STUDIO & ACCOUNT ====================
 function openCakeStudio() {
   openModal('cakeStudioModal');
 }
@@ -1677,7 +1970,7 @@ function uploadCustomerAvatar(input) {
   }
 }
 
-// ==================== 13. NAVIGATION TABS ====================
+// ==================== 14. NAVIGATION TABS ====================
 function switchNavTab(tab) {
   document.querySelectorAll('.bottom-nav .nav-tab').forEach(t => t.classList.remove('active'));
 
@@ -1704,7 +1997,7 @@ function switchNavTab(tab) {
   }
 }
 
-// ==================== 14. INITIAL RUN ====================
+// ==================== 15. INITIAL RUN ====================
 function hideSplashScreen() {
   const splash = document.getElementById("custom-splash-screen");
   if (splash && splash.style.display !== "none") {
@@ -1717,9 +2010,11 @@ function hideSplashScreen() {
 
 window.addEventListener('DOMContentLoaded', () => {
   renderFoodItems(menuCatalog);
-  setupBannerSlider();
+  initZomatoFoodBanner();
   detectTableFromUrl();
   hideSplashScreen();
+  checkNotificationSupport();
+  listenForOfferNotifications();
 
   const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
   if (profile.name && document.getElementById('accNameDisplay')) document.getElementById('accNameDisplay').innerText = profile.name;
