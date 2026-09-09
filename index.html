@@ -12,7 +12,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
   <style>
-    /* MODAL UNIVERSAL FIX */
     .modal {
       display: none;
       position: fixed;
@@ -32,7 +31,7 @@
       border: 1px solid #333;
       border-radius: 16px;
       width: 100%;
-      max-width: 390px;
+      max-width: 420px;
       padding: 18px;
       position: relative;
       box-sizing: border-box;
@@ -40,15 +39,24 @@
       overflow-y: auto;
       box-shadow: 0 10px 35px rgba(0,0,0,0.8);
     }
+    /* Fixed ✕ Close Button */
     .close-btn {
       position: absolute;
-      top: 12px;
-      right: 14px;
-      background: none;
-      border: none;
-      color: #aaa;
-      font-size: 20px;
+      top: 10px;
+      right: 12px;
+      background: #27272a;
+      border: 1px solid #3f3f46;
+      color: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      z-index: 100001;
     }
     .weight-pill {
       background: #27272a;
@@ -63,6 +71,28 @@
       background: #E21B24;
       border-color: #E21B24;
       font-weight: bold;
+    }
+    .admin-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: #fff;
+      font-size: 12px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+    .admin-btn {
+      background: #E21B24;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
     }
   </style>
 </head>
@@ -93,7 +123,7 @@
     <button id="smartMainBtn" style="background: #10b981; color: #fff; border: none; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">📲 Install App</button>
   </div>
 
-  <!-- ORDER MODE TOGGLE (HOME DELIVERY / DINE-IN TABLE) -->
+  <!-- ORDER MODE TOGGLE -->
   <div style="padding: 10px 16px; display: flex; gap: 8px;">
     <button id="modeDeliveryBtn" class="mode-toggle-btn active" onclick="setOrderMode('delivery')" style="flex:1; padding: 10px; border-radius: 10px; border: 1px solid #333; background: #E21B24; color: #fff; font-size: 12px; font-weight: 800; cursor: pointer;">
       <i class="fa-solid fa-motorcycle"></i> Home Delivery
@@ -103,7 +133,7 @@
     </button>
   </div>
 
-  <!-- ACTIVE TABLE DISPLAY BANNER -->
+  <!-- ACTIVE TABLE BANNER -->
   <div id="activeTableBanner" style="display: none; margin: 0 16px 10px; background: #15803d; color: #fff; padding: 8px 12px; border-radius: 8px; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 800;">
     <span><i class="fa-solid fa-qrcode"></i> Ordering For: <strong id="activeTableLabel">Table #1</strong></span>
     <button onclick="openTableSelectorModal()" style="background: #fff; color: #15803d; border: none; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer;">Change</button>
@@ -180,7 +210,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR -->
+  <!-- BOTTOM NAVIGATION -->
   <nav class="bottom-nav">
     <div class="nav-tab active" id="tabHome" onclick="switchNavTab('home')"><i class="fa-solid fa-house"></i><span>Home</span></div>
     <div class="nav-tab" id="tabCakes" onclick="switchNavTab('cakes')"><i class="fa-solid fa-cake-candles"></i><span>Cakes</span></div>
@@ -189,38 +219,15 @@
     <div class="nav-tab" id="tabAccount" onclick="switchNavTab('account')"><i class="fa-solid fa-user"></i><span>Account</span></div>
   </nav>
 
-  <!-- ==================== ALL MODALS ==================== -->
+  <!-- ==================== ALL POPUP MODALS ==================== -->
 
-  <!-- TABLE SELECTOR MODAL (DINE-IN POPUP) -->
-  <div id="tableSelectorModal" class="modal">
-    <div class="modal-card" style="text-align: center;">
-      <button class="close-btn" onclick="closeModal('tableSelectorModal')">✕</button>
-      <div style="font-size: 30px; margin-bottom: 6px;">🍽️</div>
-      <h3 style="color: #fff; margin: 0 0 4px; font-size: 18px;">Select Table Number</h3>
-      <p style="color: #aaa; font-size: 12px; margin: 0 0 16px;">Aap restaurant mein kis table par baithe hain?</p>
-      
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
-        <button onclick="confirmTableNumber(1)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-1</button>
-        <button onclick="confirmTableNumber(2)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-2</button>
-        <button onclick="confirmTableNumber(3)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-3</button>
-        <button onclick="confirmTableNumber(4)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-4</button>
-        <button onclick="confirmTableNumber(5)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-5</button>
-        <button onclick="confirmTableNumber(6)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-6</button>
-        <button onclick="confirmTableNumber(7)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-7</button>
-        <button onclick="confirmTableNumber(8)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-8</button>
-      </div>
-
-      <small style="color: #71717a; font-size: 11px;">Table select karne ke baad khana direct aapki table par serve hoga.</small>
-    </div>
-  </div>
-
-  <!-- PRODUCT DETAIL MODAL -->
+  <!-- 1. PRODUCT DETAIL POPUP (FIXED ✕ CROSS BUTTON) -->
   <div id="productDetailModal" class="modal">
-    <div class="modal-card">
+    <div class="modal-card" style="padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('productDetailModal')">✕</button>
       <div style="position: relative;">
-        <img id="pdpImg" src="" style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px;" />
-        <button id="pdpWishBtn" onclick="toggleCurrentWish()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer;"><i class="fa-solid fa-heart"></i></button>
+        <img id="pdpImg" src="" style="width: 100%; height: 210px; object-fit: cover; border-radius: 12px;" />
+        <button id="pdpWishBtn" onclick="toggleCurrentWish()" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.65); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; font-size: 16px; cursor: pointer;"><i class="fa-solid fa-heart"></i></button>
       </div>
       <h3 id="pdpTitle" style="color: #fff; margin: 12px 0 4px; font-size: 18px;"></h3>
       <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px;">
@@ -238,13 +245,33 @@
     </div>
   </div>
 
-  <!-- CART MODAL (MULTI-STEP CHECKOUT) -->
+  <!-- 2. TABLE SELECTOR POPUP -->
+  <div id="tableSelectorModal" class="modal">
+    <div class="modal-card" style="text-align: center; padding-top: 40px;">
+      <button class="close-btn" onclick="closeModal('tableSelectorModal')">✕</button>
+      <div style="font-size: 30px; margin-bottom: 6px;">🍽️</div>
+      <h3 style="color: #fff; margin: 0 0 4px; font-size: 18px;">Select Table Number</h3>
+      <p style="color: #aaa; font-size: 12px; margin: 0 0 16px;">Aap restaurant mein kis table par baithe hain?</p>
+      
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+        <button onclick="confirmTableNumber(1)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-1</button>
+        <button onclick="confirmTableNumber(2)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-2</button>
+        <button onclick="confirmTableNumber(3)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-3</button>
+        <button onclick="confirmTableNumber(4)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-4</button>
+        <button onclick="confirmTableNumber(5)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-5</button>
+        <button onclick="confirmTableNumber(6)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-6</button>
+        <button onclick="confirmTableNumber(7)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-7</button>
+        <button onclick="confirmTableNumber(8)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-8</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. CART POPUP -->
   <div id="cartModal" class="modal">
-    <div class="modal-card">
+    <div class="modal-card" style="padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('cartModal')">✕</button>
       <h3 id="checkoutStepTitle" style="color: #fff; margin: 0 0 14px; font-size: 16px;">1. Review Cart & Summary</h3>
 
-      <!-- STEP 1: ITEMS & SUMMARY -->
       <div id="checkoutStep1">
         <div id="cartItemsList" style="max-height: 250px; overflow-y: auto;"></div>
 
@@ -275,7 +302,6 @@
         </button>
       </div>
 
-      <!-- STEP 2: ADDRESS / DINE-IN INFO -->
       <div id="checkoutStep2" style="display: none;">
         <div id="deliveryOrderSection">
           <div style="margin-bottom: 10px;">
@@ -288,7 +314,7 @@
           </div>
           <div style="margin-bottom: 12px;">
             <label style="color: #aaa; font-size: 11px;">Complete Delivery Address</label>
-            <textarea id="custAddress" rows="2" placeholder="House / Shop / Landmark in Bengbari..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; font-size: 12px; box-sizing: border-box;"></textarea>
+            <textarea id="custAddress" rows="2" placeholder="House / Shop / Landmark in Bengbari..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; font-size: 12px; box-sizing: border-box;" ></textarea>
           </div>
         </div>
 
@@ -296,7 +322,7 @@
           <div style="background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
             <div>
               <div style="color: #38bdf8; font-size: 15px; font-weight: 800;" id="checkoutTableDisplay">Table #1</div>
-              <small style="color: #94a3b8; font-size: 11px;">Delivery Free (₹0) - Khana Table par aayega</small>
+              <small style="color: #94a3b8; font-size: 11px;">Free Serving (₹0) - Khana Table par aayega</small>
             </div>
             <button onclick="openTableSelectorModal()" style="background: #0284c7; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Change</button>
           </div>
@@ -312,7 +338,6 @@
         </div>
       </div>
 
-      <!-- STEP 3: PAYMENT -->
       <div id="checkoutStep3" style="display: none;">
         <div style="text-align: center; margin-bottom: 14px;">
           <small style="color: #aaa; font-size: 11px;">Payable Amount</small>
@@ -337,27 +362,27 @@
     </div>
   </div>
 
-  <!-- LIVE ORDER TRACKING MODAL -->
+  <!-- 4. LIVE ORDER TRACKING POPUP -->
   <div id="trackingModal" class="modal">
-    <div class="modal-card">
+    <div class="modal-card" style="padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('trackingModal')">✕</button>
       <h3 style="color: #fff; margin-bottom: 12px; font-size: 16px;">🛵 Live Order Tracking</h3>
       <div id="trackingContent"></div>
     </div>
   </div>
 
-  <!-- ORDER HISTORY MODAL -->
+  <!-- 5. ORDERS HISTORY POPUP -->
   <div id="orderHistoryModal" class="modal">
-    <div class="modal-card">
+    <div class="modal-card" style="padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('orderHistoryModal')">✕</button>
       <h3 style="color: #fff; margin-bottom: 12px; font-size: 16px;">📋 My Orders History</h3>
       <div id="orderHistoryContainer"></div>
     </div>
   </div>
 
-  <!-- CAKE STUDIO MODAL -->
+  <!-- 6. CAKE STUDIO POPUP -->
   <div id="cakeStudioModal" class="modal">
-    <div class="modal-card">
+    <div class="modal-card" style="padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('cakeStudioModal')">✕</button>
       <h3 style="color: #fff; margin: 0 0 10px; font-size: 16px;">🎂 Custom Birthday Cake Studio</h3>
       <div style="margin-bottom: 10px;">
@@ -387,9 +412,9 @@
     </div>
   </div>
 
-  <!-- ACCOUNT MODAL -->
+  <!-- 7. ACCOUNT POPUP -->
   <div id="accountModal" class="modal">
-    <div class="modal-card">
+    <div class="modal-card" style="padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('accountModal')">✕</button>
       <h3 style="color: #fff; margin-bottom: 12px; font-size: 16px;">👤 Customer Profile</h3>
       <div style="margin-bottom: 10px;">
@@ -409,20 +434,22 @@
     </div>
   </div>
 
-  <!-- ADMIN GATEWAY MODAL -->
+  <!-- 8. COMPLETE ADMIN CONTROL GATEWAY (SAARE PURANE CONTROLS RESTORED) -->
   <div id="adminModal" class="modal">
-    <div class="modal-card" style="max-width: 500px;">
+    <div class="modal-card" style="max-width: 480px; padding-top: 40px;">
       <button class="close-btn" onclick="closeModal('adminModal')">✕</button>
       
+      <!-- LOCK SCREEN -->
       <div id="adminLockScreen" style="text-align: center; padding: 20px 0;">
         <i class="fa-solid fa-lock" style="font-size: 32px; color: #ef4444; margin-bottom: 10px;"></i>
         <h3 style="color: #fff; margin-bottom: 6px;">Restaurant Admin Gateway</h3>
         <p style="color: #888; font-size: 12px; margin-bottom: 14px;">Enter Secret Password to Open Dashboard</p>
-        <input type="password" id="adminPinInput" placeholder="Master Key" style="width: 70%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; text-align: center; font-size: 14px; margin-bottom: 12px;" />
+        <input type="password" id="adminPinInput" placeholder="Master Key" style="width: 75%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; text-align: center; font-size: 14px; margin-bottom: 12px;" />
         <br/>
-        <button onclick="unlockAdminWithPin()" style="background: #E21B24; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;">UNLOCK DASHBOARD</button>
+        <button onclick="unlockAdminWithPin()" class="admin-btn">UNLOCK DASHBOARD</button>
       </div>
 
+      <!-- DASHBOARD SCREEN -->
       <div id="adminDashboard" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
@@ -432,23 +459,98 @@
           <button id="stopAlarmBtn" onclick="stopAdminAlarm()" style="display: none; background: #ef4444; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer;">🔕 Stop Alarm</button>
         </div>
 
+        <!-- STORE STATUS & COD BUTTONS -->
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <button id="storeStatusBtn" onclick="toggleStoreStatus()" style="flex:1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">Restaurant is: OPEN</button>
-          <button id="adminCodToggleBtn" onclick="toggleCodStatus()" style="flex:1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">COD: ENABLED</button>
+          <button id="adminCodToggleBtn" onclick="toggleCodStatus()" style="flex:1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">Cash on Delivery: ENABLED</button>
         </div>
 
+        <!-- LIVE ORDERS & TABLE FEED -->
         <h5 style="color: #38bdf8; margin: 10px 0 6px;">🔴 Active Orders & Table Feed</h5>
-        <div id="adminLiveOrdersList" style="max-height: 280px; overflow-y: auto;"></div>
+        <div id="adminLiveOrdersList" style="max-height: 250px; overflow-y: auto; margin-bottom: 14px;"></div>
 
-        <h5 style="color: #38bdf8; margin: 14px 0 6px;">🍲 Menu Dish Management</h5>
-        <div id="adminMenuItemsList" style="max-height: 200px; overflow-y: auto;"></div>
+        <!-- ADD NEW DISH FORM (RESTORED) -->
+        <div style="background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 14px; border: 1px solid #334155;">
+          <h5 style="color: #f59e0b; margin: 0 0 8px;">➕ Add New Dish to Menu</h5>
+          <input type="text" id="newDishName" placeholder="Dish Name (e.g. Chicken Momo)" class="admin-input" />
+          <div style="display: flex; gap: 8px;">
+            <input type="number" id="newDishPrice" placeholder="Selling Price (₹)" class="admin-input" style="flex:1;" />
+            <select id="newDishCat" class="admin-input" style="flex:1;">
+              <option value="momos">Momos</option>
+              <option value="rolls">Rolls</option>
+              <option value="chicken">Chicken</option>
+              <option value="pork">Pork Special</option>
+              <option value="chow_thukpa">Chow / Rice</option>
+              <option value="drinks">Tea & Coffee</option>
+              <option value="cakes">Cakes</option>
+            </select>
+          </div>
+          <input type="text" id="newDishImgUrl" placeholder="Image URL (Unsplash/Web link)" class="admin-input" />
+          <input type="file" accept="image/*" onchange="previewAdminDishUpload(this)" style="color:#aaa; font-size:11px; margin-bottom:8px;" />
+          <img id="adminDishPreview" src="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; display: none; margin-bottom: 8px;" />
+          <button onclick="adminSaveNewDish()" style="background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; width: 100%;">Save Dish to Menu</button>
+        </div>
+
+        <!-- MENU DISH MANAGEMENT LIST -->
+        <h5 style="color: #38bdf8; margin: 10px 0 6px;">🍲 Menu Dish Management</h5>
+        <div id="adminMenuItemsList" style="max-height: 200px; overflow-y: auto; margin-bottom: 14px;"></div>
+
+        <!-- PAYMENT SETTINGS (RESTORED) -->
+        <div style="background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 14px; border: 1px solid #334155;">
+          <h5 style="color: #38bdf8; margin: 0 0 8px;">💳 UPI & Payment Settings</h5>
+          <label style="color:#aaa; font-size:11px;">UPI ID for Payments</label>
+          <input type="text" id="adminUpiInput" class="admin-input" placeholder="e.g. yourname@okaxis" />
+          <label style="color:#aaa; font-size:11px;">Business / Payee Name</label>
+          <input type="text" id="adminUpiNameInput" class="admin-input" placeholder="S&A FAMILY RESTAURANT" />
+          <button onclick="saveAdminPaymentSettings()" style="background: #0284c7; color: #fff; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; width: 100%;">Update UPI Settings</button>
+        </div>
+
+        <!-- BANNER HEADLINE & PROMO CREATOR (RESTORED) -->
+        <div style="background: #1e293b; padding: 12px; border-radius: 10px; border: 1px solid #334155;">
+          <h5 style="color: #38bdf8; margin: 0 0 8px;">🎟️ Coupons & Banner Headline</h5>
+          <button onclick="editPromoBanner()" style="background: #334155; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 11px; cursor: pointer; width: 100%; margin-bottom: 8px;">✏️ Change Banner Headline</button>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="newCouponCode" placeholder="Code (e.g. SUPER30)" class="admin-input" style="flex:1; text-transform: uppercase;" />
+            <input type="number" id="newCouponDiscount" placeholder="Flat ₹ OFF" class="admin-input" style="flex:1;" />
+          </div>
+          <button onclick="adminCreateCoupon()" style="background: #e11d48; color: #fff; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; width: 100%;">Create Promo Code</button>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- ORDER SUCCESS MODAL -->
+  <!-- 9. FULL DISH EDIT MODAL (RESTORED) -->
+  <div id="editDishModal" class="modal">
+    <div class="modal-card" style="padding-top: 40px;">
+      <button class="close-btn" onclick="closeModal('editDishModal')">✕</button>
+      <h3 style="color: #fff; margin: 0 0 10px; font-size: 16px;">✏️ Edit Dish Details</h3>
+      <input type="hidden" id="editDishId" />
+      <label style="color:#aaa; font-size:11px;">Dish Name</label>
+      <input type="text" id="editDishName" class="admin-input" />
+      <label style="color:#aaa; font-size:11px;">Price (₹)</label>
+      <input type="number" id="editDishPrice" class="admin-input" />
+      <label style="color:#aaa; font-size:11px;">Category</label>
+      <select id="editDishCat" class="admin-input">
+        <option value="momos">Momos</option>
+        <option value="rolls">Rolls</option>
+        <option value="chicken">Chicken</option>
+        <option value="pork">Pork Special</option>
+        <option value="chow_thukpa">Chow / Rice</option>
+        <option value="drinks">Tea & Coffee</option>
+        <option value="cakes">Cakes</option>
+      </select>
+      <label style="color:#aaa; font-size:11px;">Image Link (URL)</label>
+      <input type="text" id="editDishImgUrl" class="admin-input" />
+      <input type="file" accept="image/*" onchange="previewEditDishUpload(this)" style="color:#aaa; font-size:11px; margin-bottom:8px;" />
+      <img id="editDishPreview" src="" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; display: none; margin-bottom: 10px;" />
+      <button onclick="saveEditedDishDetails()" style="background: #10b981; color: #fff; border: none; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; cursor: pointer;">Save Changes</button>
+    </div>
+  </div>
+
+  <!-- 10. ORDER SUCCESS MODAL -->
   <div id="order-success-modal" class="modal">
-    <div class="modal-card" style="text-align: center;">
+    <div class="modal-card" style="text-align: center; padding-top: 40px;">
       <div style="font-size: 40px; margin-bottom: 8px;">🎉</div>
       <h3 style="color: #10b981; margin: 0 0 6px;">Order Confirmed!</h3>
       <p id="orderSuccessSub" style="color: #a1a1aa; font-size: 12px; margin: 0 0 16px;"></p>
