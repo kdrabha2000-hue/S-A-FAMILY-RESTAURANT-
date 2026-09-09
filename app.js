@@ -78,7 +78,7 @@ function requestNotificationAccess() {
     if (bar) bar.style.display = 'none';
     if (permission === "granted") {
       new Notification("S&A Family Restaurant 🥟", {
-        body: "Offer notifications enabled! Saste deals aur tasty food updates ab aapko milenge.",
+        body: "Offer notifications enabled! Saste deals aur updates aapko milenge.",
         icon: "logo.png"
       });
     }
@@ -108,7 +108,7 @@ function sendAdminPushNotification() {
       image: img || "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500",
       timestamp: Date.now()
     });
-    alert("Offer Broadcasted! Notification will be sent to subscribed customers.");
+    alert("Offer Broadcasted! Notification will be sent to customers.");
     if (document.getElementById('adminPushTitle')) document.getElementById('adminPushTitle').value = '';
     if (document.getElementById('adminPushMsg')) document.getElementById('adminPushMsg').value = '';
     if (document.getElementById('adminPushImg')) document.getElementById('adminPushImg').value = '';
@@ -223,6 +223,7 @@ function openTableSelectorModal() {
 
 function confirmTableNumber(tableNo, shouldScroll = true) {
   selectedTableNumber = tableNo;
+  localStorage.setItem("kd_active_table_num", tableNo);
   setOrderMode('dinein');
   closeModal('tableSelectorModal');
 
@@ -1123,11 +1124,14 @@ function placeOrder() {
 
   if (currentOrderMode === 'dinein') {
     sessionStorage.setItem("last_table_order_total", grandTotal);
+    localStorage.setItem("kd_active_table_order_id", generatedId);
   }
 
   if (typeof db !== 'undefined' && db) {
     const newOrderRef = db.ref("orders").push();
     newOrderRef.set(orderPayload);
+    localStorage.setItem("kd_last_placed_order_key", newOrderRef.key);
+
     if (phone !== "DINE-IN") {
       db.ref("customer_history/" + phone + "/" + newOrderRef.key).set(orderPayload);
     }
@@ -1143,7 +1147,6 @@ function placeOrder() {
   updateCartBar();
   closeModal('cartModal');
 
-  // CUSTOMER PHONE SOUND BAND HAI - Only visuals shown
   const animModal = document.getElementById("order-success-modal");
   const succSub = document.getElementById("orderSuccessSub");
   if (succSub) {
@@ -1176,143 +1179,180 @@ function listenForCustomerOrderCancelled(orderDbKey) {
   });
 }
 
-// ==================== 8. ORDERS HISTORY & LIVE TRACKING ====================
+// ==================== 8. ORDERS HISTORY & REALTIME TRACKING ====================
 function openOrderHistoryModal() {
   const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
   const phone = profile.phone;
-
   const container = document.getElementById('orderHistoryContainer');
   openModal('orderHistoryModal');
 
   if (!container) return;
-  container.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Fetching orders...</p>';
+  container.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Fetching live orders...</p>';
 
-  if (!phone || !db) {
-    container.innerHTML = `
-      <div style="text-align:center; padding:30px 0;">
-        <i class="fa-solid fa-user-lock" style="font-size:36px; color:#444; margin-bottom:10px;"></i>
-        <p style="font-size:13px; color:#aaa;">Please save your mobile number in Account tab to view orders.</p>
-        <button class="admin-btn btn-primary" style="margin-top:12px;" onclick="closeModal('orderHistoryModal'); switchNavTab('account');">Open Account</button>
-      </div>
-    `;
+  if (!db) {
+    container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">Database offline.</p>`;
     return;
   }
 
-  db.ref("customer_history/" + phone).on("value", snapshot => {
+  // Realtime Live Listener on All Orders
+  db.ref("orders").on("value", snapshot => {
     const data = snapshot.val();
     container.innerHTML = '';
 
     if (!data) {
-      container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">No orders found for +91 ${phone}</p>`;
-    } else {
-      Object.keys(data).reverse().forEach(key => {
-        const ord = data[key];
-        const primaryImg = (ord.items && ord.items[0] && ord.items[0].img) ? ord.items[0].img : "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
-        const itemsList = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Items";
-        const isDelivered = ord.stage === 4 || (ord.status && ord.status.includes("Delivered"));
-        const isCancelled = ord.stage === 0 || (ord.status && ord.status.includes("Cancelled"));
-
-        let statusBadge = `<span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#372213; color:#f97316;">🍳 ${ord.status || 'Preparing'}</span>`;
-        if (isDelivered) {
-          statusBadge = `<span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#143423; color:#22c55e;">✅ Done</span>`;
-        } else if (isCancelled) {
-          statusBadge = `<span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#361517; color:#ef4444;">✖ Cancelled</span>`;
-        }
-
-        container.innerHTML += `
-          <div class="order-history-card" style="background:#1e1e1e; border-radius:12px; padding:12px; margin-bottom:12px; border:1px solid #2a2a2a;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span style="font-size:12px; font-weight:700; color:#E21B24;">#${ord.orderId}</span>
-              ${statusBadge}
-            </div>
-            <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
-              <img src="${primaryImg}" style="width:48px; height:48px; border-radius:8px; object-fit:cover;" />
-              <div style="flex:1;">
-                <div style="font-size:13px; font-weight:700; color:#fff;">${itemsList}</div>
-                <div style="font-size:12px; font-weight:700; color:#E21B24; margin-top:2px;">₹${ord.grandTotal} (${ord.paymentMode})</div>
-              </div>
-            </div>
-            ${(!isDelivered && !isCancelled) ? `
-              <div style="background:#261012; border:1px solid #4a1519; padding:8px 12px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:12px; font-weight:600; color:#ff6b6b;">⏱️ ETA: ~${ord.eta || 25} Mins</span>
-                <button class="add-btn" onclick="openLiveTrackingPopup('${key}', '${phone}')">Live Track 📍</button>
-              </div>
-            ` : ''}
-          </div>
-        `;
-      });
+      container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">Abhi koi active order nahi hai.</p>`;
+      return;
     }
+
+    const savedTableNum = selectedTableNumber || localStorage.getItem("kd_active_table_num");
+    const lastPlacedKey = localStorage.getItem("kd_last_placed_order_key");
+    const activeOrderId = localStorage.getItem("kd_active_table_order_id");
+
+    const filteredKeys = Object.keys(data).filter(key => {
+      const ord = data[key];
+      if (phone && ord.phone === phone) return true;
+      if (currentOrderMode === 'dinein' && savedTableNum && ord.tableNumber == savedTableNum) return true;
+      if (key === lastPlacedKey || ord.orderId === activeOrderId) return true;
+      return false;
+    });
+
+    if (filteredKeys.length === 0) {
+      container.innerHTML = `
+        <div style="text-align:center; padding:30px 10px;">
+          <i class="fa-solid fa-utensils" style="font-size:36px; color:#555; margin-bottom:10px;"></i>
+          <p style="font-size:13px; color:#aaa;">Aapka abhi koi active order nahi hai.</p>
+        </div>
+      `;
+      return;
+    }
+
+    filteredKeys.reverse().forEach(key => {
+      const ord = data[key];
+      const primaryImg = (ord.items && ord.items[0] && ord.items[0].img) ? ord.items[0].img : "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
+      const itemsList = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Items";
+      const stage = Number(ord.stage) || 1;
+
+      // Status badges sync in real-time
+      let statusBadge = `<span style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; background:#1e3a8a; color:#60a5fa;">⏳ Order Confirmed</span>`;
+      if (stage === 2) {
+        statusBadge = `<span style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; background:#831843; color:#f472b6;">🍳 In Kitchen</span>`;
+      } else if (stage === 3) {
+        statusBadge = `<span style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; background:#78350f; color:#fbbf24;">🛵 Serving / Out</span>`;
+      } else if (stage === 4) {
+        statusBadge = `<span style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; background:#14532d; color:#4ade80;">✅ Done / Served</span>`;
+      } else if (stage === 0) {
+        statusBadge = `<span style="font-size:11px; font-weight:700; padding:4px 8px; border-radius:6px; background:#450a0a; color:#f87171;">❌ Cancelled</span>`;
+      }
+
+      // Live polite waiting message
+      const liveWaitMessageHtml = (stage >= 1 && stage < 4) ? `
+        <div style="background:linear-gradient(135deg, #1c1917, #292524); border:1px solid #f59e0b; border-radius:12px; padding:12px; margin:10px 0; color:#fff;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+            <span style="font-size:16px;">⏱️</span>
+            <strong style="color:#fbbf24; font-size:13px;">Chef Special Update:</strong>
+          </div>
+          <p style="font-size:12px; color:#e7e5e4; margin:0; line-height:1.5;">
+            "तब तक आप थोड़ा इंतज़ार कीजिए जब तक खाना बन रहा है! खाना बनते ही आपको सबसे पहले परोसा जाएगा। तब तक आप Instagram Reels देख सकते हैं या हमारा मेन्यू चेक कर सकते हैं... क्या पता कुछ और स्वादिष्ट खाने का मन हो जाए! 😋"
+          </p>
+        </div>
+      ` : '';
+
+      container.innerHTML += `
+        <div class="order-history-card" style="background:#1e1e1e; border-radius:14px; padding:14px; margin-bottom:14px; border:1px solid #333; box-shadow:0 4px 15px rgba(0,0,0,0.5);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:13px; font-weight:800; color:#E21B24;">#${ord.orderId}</span>
+            ${statusBadge}
+          </div>
+          <div style="display:flex; gap:10px; align-items:center;">
+            <img src="${primaryImg}" style="width:52px; height:52px; border-radius:10px; object-fit:cover;" />
+            <div style="flex:1;">
+              <div style="font-size:13px; font-weight:700; color:#fff;">${itemsList}</div>
+              <div style="font-size:12px; font-weight:700; color:#E21B24; margin-top:2px;">₹${ord.grandTotal} (${ord.paymentMode})</div>
+            </div>
+          </div>
+
+          ${liveWaitMessageHtml}
+
+          <!-- TABLE SPECIAL GAME DIRECTLY INSIDE EMPTY SPACE -->
+          <div style="margin-top:14px; background:radial-gradient(circle, #2d124d 0%, #170729 100%); border:1.5px solid #a855f7; border-radius:14px; padding:14px; text-align:center;">
+            <div style="font-size:14px; font-weight:800; color:#e9d5ff; margin-bottom:4px;">🎡 Table Special: Spin & Win!</div>
+            <p style="font-size:11px; color:#c084fc; margin-bottom:10px;">Free Chocolates jeetne ke liye Wheel ghumaayein!</p>
+            <button onclick="openSpinWheelModal()" style="background:linear-gradient(135deg, #a855f7, #7e22ce); color:#fff; border:none; padding:8px 18px; border-radius:20px; font-weight:800; font-size:12px; cursor:pointer; box-shadow:0 2px 10px rgba(168,85,247,0.4);">
+              🎯 Play Lucky Wheel Now
+            </button>
+          </div>
+        </div>
+      `;
+    });
   });
 }
 
 function openLiveTrackingPopup(key, phone) {
   openModal('trackingModal');
   const content = document.getElementById('trackingContent');
-  if (!content) return;
+  if (!content || !db) return;
 
-  if (db && phone && key) {
-    db.ref("customer_history/" + phone + "/" + key).on("value", snap => {
-      const ord = snap.val();
-      if (!ord) return;
-      const stage = Number(ord.stage) || 1;
+  db.ref("orders/" + key).on("value", snap => {
+    const ord = snap.val();
+    if (!ord) return;
+    const stage = Number(ord.stage) || 1;
 
-      content.innerHTML = `
-        <div style="background:#261012; padding:12px 14px; border-radius:12px; margin-bottom:16px; border:1px solid #E21B24;">
-          <div style="font-size:12px; color:#E21B24; font-weight:700;">ORDER ID: #${ord.orderId}</div>
-          <div style="font-size:16px; font-weight:800; color:#fff; margin:2px 0;">₹${ord.grandTotal} (${ord.paymentMode})</div>
-          <div style="font-size:12px; color:#aaa;">${stage === 0 ? 'Status: Cancelled' : `Estimated Delivery: ~${ord.eta || 30} Mins`}</div>
+    content.innerHTML = `
+      <div style="background:#261012; padding:12px 14px; border-radius:12px; margin-bottom:16px; border:1px solid #E21B24;">
+        <div style="font-size:12px; color:#E21B24; font-weight:700;">ORDER ID: #${ord.orderId}</div>
+        <div style="font-size:16px; font-weight:800; color:#fff; margin:2px 0;">₹${ord.grandTotal} (${ord.paymentMode})</div>
+        <div style="font-size:12px; color:#aaa;">${stage === 0 ? 'Status: Cancelled' : `Estimated Delivery: ~${ord.eta || 30} Mins`}</div>
+      </div>
+
+      ${stage === 0 ? `
+        <div style="background:#2a1517; border:1px solid #ef4444; border-radius:12px; padding:14px; text-align:center; color:#fca5a5; font-weight:600; margin-bottom:16px; font-size:13px; line-height:1.4;">
+          🍲 <strong>शेफ का संदेश:</strong><br>
+          ${ord.cancelReason || 'आज इस डिश की ताज़ा सामग्री समाप्त हो गई है! कृपया हमारे अन्य लज़ीज़ आइटम आज़माएँ।'}
         </div>
-
-        ${stage === 0 ? `
-          <div style="background:#2a1517; border:1px solid #ef4444; border-radius:12px; padding:14px; text-align:center; color:#fca5a5; font-weight:600; margin-bottom:16px; font-size:13px; line-height:1.4;">
-            🍲 <strong>शेफ का संदेश:</strong><br>
-            ${ord.cancelReason || 'आज इस डिश की ताज़ा सामग्री समाप्त हो गई है! कृपया हमारे अन्य लज़ीज़ आइटम आज़माएँ।'}
-          </div>
-        ` : `
-          <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px; background:#1e1e1e; padding:14px; border-radius:14px; border:1px solid #333;">
-            <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 1 ? '1' : '0.35'};">
-              <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 1 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">1</div>
-              <div>
-                <div style="font-weight:700; font-size:13px; color:#fff;">Order Confirmed</div>
-                <div style="font-size:11px; color:#888;">Restaurant received your order</div>
-              </div>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 2 ? '1' : '0.35'};">
-              <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 2 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">2</div>
-              <div>
-                <div style="font-weight:700; font-size:13px; color:#fff;">Kitchen Preparing 🍳</div>
-                <div style="font-size:11px; color:#888;">Food is freshly cooking</div>
-              </div>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 3 ? '1' : '0.35'};">
-              <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 3 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">3</div>
-              <div>
-                <div style="font-weight:700; font-size:13px; color:#fff;">Out for Serving / Delivery 🛵</div>
-                <div style="font-size:11px; color:#888;">Order on the way</div>
-              </div>
-            </div>
-
-            <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 4 ? '1' : '0.35'};">
-              <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 4 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">4</div>
-              <div>
-                <div style="font-weight:700; font-size:13px; color:#fff;">Served / Delivered 🎉</div>
-                <div style="font-size:11px; color:#888;">Enjoy your hot & fresh meal!</div>
-              </div>
+      ` : `
+        <div style="display:flex; flex-direction:column; gap:14px; margin-bottom:20px; background:#1e1e1e; padding:14px; border-radius:14px; border:1px solid #333;">
+          <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 1 ? '1' : '0.35'};">
+            <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 1 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">1</div>
+            <div>
+              <div style="font-weight:700; font-size:13px; color:#fff;">Order Confirmed</div>
+              <div style="font-size:11px; color:#888;">Restaurant received your order</div>
             </div>
           </div>
-        `}
 
-        <a href="tel:8453270362" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#10b981; color:#fff; text-decoration:none; padding:12px; border-radius:10px; font-weight:700; font-size:13px;">
-          📞 Call Restaurant Support (8453270362)
-        </a>
-      `;
-    });
-  }
+          <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 2 ? '1' : '0.35'};">
+            <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 2 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">2</div>
+            <div>
+              <div style="font-weight:700; font-size:13px; color:#fff;">Kitchen Preparing 🍳</div>
+              <div style="font-size:11px; color:#888;">Food is freshly cooking</div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 3 ? '1' : '0.35'};">
+            <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 3 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">3</div>
+            <div>
+              <div style="font-weight:700; font-size:13px; color:#fff;">Out for Serving / Delivery 🛵</div>
+              <div style="font-size:11px; color:#888;">Order on the way</div>
+            </div>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:12px; opacity:${stage >= 4 ? '1' : '0.35'};">
+            <div style="width:28px; height:28px; border-radius:50%; background:${stage >= 4 ? '#E21B24' : '#444'}; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:12px;">4</div>
+            <div>
+              <div style="font-weight:700; font-size:13px; color:#fff;">Served / Delivered 🎉</div>
+              <div style="font-size:11px; color:#888;">Enjoy your hot & fresh meal!</div>
+            </div>
+          </div>
+        </div>
+      `}
+
+      <a href="tel:8453270362" style="display:flex; align-items:center; justify-content:center; gap:8px; background:#10b981; color:#fff; text-decoration:none; padding:12px; border-radius:10px; font-weight:700; font-size:13px;">
+        📞 Call Restaurant Support (8453270362)
+      </a>
+    `;
+  });
 }
 
-// ==================== 9. ADMIN PANEL (OUT OF STOCK CANCEL BUTTON) ====================
+// ==================== 9. ADMIN PANEL (REALTIME STATUS DISPATCH) ====================
 function openAdminGateway() {
   openModal('adminModal');
   const lock = document.getElementById('adminLockScreen');
@@ -1427,6 +1467,22 @@ function loadAdminOrdersList() {
   });
 }
 
+function setAdminOrderStatus(key, orderId, phone, stage, statusText) {
+  const updates = { stage: Number(stage), status: statusText };
+  if (db) {
+    db.ref("orders/" + key).update(updates);
+    if (phone && phone !== "DINE-IN") {
+      db.ref("customer_history/" + phone).once("value", snap => {
+        snap.forEach(child => {
+          if (child.val().orderId === orderId || child.key === key) {
+            child.ref.update(updates);
+          }
+        });
+      });
+    }
+  }
+}
+
 function adminCancelOutOfStock(key, orderId, phone) {
   const customReason = "अरे माफ़ी चाहते हैं! आज इस डिश की ताज़ा सामग्री समाप्त हो गई है। लेकिन आपके लिए हमारे मेनू में कई और भी लाजवाब डिश तैयार हैं, कृपया कुछ और ऑर्डर करें!";
   if (confirm("Cancel this order with polite Out-of-Stock message to customer?")) {
@@ -1440,28 +1496,12 @@ function adminCancelOutOfStock(key, orderId, phone) {
       if (phone && phone !== "DINE-IN") {
         db.ref("customer_history/" + phone).once("value", snap => {
           snap.forEach(child => {
-            if (child.val().orderId === orderId) {
+            if (child.val().orderId === orderId || child.key === key) {
               child.ref.update(updates);
             }
           });
         });
       }
-    }
-  }
-}
-
-function setAdminOrderStatus(key, orderId, phone, stage, statusText) {
-  const updates = { stage: Number(stage), status: statusText };
-  if (db) {
-    db.ref("orders/" + key).update(updates);
-    if (phone && phone !== "DINE-IN") {
-      db.ref("customer_history/" + phone).once("value", snap => {
-        snap.forEach(child => {
-          if (child.val().orderId === orderId) {
-            child.ref.update(updates);
-          }
-        });
-      });
     }
   }
 }
@@ -1485,7 +1525,6 @@ const wheelSegments = [
 ];
 
 let isWheelSpinning = false;
-let wheelCurrentAngle = 0;
 
 function drawWheel() {
   const canvas = document.getElementById('wheelCanvas');
@@ -1577,7 +1616,7 @@ function triggerSpinWheel() {
   let targetIndex = 0;
 
   if (isWinner) {
-    const winIndices = [1, 3, 5]; // 5, 8, 10 Chocolates
+    const winIndices = [1, 3, 5];
     targetIndex = winIndices[Math.floor(Math.random() * winIndices.length)];
   } else {
     const loseIndices = [0, 2, 4, 6, 7];
