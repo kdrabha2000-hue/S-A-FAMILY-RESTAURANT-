@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
 
-  <link rel="stylesheet" href="style.css?v=310" />
+  <link rel="stylesheet" href="style.css?v=311" />
 
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body>
 
-<!-- === FULL SPLASH SCREEN START === -->
+<!-- FULL SPLASH SCREEN -->
 <style>
   #custom-splash-screen {
     position: fixed;
@@ -117,7 +117,6 @@
     100% { transform: translateX(100%); }
   }
 
-  /* PWA Install Banner */
   #pwaInstallBanner {
     display: none;
     position: fixed;
@@ -140,7 +139,6 @@
     100% { transform: translateY(0); opacity: 1; }
   }
 
-  /* Floating Toast Alert */
   #cartToast {
     display: none;
     position: fixed;
@@ -162,7 +160,6 @@
     100% { transform: translate(-50%, 0); opacity: 1; }
   }
 
-  /* Order Mode Switcher (Delivery vs Table) */
   .order-mode-toggle {
     display: flex;
     background: #1c1c1e;
@@ -205,6 +202,151 @@
     justify-content: space-between;
     align-items: center;
   }
+
+  /* ZOMATO STYLE FOOD BANNER CAROUSEL */
+  .zomato-banner-slider-box {
+    margin: 10px 14px;
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    background: #18181b;
+    border: 1px solid #332224;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    height: 140px;
+    cursor: pointer;
+  }
+  .zomato-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    transition: opacity 0.6s ease-in-out;
+    background-size: cover;
+    background-position: center;
+  }
+  .zomato-slide.active {
+    opacity: 1;
+    z-index: 2;
+  }
+  .zomato-slide::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.85) 45%, rgba(0,0,0,0.3) 100%);
+    z-index: 1;
+  }
+  .zomato-slide-content {
+    position: relative;
+    z-index: 2;
+    max-width: 65%;
+  }
+  .zomato-tag {
+    background: #E21B24;
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 700;
+    display: inline-block;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .zomato-slide-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .zomato-price-tag {
+    color: #ffca42;
+    font-size: 15px;
+    font-weight: 800;
+  }
+  .zomato-slide-img {
+    position: relative;
+    z-index: 2;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 2px solid #ffca42;
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  }
+
+  /* SPIN WHEEL BUTTON AND CANVAS */
+  #spinWheelEntryBtn {
+    display: none;
+    margin: 8px 14px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+    font-weight: 800;
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #fbbf24;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+    animation: pulseGlow 1.8s infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  .spin-wheel-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .wheel-box {
+    position: relative;
+    width: 280px;
+    height: 280px;
+    margin: 10px auto;
+  }
+  .wheel-pointer {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14px solid transparent;
+    border-right: 14px solid transparent;
+    border-top: 22px solid #fff;
+    z-index: 10;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  }
+  #wheelCanvas {
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    border: 4px solid #f59e0b;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+    transition: transform 4s cubic-bezier(0.15, 0.9, 0.25, 1);
+  }
+
+  /* PUSH NOTIFICATION PROMPT */
+  #pushNotifyBar {
+    display: none;
+    margin: 8px 14px;
+    background: #1a2232;
+    border: 1px solid #38bdf8;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 12px;
+  }
 </style>
 
 <div id="custom-splash-screen">
@@ -241,12 +383,23 @@
     window.addEventListener("load", dismissSplash);
   })();
 </script>
-<!-- === FULL SPLASH SCREEN END === -->
 
-  <!-- Toast Notification -->
+  <!-- Cart Toast -->
   <div id="cartToast">✅ Added to Cart!</div>
 
-  <!-- PWA Banner -->
+  <!-- PUSH NOTIFICATION PERMISSION BAR -->
+  <div id="pushNotifyBar">
+    <div style="display:flex; align-items:center; gap:8px;">
+      <i class="fa-solid fa-bell" style="color:#38bdf8; font-size:16px;"></i>
+      <div><strong>Get Saste Deals & Offers!</strong><br><span style="color:#94a3b8; font-size:10px;">Turn on discounts with food photos.</span></div>
+    </div>
+    <div style="display:flex; gap:6px;">
+      <button onclick="requestNotificationAccess()" style="background:#38bdf8; color:#0f172a; border:none; padding:5px 10px; border-radius:6px; font-weight:700; font-size:11px; cursor:pointer;">Allow</button>
+      <button onclick="dismissNotificationPrompt()" style="background:transparent; color:#888; border:none; font-size:16px; cursor:pointer;">✕</button>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner -->
   <div id="pwaInstallBanner">
     <div style="display:flex; align-items:center; gap:10px;">
       <img src="logo.png" onerror="this.src='https://img.icons8.com/color/512/restaurant.png'" style="width:36px; height:36px; border-radius:50%; border:1px solid #E21B24;" />
@@ -271,7 +424,7 @@
         </div>
       </div>
       <div class="header-actions">
-        <div class="admin-icon-btn" onclick="openSavedItemsModal()" title="Saved Dishes (Wishlist)" style="color:#ef4444;"><i class="fa-solid fa-heart"></i></div>
+        <div class="admin-icon-btn" onclick="openSavedItemsModal()" title="Saved Dishes" style="color:#ef4444;"><i class="fa-solid fa-heart"></i></div>
         <div class="coin-pill" onclick="switchNavTab('account')"><i class="fa-solid fa-coins"></i> <span id="headerCoins">25</span></div>
         <div class="admin-icon-btn" onclick="openAdminGateway()" title="Admin Control Room"><i class="fa-solid fa-shield-halved"></i></div>
       </div>
@@ -293,6 +446,11 @@
       <button onclick="openTableSelectorModal()" style="background:transparent; color:#ff6b6b; border:1px solid #ff6b6b; padding:2px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change</button>
     </div>
 
+    <!-- LUCKY WHEEL BANNER BUTTON (TABLE ORDERS) -->
+    <div id="spinWheelEntryBtn" onclick="openSpinWheelModal()">
+      🎡 <strong>Table Special Game:</strong> Spin & Win Free Chocolates! (Min ₹100 Order) ➔
+    </div>
+
     <div class="search-box">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input type="text" id="searchInput" placeholder="Search momos, rolls, thukpa, biryani..." onkeyup="searchDishes()" />
@@ -300,7 +458,12 @@
     </div>
   </header>
 
-  <div class="promo-carousel">
+  <!-- ZOMATO-STYLE AUTO SLIDING FOOD BANNER -->
+  <div class="zomato-banner-slider-box" id="zomatoFoodSlider" onclick="onSliderBannerClick()">
+    <!-- Slides dynamically filled via app.js -->
+  </div>
+
+  <div class="promo-carousel" style="display:none;">
     <span class="promo-badge">🎉 FESTIVAL DEAL</span>
     <h2 id="bannerTitle">K.D RABHA SPECIAL</h2>
     <p id="bannerSub">Freshly Made, Especially for You in Bengbari!</p>
@@ -389,6 +552,32 @@
         <button class="table-num-btn" onclick="confirmTableNumber(12)">Table 12</button>
       </div>
       <button class="admin-btn" style="background:#262626; color:#fff;" onclick="setOrderMode('delivery'); closeModal('tableSelectorModal');">Ghar ke liye mangwana hai (Home Delivery)</button>
+    </div>
+  </div>
+
+  <!-- LUCKY SPIN WHEEL MODAL -->
+  <div class="full-modal" id="spinWheelModal" style="display:none !important;">
+    <div class="modal-header">
+      <h3>🎡 Spin the Lucky Wheel</h3>
+      <i class="fa-solid fa-xmark close-btn" onclick="closeModal('spinWheelModal')"></i>
+    </div>
+    <div class="spin-wheel-container">
+      <p style="font-size:12px; color:#aaa; text-align:center; margin-bottom:10px;">
+        Sirf Table order (₹100+) ke liye! Har 20 minute me 1 mauka milega.
+      </p>
+
+      <div class="wheel-box">
+        <div class="wheel-pointer"></div>
+        <canvas id="wheelCanvas" width="280" height="280"></canvas>
+      </div>
+
+      <div id="spinCooldownTimer" style="font-size:12px; color:#ffca42; margin-top:10px; font-weight:700;"></div>
+
+      <button id="spinWheelBtn" class="admin-btn btn-primary" style="margin-top:14px; width:80%;" onclick="triggerSpinWheel()">
+        🎡 SPIN NOW
+      </button>
+
+      <div id="spinResultBox" style="margin-top:14px; font-size:14px; font-weight:700; text-align:center; color:#fff;"></div>
     </div>
   </div>
 
@@ -571,7 +760,6 @@
       <i class="fa-solid fa-xmark close-btn" onclick="closeModal('cartModal')"></i>
     </div>
     <div style="padding:16px;">
-      <!-- STEP 1: CART ITEMS & PLUS/MINUS -->
       <div id="checkoutStep1">
         <div id="cartItemsList"></div>
 
@@ -598,15 +786,13 @@
         <button class="admin-btn btn-primary" style="margin-top:14px;" onclick="goToCheckoutStep(2)">PROCEED ➔</button>
       </div>
 
-      <!-- STEP 2: DINE-IN BILL / HOME DELIVERY ADDRESS -->
       <div id="checkoutStep2" style="display:none;">
-        <!-- DINE-IN TABLE ORDER SUMMARY (PAY AT COUNTER) -->
         <div id="dineInOrderSection" style="display:none; background:#1c1c1e; border:1px solid #E21B24; border-radius:12px; padding:16px; margin-bottom:14px;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
             <h4 style="font-size:15px; color:#E21B24; margin:0;"><i class="fa-solid fa-chair"></i> Dine-in Table Order</h4>
             <button onclick="openTableSelectorModal()" style="background:transparent; color:#E21B24; border:1px solid #E21B24; padding:3px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Change Table</button>
           </div>
-          
+
           <div style="font-size:15px; color:#fff; margin-bottom:12px;">
             Serving directly at: <strong id="checkoutTableDisplay" style="color:#ff6b6b; font-size:18px;">Table #1</strong>
           </div>
@@ -614,7 +800,6 @@
           <label style="font-size:11px; color:#aaa; margin-bottom:4px; display:block;">Customer Name (Optional):</label>
           <input type="text" id="custTableGuestName" class="form-input" placeholder="e.g. Rahul" />
 
-          <!-- TABLE BILL SUMMARY -->
           <div class="bill-box" style="margin:12px 0 6px; background:#141414; border-color:#333;">
             <div class="bill-row"><span>Items Bill Total:</span><span id="dineInBillTotal" style="color:#fff; font-weight:700;">₹0</span></div>
             <div class="bill-row"><span>Delivery Charges:</span><span style="color:#10b981; font-weight:700;">₹0 (Dine-in)</span></div>
@@ -624,7 +809,6 @@
           <p style="font-size:11px; color:#888; text-align:center; margin-top:8px;">💡 Khana khane ke baad bill counter par cash ya scanner se pay karein.</p>
         </div>
 
-        <!-- HOME DELIVERY DETAILS -->
         <div id="deliveryOrderSection">
           <h4 style="font-size:14px; margin-bottom:12px; color:#fff;"><i class="fa-solid fa-motorcycle" style="color:#E21B24;"></i> Delivery Address</h4>
           <label style="font-size:11px; color:#888;">Full Name</label>
@@ -637,14 +821,12 @@
           <textarea id="custAddress" class="form-input" placeholder="House no, Street name, Landmark in Bengbari/Udalguri"></textarea>
         </div>
 
-        <!-- ACTION BUTTONS -->
         <div style="display:flex; gap:10px; margin-top:14px;">
           <button class="admin-btn btn-primary" style="background:#333; flex:1;" onclick="goToCheckoutStep(1)">⬅ Back</button>
           <button id="step2ConfirmBtn" class="admin-btn btn-green" style="flex:2;" onclick="handleStep2Action()">CONFIRM TABLE ORDER ✅</button>
         </div>
       </div>
 
-      <!-- STEP 3: ONLINE PAYMENT ONLY FOR HOME DELIVERY -->
       <div id="checkoutStep3" style="display:none;">
         <div class="bill-box" style="margin-bottom:14px;">
           <div class="bill-row" style="font-weight:700;"><span>Total Amount to Pay:</span><span id="step3GrandTotal" style="color:#E21B24; font-size:16px;">₹0</span></div>
@@ -656,7 +838,6 @@
           <button class="add-btn" id="upiBtn" style="flex:1; padding:12px 8px; background:#E21B24; color:#fff;" onclick="setPaymentMethod('UPI')">📱 Online / UPI</button>
         </div>
 
-        <!-- ONLINE PAYMENT CONTAINER -->
         <div id="upiQrBox" class="upi-box" style="display:block; text-align:center; padding:16px; background:#141414; border-radius:12px; border:1px solid #2a2a2a; margin-bottom:14px;">
           <p style="font-size:13px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Scan & Pay via Any UPI App</p>
 
@@ -709,6 +890,15 @@
     </div>
 
     <div id="adminDashboard" style="display:none; padding:10px 0;">
+      <!-- SEND PUSH NOTIFICATION CARD (ADMIN) -->
+      <div class="admin-card">
+        <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-paper-plane"></i> Broadcast Offer Push Notification</h4>
+        <input type="text" id="adminPushTitle" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Offer Title (e.g. 20% OFF Momo Special!)" />
+        <textarea id="adminPushMsg" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Offer Details..."></textarea>
+        <input type="text" id="adminPushImg" class="form-input" style="background:#0f172a; color:#fff; border-color:#334155;" placeholder="Food Photo URL (Optional)" />
+        <button class="admin-btn btn-green" onclick="sendAdminPushNotification()">📢 SEND NOTIFICATION TO ALL</button>
+      </div>
+
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-chart-line"></i> Daily Sales & Analytics</h4>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center;">
@@ -765,7 +955,6 @@
         <button class="admin-btn btn-blue" onclick="adminCreateCoupon()">SAVE PROMO CODE</button>
       </div>
 
-      <!-- Payment Settings & QR Control -->
       <div class="admin-card">
         <h4 style="font-size:14px; color:#38bdf8; margin-bottom:10px;"><i class="fa-solid fa-money-check-dollar"></i> Payment Gateways & QR Control</h4>
         <button class="admin-btn btn-green" onclick="toggleCodStatus()" id="adminCodToggleBtn" style="margin-bottom:12px;">Cash on Delivery: ENABLED</button>
@@ -879,8 +1068,6 @@
     </div>
   </div>
 
-  <audio id="orderAudioAlert" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
-
   <!-- Celebration Popup -->
   <div id="order-success-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999999; align-items:center; justify-content:center; text-align:center; padding:20px;">
     <div style="background:#141a24; border:1px solid #E21B24; border-radius:24px; padding:30px 20px; width:100%; max-width:320px; color:#fff; box-shadow:0 0 25px rgba(226,27,36,0.4);">
@@ -891,6 +1078,20 @@
     </div>
   </div>
 
-  <script src="app.js?v=310"></script>
+  <!-- POLITE OUT-OF-STOCK CANCEL MODAL FOR CUSTOMER -->
+  <div id="outOfStockNoticeModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.88); z-index:9999999; align-items:center; justify-content:center; text-align:center; padding:20px;">
+    <div style="background:#1f1618; border:1.5px solid #ff4d4f; border-radius:20px; padding:25px 20px; width:100%; max-width:340px; color:#fff; box-shadow:0 10px 30px rgba(255,77,79,0.3);">
+      <div style="font-size:42px; margin-bottom:8px;">🍲✨</div>
+      <h3 style="color:#ff6b6b; margin:0 0 8px 0; font-size:18px;">अरे, दिल से माफ़ी चाहते हैं!</h3>
+      <p id="outOfStockCustomText" style="color:#e2e8f0; font-size:13px; line-height:1.5; margin:0 0 16px 0;">
+        शेफ की यह स्पेशल डिश आज बहुत पसंद की गई और ताज़ी सामग्री ख़त्म हो गई है! लेकिन आपके लिए हमारे मेनू में कई और भी लाजवाब डिश तैयार हैं। क्या आप कुछ और ऑर्डर करना चाहेंगे?
+      </p>
+      <button onclick="document.getElementById('outOfStockNoticeModal').style.display='none'; switchNavTab('home');" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; padding:12px 20px; border-radius:10px; font-weight:bold; cursor:pointer; width:100%; font-size:13px;">
+        😋 मेन्यू देखें और नया ऑर्डर चुनें
+      </button>
+    </div>
+  </div>
+
+  <script src="app.js?v=311"></script>
 </body>
 </html>
