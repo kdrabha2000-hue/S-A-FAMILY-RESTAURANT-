@@ -11,8 +11,62 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <style>
+    /* MODAL UNIVERSAL FIX */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .modal-card {
+      background: #18181b;
+      border: 1px solid #333;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 390px;
+      padding: 18px;
+      position: relative;
+      box-sizing: border-box;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.8);
+    }
+    .close-btn {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .weight-pill {
+      background: #27272a;
+      color: #fff;
+      border: 1px solid #3f3f46;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .weight-pill.active {
+      background: #E21B24;
+      border-color: #E21B24;
+      font-weight: bold;
+    }
+  </style>
 </head>
-<body>
+<body style="background: #09090b; color: #fff; margin: 0; padding-bottom: 90px; font-family: system-ui, -apple-system, sans-serif;">
 
   <!-- TOP HEADER -->
   <header style="padding: 12px 16px; background: #0f0f11; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; position: sticky; top:0; z-index: 100;">
@@ -62,7 +116,7 @@
     <button onclick="triggerVoiceSearch()" style="position: absolute; right: 26px; top: 10px; background: none; border: none; color: #ef4444; font-size: 15px; cursor: pointer;"><i class="fa-solid fa-microphone"></i></button>
   </div>
 
-  <!-- DYNAMIC AUTO-SLIDING FOOD BANNER (ZOMATO STYLE) -->
+  <!-- DYNAMIC AUTO-SLIDING FOOD BANNER -->
   <div id="dynamicHeroBanner" style="margin: 12px 16px; border-radius: 16px; overflow: hidden; position: relative; background: linear-gradient(135deg, #7f1d1d, #1e1b4b); box-shadow: 0 4px 15px rgba(0,0,0,0.5); min-height: 120px;">
     <div id="heroBannerSlide" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; transition: opacity 0.4s ease-in-out; cursor: pointer;">
       <div style="flex: 1; padding-right: 10px;">
@@ -79,7 +133,6 @@
         <img id="bannerFoodImg" src="https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" alt="Food Banner" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.6);" />
       </div>
     </div>
-    <!-- Banner Dots -->
     <div id="bannerDots" style="position: absolute; bottom: 6px; left: 16px; display: flex; gap: 4px;">
       <span class="b-dot" style="width: 6px; height: 6px; border-radius: 50%; background: #fff;"></span>
       <span class="b-dot" style="width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.3);"></span>
@@ -105,7 +158,7 @@
     <small style="color: #ef4444; font-size: 11px; font-weight: 700;">8:00 AM - 9:30 PM</small>
   </div>
 
-  <!-- FOOD GRID CONTAINER -->
+  <!-- FOOD GRID -->
   <main>
     <div id="foodGrid" class="food-grid"></div>
   </main>
@@ -136,10 +189,33 @@
     <div class="nav-tab" id="tabAccount" onclick="switchNavTab('account')"><i class="fa-solid fa-user"></i><span>Account</span></div>
   </nav>
 
-  <!-- ALL MODALS (PRODUCT DETAIL, CART, TRACKING, ADMIN, TABLE SELECTOR) -->
-  
+  <!-- ==================== ALL MODALS ==================== -->
+
+  <!-- TABLE SELECTOR MODAL (DINE-IN POPUP) -->
+  <div id="tableSelectorModal" class="modal">
+    <div class="modal-card" style="text-align: center;">
+      <button class="close-btn" onclick="closeModal('tableSelectorModal')">✕</button>
+      <div style="font-size: 30px; margin-bottom: 6px;">🍽️</div>
+      <h3 style="color: #fff; margin: 0 0 4px; font-size: 18px;">Select Table Number</h3>
+      <p style="color: #aaa; font-size: 12px; margin: 0 0 16px;">Aap restaurant mein kis table par baithe hain?</p>
+      
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
+        <button onclick="confirmTableNumber(1)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-1</button>
+        <button onclick="confirmTableNumber(2)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-2</button>
+        <button onclick="confirmTableNumber(3)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-3</button>
+        <button onclick="confirmTableNumber(4)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-4</button>
+        <button onclick="confirmTableNumber(5)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-5</button>
+        <button onclick="confirmTableNumber(6)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-6</button>
+        <button onclick="confirmTableNumber(7)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-7</button>
+        <button onclick="confirmTableNumber(8)" style="padding: 14px 8px; background: #27272a; color: #fff; border: 1px solid #3f3f46; border-radius: 10px; font-weight: 800; font-size: 14px; cursor: pointer;">T-8</button>
+      </div>
+
+      <small style="color: #71717a; font-size: 11px;">Table select karne ke baad khana direct aapki table par serve hoga.</small>
+    </div>
+  </div>
+
   <!-- PRODUCT DETAIL MODAL -->
-  <div id="productDetailModal" class="modal" style="display: none;">
+  <div id="productDetailModal" class="modal">
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal('productDetailModal')">✕</button>
       <div style="position: relative;">
@@ -163,7 +239,7 @@
   </div>
 
   <!-- CART MODAL (MULTI-STEP CHECKOUT) -->
-  <div id="cartModal" class="modal" style="display: none;">
+  <div id="cartModal" class="modal">
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal('cartModal')">✕</button>
       <h3 id="checkoutStepTitle" style="color: #fff; margin: 0 0 14px; font-size: 16px;">1. Review Cart & Summary</h3>
@@ -172,7 +248,6 @@
       <div id="checkoutStep1">
         <div id="cartItemsList" style="max-height: 250px; overflow-y: auto;"></div>
 
-        <!-- SuperCoins Box -->
         <div style="background: #18181b; padding: 10px; border-radius: 8px; border: 1px solid #333; margin: 10px 0; display: flex; justify-content: space-between; align-items: center;">
           <label style="color: #fff; font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
             <input type="checkbox" id="redeemCoinsCheck" onchange="toggleCoinRedemption()" />
@@ -180,16 +255,14 @@
           </label>
         </div>
 
-        <!-- Promo Code Input -->
         <div style="display: flex; gap: 6px; margin-bottom: 12px;">
           <input type="text" id="couponCodeInput" placeholder="Enter Promo Code (e.g. KD20)" style="flex:1; padding: 8px 12px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; font-size: 12px; text-transform: uppercase;" />
           <button onclick="applyDiscountCoupon()" style="background: #E21B24; color: #fff; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer;">APPLY</button>
         </div>
 
-        <!-- Bill Details -->
         <div style="background: #141416; padding: 12px; border-radius: 10px; font-size: 12px; border: 1px solid #222;">
           <div style="display: flex; justify-content: space-between; color: #aaa; margin-bottom: 4px;"><span>Item Subtotal:</span><span id="billSubtotal">₹0</span></div>
-          <div id="deliveryFeeRow" style="display: flex; justify-content: space-between; color: #aaa; margin-bottom: 4px;"><span>Delivery Fee:</span><span>₹9</span></div>
+          <div id="deliveryFeeRow" style="display: flex; justify-content: space-between; color: #aaa; margin-bottom: 4px;"><span>Delivery Fee:</span><span id="billDeliveryChargeText">₹9</span></div>
           <div id="discountRow" style="display: none; justify-content: space-between; color: #10b981; margin-bottom: 4px;"><span>Promo Discount:</span><span id="billDiscount">-₹0</span></div>
           <div id="coinsDiscountRow" style="display: none; justify-content: space-between; color: #10b981; margin-bottom: 4px;"><span>Coins Discount:</span><span>-₹20</span></div>
           <div style="border-top: 1px dashed #333; margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; color: #fff; font-weight: 800; font-size: 14px;">
@@ -220,13 +293,16 @@
         </div>
 
         <div id="dineInOrderSection" style="display: none;">
-          <div style="background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #334155;">
-            <div style="color: #38bdf8; font-size: 14px; font-weight: 800; margin-bottom: 4px;" id="checkoutTableDisplay">Table #1</div>
-            <small style="color: #94a3b8; font-size: 11px;">Khana seedha aapki table par serve kiya jayega.</small>
+          <div style="background: #1e293b; padding: 12px; border-radius: 10px; margin-bottom: 12px; border: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="color: #38bdf8; font-size: 15px; font-weight: 800;" id="checkoutTableDisplay">Table #1</div>
+              <small style="color: #94a3b8; font-size: 11px;">Delivery Free (₹0) - Khana Table par aayega</small>
+            </div>
+            <button onclick="openTableSelectorModal()" style="background: #0284c7; color:#fff; border:none; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Change</button>
           </div>
           <div style="margin-bottom: 12px;">
-            <label style="color: #aaa; font-size: 11px;">Guest Name (Optional)</label>
-            <input type="text" id="custTableGuestName" placeholder="Aapka Naam" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; font-size: 12px; box-sizing: border-box;" />
+            <label style="color: #aaa; font-size: 11px;">Aapka Naam (Optional)</label>
+            <input type="text" id="custTableGuestName" placeholder="Guest Name" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; font-size: 12px; box-sizing: border-box;" />
           </div>
         </div>
 
@@ -248,7 +324,6 @@
           <button id="upiBtn" onclick="setPaymentMethod('UPI')" style="flex:1; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #1c1c1e; color: #aaa; font-weight: bold; font-size: 12px; cursor: pointer;">Pay via UPI / QR</button>
         </div>
 
-        <!-- UPI Box -->
         <div id="upiQrBox" style="display: none; background: #141416; padding: 12px; border-radius: 10px; text-align: center; border: 1px solid #333; margin-bottom: 12px;">
           <img id="checkoutQrImg" src="" style="width: 140px; height: 140px; border-radius: 8px; margin: 0 auto 8px;" />
           <button onclick="launchDirectUpiPayment()" style="width: 100%; background: #0284c7; color: #fff; border: none; padding: 8px; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; margin-bottom: 8px;">📲 Pay Directly with GPay / PhonePe / Paytm</button>
@@ -262,27 +337,8 @@
     </div>
   </div>
 
-  <!-- TABLE SELECTOR MODAL -->
-  <div id="tableSelectorModal" class="modal" style="display: none;">
-    <div class="modal-card" style="text-align: center;">
-      <button class="close-btn" onclick="closeModal('tableSelectorModal')">✕</button>
-      <h3 style="color: #fff; margin-bottom: 4px;">🍽️ Select Table Number</h3>
-      <p style="color: #888; font-size: 12px; margin-bottom: 16px;">Aap kis table par baithe hain?</p>
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px;">
-        <button onclick="confirmTableNumber(1)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-1</button>
-        <button onclick="confirmTableNumber(2)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-2</button>
-        <button onclick="confirmTableNumber(3)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-3</button>
-        <button onclick="confirmTableNumber(4)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-4</button>
-        <button onclick="confirmTableNumber(5)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-5</button>
-        <button onclick="confirmTableNumber(6)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-6</button>
-        <button onclick="confirmTableNumber(7)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-7</button>
-        <button onclick="confirmTableNumber(8)" style="padding: 12px; background: #1f2937; color: #fff; border: 1px solid #374151; border-radius: 8px; font-weight: bold; cursor: pointer;">T-8</button>
-      </div>
-    </div>
-  </div>
-
   <!-- LIVE ORDER TRACKING MODAL -->
-  <div id="trackingModal" class="modal" style="display: none;">
+  <div id="trackingModal" class="modal">
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal('trackingModal')">✕</button>
       <h3 style="color: #fff; margin-bottom: 12px; font-size: 16px;">🛵 Live Order Tracking</h3>
@@ -291,7 +347,7 @@
   </div>
 
   <!-- ORDER HISTORY MODAL -->
-  <div id="orderHistoryModal" class="modal" style="display: none;">
+  <div id="orderHistoryModal" class="modal">
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal('orderHistoryModal')">✕</button>
       <h3 style="color: #fff; margin-bottom: 12px; font-size: 16px;">📋 My Orders History</h3>
@@ -300,7 +356,7 @@
   </div>
 
   <!-- CAKE STUDIO MODAL -->
-  <div id="cakeStudioModal" class="modal" style="display: none;">
+  <div id="cakeStudioModal" class="modal">
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal('cakeStudioModal')">✕</button>
       <h3 style="color: #fff; margin: 0 0 10px; font-size: 16px;">🎂 Custom Birthday Cake Studio</h3>
@@ -332,7 +388,7 @@
   </div>
 
   <!-- ACCOUNT MODAL -->
-  <div id="accountModal" class="modal" style="display: none;">
+  <div id="accountModal" class="modal">
     <div class="modal-card">
       <button class="close-btn" onclick="closeModal('accountModal')">✕</button>
       <h3 style="color: #fff; margin-bottom: 12px; font-size: 16px;">👤 Customer Profile</h3>
@@ -353,51 +409,46 @@
     </div>
   </div>
 
-  <!-- ADMIN CONTROL GATEWAY MODAL -->
-  <div id="adminModal" class="modal" style="display: none;">
+  <!-- ADMIN GATEWAY MODAL -->
+  <div id="adminModal" class="modal">
     <div class="modal-card" style="max-width: 500px;">
       <button class="close-btn" onclick="closeModal('adminModal')">✕</button>
       
-      <!-- LOCK SCREEN -->
       <div id="adminLockScreen" style="text-align: center; padding: 20px 0;">
         <i class="fa-solid fa-lock" style="font-size: 32px; color: #ef4444; margin-bottom: 10px;"></i>
         <h3 style="color: #fff; margin-bottom: 6px;">Restaurant Admin Gateway</h3>
-        <p style="color: #888; font-size: 12px; margin-bottom: 14px;">Enter Secret Password to Open KOT Dashboard</p>
+        <p style="color: #888; font-size: 12px; margin-bottom: 14px;">Enter Secret Password to Open Dashboard</p>
         <input type="password" id="adminPinInput" placeholder="Master Key" style="width: 70%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #141416; color: #fff; text-align: center; font-size: 14px; margin-bottom: 12px;" />
         <br/>
         <button onclick="unlockAdminWithPin()" style="background: #E21B24; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;">UNLOCK DASHBOARD</button>
       </div>
 
-      <!-- DASHBOARD SCREEN -->
       <div id="adminDashboard" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 12px;">
           <div>
             <h4 style="color: #fff; margin: 0;">Live KOT & Operations</h4>
             <small style="color: #10b981;">Total Sales: <strong id="statTotalSales">₹0</strong> (<span id="statOrderCount">0</span> orders)</small>
           </div>
-          <button id="stopAlarmBtn" onclick="stopAdminAlarm()" style="display: none; background: #ef4444; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; animation: pulse 1s infinite;">🔕 Stop Alarm</button>
+          <button id="stopAlarmBtn" onclick="stopAdminAlarm()" style="display: none; background: #ef4444; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer;">🔕 Stop Alarm</button>
         </div>
 
-        <!-- STORE STATUS TOGGLE -->
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <button id="storeStatusBtn" onclick="toggleStoreStatus()" style="flex:1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">Restaurant is: OPEN</button>
           <button id="adminCodToggleBtn" onclick="toggleCodStatus()" style="flex:1; background: #10b981; color: #fff; border: none; padding: 8px; border-radius: 6px; font-size: 11px; font-weight: bold; cursor: pointer;">COD: ENABLED</button>
         </div>
 
-        <!-- LIVE ORDERS FEED -->
         <h5 style="color: #38bdf8; margin: 10px 0 6px;">🔴 Active Orders & Table Feed</h5>
         <div id="adminLiveOrdersList" style="max-height: 280px; overflow-y: auto;"></div>
 
-        <!-- DISH CATALOG MANAGER -->
         <h5 style="color: #38bdf8; margin: 14px 0 6px;">🍲 Menu Dish Management</h5>
         <div id="adminMenuItemsList" style="max-height: 200px; overflow-y: auto;"></div>
       </div>
     </div>
   </div>
 
-  <!-- ORDER SUCCESS NOTIFICATION MODAL -->
-  <div id="order-success-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99999; justify-content: center; align-items: center;">
-    <div style="background: #18181b; padding: 24px; border-radius: 16px; text-align: center; max-width: 320px; border: 1px solid #27272a;">
+  <!-- ORDER SUCCESS MODAL -->
+  <div id="order-success-modal" class="modal">
+    <div class="modal-card" style="text-align: center;">
       <div style="font-size: 40px; margin-bottom: 8px;">🎉</div>
       <h3 style="color: #10b981; margin: 0 0 6px;">Order Confirmed!</h3>
       <p id="orderSuccessSub" style="color: #a1a1aa; font-size: 12px; margin: 0 0 16px;"></p>
@@ -407,7 +458,6 @@
     </div>
   </div>
 
-  <!-- CART TOAST -->
   <div id="cartToast" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #10b981; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; z-index: 999999;"></div>
 
   <script src="app.js"></script>
