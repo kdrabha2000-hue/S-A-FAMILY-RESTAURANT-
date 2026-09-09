@@ -19,6 +19,7 @@ const adminRingerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/
 adminRingerAudio.loop = true;
 let isAudioUnlocked = false;
 let lastKnownOrdersCount = -1;
+let isAdminLoggedIn = false; // ADMIN ROLE FLAG
 
 document.addEventListener('click', () => {
   if (!isAudioUnlocked) {
@@ -31,6 +32,7 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 function playAdminAlarm() {
+  if (!isAdminLoggedIn) return; // Sirf admin device par sound chalega
   const stopBtn = document.getElementById('stopAlarmBtn');
   if (stopBtn) stopBtn.style.display = 'inline-block';
   adminRingerAudio.play().catch(() => {});
@@ -43,6 +45,96 @@ function stopAdminAlarm() {
   if (stopBtn) stopBtn.style.display = 'none';
 }
 
+// ==================== CUSTOMER OFFER NOTIFICATION SYSTEM ====================
+function initCustomerNotificationPrompt() {
+  if (!('Notification' in window)) return;
+
+  const permission = Notification.permission;
+  if (permission === 'default') {
+    setTimeout(() => {
+      showNotificationPermissionBanner();
+    }, 3500);
+  }
+}
+
+function showNotificationPermissionBanner() {
+  if (document.getElementById('kdOfferPromptBanner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'kdOfferPromptBanner';
+  banner.style.cssText = `
+    position: fixed;
+    bottom: 75px;
+    left: 12px;
+    right: 12px;
+    background: #1e1e1e;
+    color: #fff;
+    border: 1px solid #ff4757;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    z-index: 99999;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+  `;
+
+  banner.innerHTML = `
+    <div style="font-size:12px; line-height:1.4;">
+      <strong style="color:#ff6b6b; font-size:13px;">🎁 Special Offers & Discounts!</strong><br/>
+      Saste aur best deals ke alerts paane ke liye notification on karein.
+    </div>
+    <div style="display:flex; gap:6px; flex-shrink:0;">
+      <button id="kdAllowNotifBtn" style="background:#E21B24; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Allow</button>
+      <button id="kdDismissNotifBtn" style="background:#333; color:#bbb; border:none; padding:6px 10px; border-radius:6px; font-size:11px; cursor:pointer;">Later</button>
+    </div>
+  `;
+
+  document.body.appendChild(banner);
+
+  document.getElementById('kdAllowNotifBtn').addEventListener('click', () => {
+    requestNotificationAccess();
+    banner.remove();
+  });
+
+  document.getElementById('kdDismissNotifBtn').addEventListener('click', () => {
+    banner.remove();
+  });
+}
+
+function requestNotificationAccess() {
+  if (!('Notification' in window)) return;
+
+  Notification.requestPermission().then(permission => {
+    if (permission === 'granted') {
+      triggerOfferNotification(
+        "🎉 Welcome Offer Unlocked!",
+        "Special Discount: Use Promo Code KD20 and get Flat ₹20 OFF on your meal!",
+        "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500"
+      );
+    }
+  });
+}
+
+function triggerOfferNotification(title, body, iconUrl) {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    navigator.serviceWorker.ready.then(reg => {
+      reg.showNotification(title, {
+        body: body,
+        icon: iconUrl || 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500',
+        badge: iconUrl || 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500',
+        vibrate: [200, 100, 200]
+      });
+    });
+  } else if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, {
+      body: body,
+      icon: iconUrl || 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500'
+    });
+  }
+}
+
 // ==================== SMART 1-CLICK PWA INSTALL & UPDATE ====================
 let deferredPrompt = null;
 const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
@@ -50,10 +142,10 @@ const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches |
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  
+
   const topBanner = document.getElementById('smartPwaBanner');
   if (topBanner) topBanner.style.display = 'flex';
-  
+
   const btn = document.getElementById('smartMainBtn');
   if (btn) btn.innerHTML = '📲 Install App';
 });
@@ -320,19 +412,21 @@ if (db) {
     }
   });
 
-  // Admin Realtime Order Ringer & Tracker Listener
+  // Admin Realtime Order Ringer & Tracker Listener (SIRF ADMIN PAR RINGER CHALEGA)
   db.ref("orders").on("value", snap => {
     const orders = snap.val();
     if (orders) {
       const count = Object.keys(orders).length;
-      if (lastKnownOrdersCount !== -1 && count > lastKnownOrdersCount) {
+      if (isAdminLoggedIn && lastKnownOrdersCount !== -1 && count > lastKnownOrdersCount) {
         playAdminAlarm();
       }
       lastKnownOrdersCount = count;
     } else {
       lastKnownOrdersCount = 0;
     }
-    loadAdminOrdersList();
+    if (isAdminLoggedIn) {
+      loadAdminOrdersList();
+    }
   });
 }
 
@@ -1343,6 +1437,7 @@ function unlockAdminWithPin() {
   const MASTER_KEY = "KD@1234";
 
   if (pin === MASTER_KEY) {
+    isAdminLoggedIn = true; // Admin verified
     const lock = document.getElementById('adminLockScreen');
     const dash = document.getElementById('adminDashboard');
     if (lock) lock.style.display = 'none';
@@ -1700,6 +1795,7 @@ function saveCustomerAccount() {
 window.addEventListener('DOMContentLoaded', () => {
   renderFoodItems(menuCatalog);
   detectTableFromUrl();
+  initCustomerNotificationPrompt();
   const splash = document.getElementById("custom-splash-screen");
   if (splash) splash.style.display = "none";
 });
