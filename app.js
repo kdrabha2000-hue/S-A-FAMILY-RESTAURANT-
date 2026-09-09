@@ -19,7 +19,7 @@ const adminRingerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/
 adminRingerAudio.loop = true;
 let isAudioUnlocked = false;
 let lastKnownOrdersCount = -1;
-let isAdminLoggedIn = false;
+let isAdminLoggedIn = false; // Sirf verified admin ke device par sound bajega
 
 document.addEventListener('click', () => {
   if (!isAudioUnlocked) {
@@ -32,7 +32,7 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 function playAdminAlarm() {
-  if (!isAdminLoggedIn) return;
+  if (!isAdminLoggedIn) return; // Customer phone par ringtone block
   const stopBtn = document.getElementById('stopAlarmBtn');
   if (stopBtn) stopBtn.style.display = 'inline-block';
   adminRingerAudio.play().catch(() => {});
@@ -45,144 +45,17 @@ function stopAdminAlarm() {
   if (stopBtn) stopBtn.style.display = 'none';
 }
 
-// ==================== CUSTOMER OFFER NOTIFICATION PERMISSION ====================
-function initCustomerNotificationPrompt() {
-  if (!('Notification' in window)) return;
-  if (Notification.permission === 'default') {
-    setTimeout(() => {
-      showNotificationPermissionBanner();
-    }, 3500);
-  }
-}
-
-function showNotificationPermissionBanner() {
-  if (document.getElementById('kdOfferPromptBanner')) return;
-
-  const banner = document.createElement('div');
-  banner.id = 'kdOfferPromptBanner';
-  banner.style.cssText = `
-    position: fixed; bottom: 75px; left: 12px; right: 12px;
-    background: #1e1e1e; color: #fff; border: 1px solid #ff4757;
-    border-radius: 12px; padding: 12px 14px; display: flex;
-    align-items: center; justify-content: space-between; gap: 10px;
-    z-index: 99999; box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-  `;
-  banner.innerHTML = `
-    <div style="font-size:12px; line-height:1.4;">
-      <strong style="color:#ff6b6b; font-size:13px;">🎁 Special Offers & Discounts!</strong><br/>
-      Saste aur best deals ke alerts paane ke liye notification on karein.
-    </div>
-    <div style="display:flex; gap:6px; flex-shrink:0;">
-      <button id="kdAllowNotifBtn" style="background:#E21B24; color:#fff; border:none; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Allow</button>
-      <button id="kdDismissNotifBtn" style="background:#333; color:#bbb; border:none; padding:6px 10px; border-radius:6px; font-size:11px; cursor:pointer;">Later</button>
-    </div>
-  `;
-  document.body.appendChild(banner);
-
-  document.getElementById('kdAllowNotifBtn').addEventListener('click', () => {
-    requestNotificationAccess();
-    banner.remove();
-  });
-  document.getElementById('kdDismissNotifBtn').addEventListener('click', () => {
-    banner.remove();
-  });
-}
-
-function requestNotificationAccess() {
-  if (!('Notification' in window)) return;
-  Notification.requestPermission().then(permission => {
-    if (permission === 'granted') {
-      triggerOfferNotification(
-        "🎉 Welcome Offer Unlocked!",
-        "Special Discount: Use Promo Code KD20 and get Flat ₹20 OFF on your meal!",
-        "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500"
-      );
-    }
-  });
-}
-
-function triggerOfferNotification(title, body, iconUrl) {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    navigator.serviceWorker.ready.then(reg => {
-      reg.showNotification(title, {
-        body: body,
-        icon: iconUrl || 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500',
-        badge: iconUrl || 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500',
-        vibrate: [200, 100, 200]
-      });
-    });
-  } else if ('Notification' in window && Notification.permission === 'granted') {
-    new Notification(title, { body: body, icon: iconUrl || 'https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500' });
-  }
-}
-
-// ==================== DYNAMIC AUTO-SLIDING FOOD BANNER SYSTEM ====================
-const bannerSlideData = [
-  { tag: "🔥 BESTSELLER", title: "Chicken Steamed Momo", sub: "Fresh, Juicy & Hot with Spicy Chutney", price: "₹60", mrp: "₹80", img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500", dishId: "nb_m1", bg: "linear-gradient(135deg, #7f1d1d, #450a0a)" },
-  { tag: "⚡ SUPER CRUNCH", title: "Crispy Baba Roll (Special)", sub: "Extra Filling, Loaded Sauces & Crispy Crust", price: "₹120", mrp: "₹150", img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500", dishId: "nb_r3", bg: "linear-gradient(135deg, #854d0e, #1c1917)" },
-  { tag: "🍲 CHEF SPECIAL", title: "Chicken Chowmein Full", sub: "Tossed with Veggies & Smoky Sauces", price: "₹100", mrp: "₹130", img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500", dishId: "nb_c2", bg: "linear-gradient(135deg, #1e3a8a, #0f172a)" },
-  { tag: "🎉 FESTIVAL DEAL", title: "Special Food Booking", sub: "Freshly Made, Especially for You in Bengbari!", price: "HOT", mrp: "DEAL", img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500", dishId: "nb_ch1", bg: "linear-gradient(135deg, #991b1b, #18181b)" }
-];
-
-let currentBannerIndex = 0;
-let bannerInterval = null;
-
-function renderCurrentBannerSlide(index) {
-  const container = document.getElementById('dynamicHeroBanner');
-  const slide = document.getElementById('heroBannerSlide');
-  const tag = document.getElementById('bannerTag');
-  const title = document.getElementById('bannerFoodTitle');
-  const sub = document.getElementById('bannerFoodSub');
-  const price = document.getElementById('bannerFoodPrice');
-  const mrp = document.getElementById('bannerFoodMrp');
-  const img = document.getElementById('bannerFoodImg');
-
-  if (!slide || !title) return;
-
-  const data = bannerSlideData[index];
-  slide.style.opacity = '0';
-
-  setTimeout(() => {
-    if (container) container.style.background = data.bg;
-    if (tag) tag.innerText = data.tag;
-    if (title) title.innerText = data.title;
-    if (sub) sub.innerText = data.sub;
-    if (price) price.innerText = data.price;
-    if (mrp) mrp.innerText = data.mrp;
-    if (img) img.src = data.img;
-
-    slide.onclick = () => {
-      if (typeof openProductDetail === 'function' && data.dishId) {
-        openProductDetail(data.dishId);
-      }
-    };
-
-    const dots = document.querySelectorAll('.b-dot');
-    dots.forEach((dot, dIdx) => {
-      dot.style.background = (dIdx === index) ? '#ffffff' : 'rgba(255,255,255,0.3)';
-    });
-
-    slide.style.opacity = '1';
-  }, 250);
-}
-
-function startHeroBannerSlider() {
-  if (bannerInterval) clearInterval(bannerInterval);
-  renderCurrentBannerSlide(0);
-
-  bannerInterval = setInterval(() => {
-    currentBannerIndex = (currentBannerIndex + 1) % bannerSlideData.length;
-    renderCurrentBannerSlide(currentBannerIndex);
-  }, 3800);
-}
-
 // ==================== SMART 1-CLICK PWA INSTALL & UPDATE ====================
 let deferredPrompt = null;
+const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
+
   const topBanner = document.getElementById('smartPwaBanner');
   if (topBanner) topBanner.style.display = 'flex';
+
   const btn = document.getElementById('smartMainBtn');
   if (btn) btn.innerHTML = '📲 Install App';
 });
@@ -229,6 +102,41 @@ function triggerAppUpdate() {
   window.location.reload(true);
 }
 
+// ==================== LANGUAGE MODAL ====================
+function openLanguageModal() {
+  openModal('languageModal');
+}
+
+function selectLanguage(lang) {
+  alert(`Language set to ${lang}`);
+  closeModal('languageModal');
+}
+
+// ==================== REFER & EARN SHARE SYSTEM ====================
+function shareReferralLink() {
+  const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
+  const custName = profile.name || "Aapke dost";
+  const appUrl = window.location.origin + window.location.pathname;
+
+  const shareText = `🍔 ${custName} ne aapko S&A FAMILY RESTAURANT par invite kiya hai!\n\n🎉 Use Promo Code: *KD20* to get Flat ₹20 OFF on your first order!\n\n👉 Abhi online order karein ya App install karein:\n${appUrl}`;
+
+  if (navigator.share) {
+    navigator.share({
+      title: "S&A Family Restaurant - Special Offer",
+      text: shareText,
+      url: appUrl
+    }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(shareText).then(() => {
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(waUrl, '_blank');
+    }).catch(() => {
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(waUrl, '_blank');
+    });
+  }
+}
+
 // ==================== TABLE QR & ORDER MODE SYSTEM ====================
 let currentOrderMode = 'delivery';
 let selectedTableNumber = null;
@@ -254,26 +162,23 @@ function setOrderMode(mode) {
   const dineSection = document.getElementById('dineInOrderSection');
   const delFeeRow = document.getElementById('deliveryFeeRow');
   const floatDelTag = document.getElementById('floatingDeliveryTag');
-  const delText = document.getElementById('billDeliveryChargeText');
 
   if (mode === 'delivery') {
-    if (delBtn) { delBtn.style.background = '#E21B24'; delBtn.style.color = '#fff'; }
-    if (dineBtn) { dineBtn.style.background = '#18181b'; dineBtn.style.color = '#aaa'; }
+    if (delBtn) delBtn.classList.add('active');
+    if (dineBtn) dineBtn.classList.remove('active');
     if (tableBanner) tableBanner.style.display = 'none';
     if (delSection) delSection.style.display = 'block';
     if (dineSection) dineSection.style.display = 'none';
     if (delFeeRow) delFeeRow.style.display = 'flex';
-    if (delText) delText.innerText = '₹9';
     if (floatDelTag) floatDelTag.innerText = '+ ₹9 Fixed Delivery';
     selectedTableNumber = null;
   } else {
-    if (delBtn) { delBtn.style.background = '#18181b'; delBtn.style.color = '#aaa'; }
-    if (dineBtn) { dineBtn.style.background = '#E21B24'; dineBtn.style.color = '#fff'; }
+    if (delBtn) delBtn.classList.remove('active');
+    if (dineBtn) dineBtn.classList.add('active');
     if (tableBanner) tableBanner.style.display = 'flex';
     if (delSection) delSection.style.display = 'none';
     if (dineSection) dineSection.style.display = 'block';
     if (delFeeRow) delFeeRow.style.display = 'none';
-    if (delText) delText.innerText = '₹0';
     if (floatDelTag) floatDelTag.innerText = '🍽️ Dine-in (₹0 Delivery)';
   }
   updateCartBar();
@@ -301,11 +206,14 @@ function confirmTableNumber(tableNo, shouldScroll = true) {
 
 // ==================== 2. MENU DATA & STORAGE ====================
 const defaultMenu = [
+  // --- TOP BESTSELLERS ---
   { id: "nb_m1", name: "Chicken Momo", price: 60, mrp: 80, cat: "momos", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
   { id: "nb_r2", name: "Chicken Roll", price: 80, mrp: 100, cat: "rolls", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
   { id: "nb_r3", name: "Baba Roll (Special)", price: 120, mrp: 150, cat: "rolls", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1509722747041-616f39b57569?w=500" },
   { id: "nb_c2", name: "Chicken Chowmein (Full)", price: 100, mrp: 130, cat: "chow_thukpa", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
   { id: "nb_t8", name: "Cold Coffee (Special)", price: 70, mrp: 90, cat: "drinks", isBestseller: true, inStock: true, img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500" },
+
+  // --- TEA & COFFEE ---
   { id: "nb_t1", name: "Black Tea", price: 10, mrp: 15, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=500" },
   { id: "nb_t2", name: "Milk Tea (Normal)", price: 10, mrp: 15, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500" },
   { id: "nb_t3", name: "Milk Tea (Special)", price: 20, mrp: 25, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=500" },
@@ -313,7 +221,11 @@ const defaultMenu = [
   { id: "nb_t5", name: "Milk Coffee (Normal)", price: 30, mrp: 40, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500" },
   { id: "nb_t6", name: "Milk Coffee (Special)", price: 40, mrp: 50, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500" },
   { id: "nb_t7", name: "Cold Coffee (Normal)", price: 50, mrp: 60, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500" },
+
+  // --- ROLLS ---
   { id: "nb_r1", name: "Veg Roll", price: 40, mrp: 50, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?w=500" },
+
+  // --- CHOWMEIN ---
   { id: "nb_c1", name: "Chicken Chowmein (Half)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
   { id: "nb_c3", name: "Veg Chowmein (Half)", price: 40, mrp: 50, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500" },
   { id: "nb_c4", name: "Veg Chowmein (Full)", price: 60, mrp: 80, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=500" },
@@ -321,7 +233,11 @@ const defaultMenu = [
   { id: "nb_c6", name: "Egg Chowmein (Full)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
   { id: "nb_c7", name: "Chicken Egg Mix Chowmein (Half)", price: 80, mrp: 100, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
   { id: "nb_c8", name: "Chicken Egg Mix Chowmein (Full)", price: 120, mrp: 150, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=500" },
+
+  // --- MOMOS ---
   { id: "nb_m2", name: "Veg Momo", price: 50, mrp: 70, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
+
+  // --- FRIED RICE ---
   { id: "nb_fr1", name: "Veg Fried Rice", price: 50, mrp: 70, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
   { id: "nb_fr2", name: "Egg Fried Rice (Half)", price: 60, mrp: 80, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
   { id: "nb_fr3", name: "Egg Fried Rice (Full)", price: 80, mrp: 100, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
@@ -329,10 +245,25 @@ const defaultMenu = [
   { id: "nb_fr5", name: "Chicken Fried Rice (Full)", price: 100, mrp: 130, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
   { id: "nb_fr6", name: "Chicken Egg Mix Fried Rice (Half)", price: 70, mrp: 90, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
   { id: "nb_fr7", name: "Chicken Egg Mix Fried Rice (Full)", price: 120, mrp: 150, cat: "chow_thukpa", inStock: true, img: "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=500" },
+
+  // --- CHICKEN MAIN COURSE ---
   { id: "nb_ch1", name: "Chilli Chicken (Half)", price: 110, mrp: 140, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500" },
   { id: "nb_ch2", name: "Chilli Chicken (Full)", price: 200, mrp: 240, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=500" },
   { id: "nb_ch3", name: "Chicken Gravy (Half)", price: 150, mrp: 180, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
-  { id: "nb_ch4", name: "Chicken Gravy (Full)", price: 200, mrp: 250, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" }
+  { id: "nb_ch4", name: "Chicken Gravy (Full)", price: 200, mrp: 250, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=500" },
+
+  // --- PREVIOUS ITEMS ---
+  { id: "m1", name: "Chicken Steamed Momo (10 Pcs)", price: 120, mrp: 160, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500" },
+  { id: "m2", name: "Chicken Fried Momo (10 Pcs)", price: 140, mrp: 180, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
+  { id: "m3", name: "Chicken Schezwan Gravy Momo", price: 160, mrp: 200, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=500" },
+  { id: "m4", name: "Pork Steamed Momo (10 Pcs)", price: 130, mrp: 170, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1541696432-82c6da8ce7bf?w=500" },
+  { id: "m5", name: "Pork Fried Momo (10 Pcs)", price: 150, mrp: 190, cat: "momos", inStock: true, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=500" },
+  { id: "r4", name: "Crispy French Fries (Peri-Peri)", price: 80, mrp: 110, cat: "rolls", inStock: true, img: "https://images.unsplash.com/photo-1576107232684-1279f3908594?w=500" },
+  { id: "c1", name: "Chicken Butter Masala (Boneless)", price: 280, mrp: 350, cat: "chicken", inStock: true, img: "https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?w=500" },
+  { id: "p1", name: "Pork Curry with Bamboo Shoot", price: 300, mrp: 380, cat: "pork", inStock: true, img: "https://images.unsplash.com/photo-1544025162-d76694265947?w=500" },
+  { id: "p2", name: "Smoked Pork Dry Fry", price: 320, mrp: 400, cat: "pork", inStock: true, img: "https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=500" },
+  { id: "ck1", name: "Chocolate Truffle Cake (1 Kg)", price: 850, mrp: 1100, cat: "cakes", inStock: true, img: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500" },
+  { id: "dr1", name: "Cold Drinks 750ml (Coke / Sprite)", price: 45, mrp: 50, cat: "drinks", inStock: true, img: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=500" }
 ];
 
 let menuCatalog = defaultMenu;
@@ -376,6 +307,11 @@ if (db) {
     }
   });
 
+  db.ref("banner_headline").on("value", snap => {
+    const headline = snap.val();
+    if (headline) updateBannerUI(headline);
+  });
+
   db.ref("payment_settings").on("value", snap => {
     const val = snap.val();
     if (val) {
@@ -386,6 +322,7 @@ if (db) {
     }
   });
 
+  // Admin Realtime Order Ringer & Tracker Listener
   db.ref("orders").on("value", snap => {
     const orders = snap.val();
     if (orders) {
@@ -418,6 +355,9 @@ function updatePaymentSettingsUI() {
     }
   }
 
+  const upiText = document.getElementById('displayUpiIdText');
+  if (upiText) upiText.innerText = paymentSettings.upiId || "6000026478@okbizaxis";
+
   const adminUpi = document.getElementById('adminUpiInput');
   const adminName = document.getElementById('adminUpiNameInput');
   if (adminUpi) adminUpi.value = paymentSettings.upiId || "6000026478@okbizaxis";
@@ -435,6 +375,7 @@ function toggleCodStatus() {
 function saveAdminPaymentSettings() {
   const newUpi = document.getElementById('adminUpiInput')?.value.trim() || "6000026478@okbizaxis";
   const newName = document.getElementById('adminUpiNameInput')?.value.trim() || "S&A FAMILY RESTAURANT";
+
   paymentSettings.upiId = newUpi;
   paymentSettings.payeeName = newName;
 
@@ -443,6 +384,12 @@ function saveAdminPaymentSettings() {
   }
   updatePaymentSettingsUI();
   alert("UPI ID and QR settings successfully updated!");
+}
+
+function copyUpiId() {
+  navigator.clipboard.writeText(paymentSettings.upiId).then(() => {
+    alert("UPI ID copied: " + paymentSettings.upiId);
+  });
 }
 
 function launchDirectUpiPayment() {
@@ -454,9 +401,19 @@ function launchDirectUpiPayment() {
 function updateStoreStatusUI(open) {
   const btn = document.getElementById('storeStatusBtn');
   if (btn) {
-    btn.innerText = open ? "Restaurant is: OPEN" : "Restaurant is: CLOSED";
+    btn.innerText = open ? "Restaurant is: OPEN (8am - 9:30pm)" : "Restaurant is: CLOSED (Offline)";
     btn.style.background = open ? "#10b981" : "#ef4444";
   }
+  let closedAlert = document.getElementById('storeClosedBanner');
+  if (!closedAlert) {
+    closedAlert = document.createElement('div');
+    closedAlert.id = 'storeClosedBanner';
+    closedAlert.style.cssText = "background:#ef4444; color:#fff; font-weight:bold; font-size:12px; text-align:center; padding:8px; border-radius:8px; margin:10px 16px; display:none;";
+    closedAlert.innerText = "⚠️ Restaurant is currently CLOSED. Ordering is temporarily disabled.";
+    const header = document.querySelector('header') || document.body;
+    header.parentNode.insertBefore(closedAlert, header.nextSibling);
+  }
+  closedAlert.style.display = open ? "none" : "block";
 }
 
 function toggleStoreStatus() {
@@ -467,11 +424,17 @@ function toggleStoreStatus() {
   updateStoreStatusUI(isStoreOpen);
 }
 
+function updateBannerUI(headline) {
+  const titles = document.querySelectorAll('.hero-title, #bannerTitle, .banner-title');
+  titles.forEach(el => { el.innerText = headline; });
+}
+
 function editPromoBanner() {
-  const newText = prompt("Enter new banner headline:");
+  const currentText = document.getElementById('bannerTitle')?.innerText || "";
+  const newText = prompt("Enter new banner headline:", currentText);
   if (newText && newText.trim() !== "") {
     if (db) db.ref("banner_headline").set(newText.trim());
-    alert("Banner updated!");
+    updateBannerUI(newText.trim());
   }
 }
 
@@ -487,14 +450,14 @@ function saveMenuToStorageAndCloud() {
 function openModal(id) {
   const m = document.getElementById(id);
   if (m) {
-    m.style.display = 'flex';
+    m.style.setProperty('display', 'flex', 'important');
   }
 }
 
 function closeModal(id) {
   const m = document.getElementById(id);
   if (m) {
-    m.style.display = 'none';
+    m.style.setProperty('display', 'none', 'important');
   }
 }
 
@@ -555,10 +518,10 @@ function filterCategory(cat, el) {
 }
 
 function triggerVoiceSearch() {
-  alert("Voice Search: Dish ka naam bolein (e.g. Momo, Roll)");
+  alert("Voice Search: Say dish name (e.g. 'Chicken Momo' or 'Chicken Roll')");
 }
 
-// ==================== 5. PDP & COMBO ====================
+// ==================== 5. PDP & DYNAMIC COMBO ====================
 function calculateDoubleCombo(basePrice) {
   const doubleRaw = basePrice * 2;
   const comboDiscount = Math.round(doubleRaw * 0.05);
@@ -589,6 +552,19 @@ function openProductDetail(dishId) {
   if (wishBtn) {
     if (isWished) wishBtn.classList.add('active');
     else wishBtn.classList.remove('active');
+  }
+
+  const similarContainer = document.getElementById('similarDishesScroll');
+  if (similarContainer) {
+    similarContainer.innerHTML = '';
+    menuCatalog.filter(d => d.cat === dish.cat && d.id !== dish.id).slice(0, 5).forEach(sim => {
+      similarContainer.innerHTML += `
+        <div class="cat-item" onclick="openProductDetail('${sim.id}')">
+          <div class="cat-circle"><img src="${sim.img}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" /></div>
+          <div class="cat-name">${sim.name.substring(0, 12)}..</div>
+        </div>
+      `;
+    });
   }
 
   openModal('productDetailModal');
@@ -643,6 +619,48 @@ function buyNowPdp() {
   openCartModal();
 }
 
+function shareCurrentItem() {
+  if (navigator.share && currentPdpItem) {
+    navigator.share({ title: currentPdpItem.name, text: `Check out ${currentPdpItem.name} at S&A FAMILY RESTAURANT!`, url: window.location.href });
+  } else {
+    alert("Link copied to clipboard!");
+  }
+}
+
+function openReviewModal() {
+  openModal('reviewModal');
+}
+
+function submitCustomerReview() {
+  const rating = document.getElementById('reviewRatingSelect')?.value || "5";
+  const msg = document.getElementById('reviewText')?.value.trim();
+  const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
+  const author = profile.name || "Happy Customer";
+
+  if (!msg) {
+    alert("Please write a few words about your experience!");
+    return;
+  }
+
+  const reviewHtml = `
+    <div class="review-item">
+      <div class="rev-header"><span>⭐ ${rating}.0 - ${author}</span><small>Just now</small></div>
+      <p>${msg}</p>
+    </div>
+  `;
+
+  const list = document.getElementById('pdpReviewsList');
+  if (list) list.insertAdjacentHTML('afterbegin', reviewHtml);
+
+  if (db) {
+    db.ref("customer_reviews").push({ author, rating, message: msg, timestamp: Date.now() });
+  }
+
+  alert("Thank you for your valuable review!");
+  if (document.getElementById('reviewText')) document.getElementById('reviewText').value = '';
+  closeModal('reviewModal');
+}
+
 // ==================== 6. CART OPERATIONS ====================
 function showCartToast(dishName) {
   const toast = document.getElementById('cartToast');
@@ -686,6 +704,21 @@ function removeCartItem(id) {
   renderCartModalItems();
 }
 
+function moveCartItemToSaved(id) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+
+  const rawId = id.replace('_dbl', '');
+  if (!wishlist.includes(rawId)) {
+    wishlist.push(rawId);
+    try { localStorage.setItem("kd_wishlist", JSON.stringify(wishlist)); } catch(e) {}
+  }
+  cart = cart.filter(i => i.id !== id);
+  updateCartBar();
+  renderCartModalItems();
+  alert(`❤️ "${item.name}" moved to Saved Items!`);
+}
+
 function updateCartBar() {
   const cartBar = document.getElementById('floatingCart');
   if (!cartBar) return;
@@ -719,7 +752,7 @@ function renderCartModalItems() {
   cart.forEach(item => {
     subtotal += (item.price * item.qty);
     list.innerHTML += `
-      <div style="background:#1e1e1e; border-radius:12px; padding:10px 12px; margin-bottom:10px; border:1px solid #2a2a2a;">
+      <div style="background:#1e1e1e; border-radius:12px; padding:10px 12px; margin-bottom:10px; border:1px solid #2a2a2a; box-shadow:0 2px 6px rgba(0,0,0,0.5);">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; align-items:center; gap:10px;">
             <img src="${item.img}" style="width:44px; height:44px; border-radius:8px; object-fit:cover;" />
@@ -730,15 +763,22 @@ function renderCartModalItems() {
           </div>
           <div style="font-weight:800; font-size:14px; color:#fff;">₹${item.price * item.qty}</div>
         </div>
+
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; padding-top:8px; border-top:1px dashed #333;">
           <div style="display:flex; align-items:center; gap:8px;">
             <button onclick="changeCartQty('${item.id}', -1)" style="width:26px; height:26px; border-radius:6px; border:1px solid #444; background:#2a2a2a; color:#fff; font-weight:bold; cursor:pointer;">-</button>
             <span style="font-weight:700; font-size:13px; min-width:16px; text-align:center; color:#fff;">${item.qty}</span>
             <button onclick="changeCartQty('${item.id}', 1)" style="width:26px; height:26px; border-radius:6px; border:1px solid #444; background:#2a2a2a; color:#fff; font-weight:bold; cursor:pointer;">+</button>
           </div>
-          <button onclick="removeCartItem('${item.id}')" style="background:#2a2a2a; color:#aaa; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">
-            <i class="fa-solid fa-trash"></i> Remove
-          </button>
+
+          <div style="display:flex; gap:8px;">
+            <button onclick="moveCartItemToSaved('${item.id}')" style="background:#261012; color:#ef4444; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">
+              <i class="fa-solid fa-heart"></i> Save
+            </button>
+            <button onclick="removeCartItem('${item.id}')" style="background:#2a2a2a; color:#aaa; border:none; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
         </div>
       </div>
     `;
@@ -760,33 +800,31 @@ function goToCheckoutStep(step) {
 
   if (step === 2) {
     if (cart.length === 0) {
-      alert("Cart khali hai! Pehle kuch item add karein.");
+      alert("Bag khali hai! Kripya pehle items add karein.");
       return;
     }
-
     if (currentOrderMode === 'dinein' && !selectedTableNumber) {
       openTableSelectorModal();
       return;
     }
 
-    const delSection = document.getElementById('deliveryOrderSection');
-    const dineSection = document.getElementById('dineInOrderSection');
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const coinDiscount = coinsRedeemed ? 20 : 0;
+    const grandTotal = Math.max(0, subtotal - appliedDiscount - coinDiscount);
 
     if (currentOrderMode === 'dinein') {
-      if (title) title.innerText = `Table #${selectedTableNumber} - Confirmation`;
-      if (delSection) delSection.style.display = 'none';
-      if (dineSection) dineSection.style.display = 'block';
+      if (document.getElementById('dineInBillTotal')) document.getElementById('dineInBillTotal').innerText = `₹${subtotal}`;
+      if (document.getElementById('dineInGrandTotal')) document.getElementById('dineInGrandTotal').innerText = `₹${grandTotal}`;
+      if (title) title.innerText = `Table #${selectedTableNumber} - Bill & Order`;
       if (step2Btn) {
         step2Btn.innerText = "CONFIRM TABLE ORDER ✅";
-        step2Btn.style.background = "#15803d";
+        step2Btn.className = "admin-btn btn-green";
       }
     } else {
       if (title) title.innerText = "2. Delivery Address";
-      if (delSection) delSection.style.display = 'block';
-      if (dineSection) dineSection.style.display = 'none';
       if (step2Btn) {
         step2Btn.innerText = "PROCEED TO PAYMENT ➔";
-        step2Btn.style.background = "#E21B24";
+        step2Btn.className = "admin-btn btn-primary";
       }
     }
 
@@ -800,7 +838,7 @@ function goToCheckoutStep(step) {
     const address = document.getElementById('custAddress')?.value.trim();
 
     if (!name || !phone || !address) {
-      alert("Please fill Name, Phone and Complete Delivery Address!");
+      alert("Please fill Name, Phone and Delivery Address!");
       return;
     }
     try { localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address })); } catch(e) {}
@@ -843,6 +881,7 @@ function handleStep2Action() {
 
 function openCartModal() {
   renderCartModalItems();
+
   const savedProfile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
   if (savedProfile.name && document.getElementById('custName')) document.getElementById('custName').value = savedProfile.name;
   if (savedProfile.phone && document.getElementById('custPhone')) document.getElementById('custPhone').value = savedProfile.phone;
@@ -879,6 +918,18 @@ function toggleCoinRedemption() {
   const chk = document.getElementById('redeemCoinsCheck');
   if (!chk) return;
 
+  const coinsUsed = localStorage.getItem("kd_coins_used") === "true";
+  if (chk.checked && coinsUsed) {
+    alert("❌ Aap pehle hi apne SuperCoins redeem kar chuke hain!");
+    chk.checked = false;
+    coinsRedeemed = false;
+    const row = document.getElementById('coinsDiscountRow');
+    if (row) row.style.display = 'none';
+    updateCartBar();
+    renderCartModalItems();
+    return;
+  }
+
   coinsRedeemed = chk.checked;
   const row = document.getElementById('coinsDiscountRow');
   if (row) row.style.display = coinsRedeemed ? 'flex' : 'none';
@@ -886,8 +937,17 @@ function toggleCoinRedemption() {
   renderCartModalItems();
 }
 
+// ==================== COUPON SYSTEM ====================
+const defaultStaticCoupons = {
+  "KD20": { discount: 20, minBill: 100, maxUses: 9999, used: 0 },
+  "WELCOME": { discount: 20, minBill: 100, maxUses: 9999, used: 0 },
+  "BIKASH50": { discount: 50, minBill: 250, maxUses: 9999, used: 0 },
+  "FIRST5": { discount: 50, minBill: 299, maxUses: 5, used: 0 },
+  "BENGBARI10": { discount: 30, minBill: 199, maxUses: 10, used: 0 }
+};
+
 function applyDiscountCoupon() {
-  const codeEl = document.getElementById('couponCodeInput');
+  const codeEl = document.getElementById('couponCodeInput') || document.querySelector('input[placeholder*="Promo Code"]');
   const code = codeEl ? codeEl.value.trim().toUpperCase() : '';
 
   if (!code) {
@@ -901,20 +961,89 @@ function applyDiscountCoupon() {
     return;
   }
 
-  appliedDiscount = 20;
+  const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
+  if (usedPromos.includes(code)) {
+    alert(`❌ Code "${code}" aap pehle hi use kar chuke hain!`);
+    return;
+  }
+
+  if (typeof db !== 'undefined' && db) {
+    db.ref("promos/" + code).once("value", snap => {
+      const pData = snap.val();
+
+      if (pData) {
+        let disc = 0;
+        let minBill = 0;
+        let maxUses = 9999;
+        let usedCount = 0;
+
+        if (typeof pData === 'object') {
+          disc = Number(pData.discount || 0);
+          minBill = Number(pData.minBill || 0);
+          maxUses = Number(pData.maxUses || 9999);
+          usedCount = Number(pData.used || 0);
+        } else {
+          disc = Number(pData);
+        }
+
+        if (usedCount >= maxUses) {
+          alert(`❌ Maaf kijiye! Promo Code '${code}' ki limit puri ho chuki hai.`);
+          return;
+        }
+
+        if (subtotal < minBill) {
+          alert(`❌ Yeh code kam se kam ₹${minBill} ke bill par hi valid hai.`);
+          return;
+        }
+
+        setCouponDiscount(disc, code);
+      } else if (defaultStaticCoupons[code]) {
+        validateStaticCoupon(code, subtotal);
+      } else {
+        alert("❌ Invalid Promo Code!");
+      }
+    });
+  } else {
+    if (defaultStaticCoupons[code]) {
+      validateStaticCoupon(code, subtotal);
+    } else {
+      alert("❌ Invalid Promo Code!");
+    }
+  }
+}
+
+function validateStaticCoupon(code, subtotal) {
+  const promo = defaultStaticCoupons[code];
+  const localUsed = Number(localStorage.getItem("kd_promo_used_" + code) || promo.used);
+
+  if (localUsed >= promo.maxUses) {
+    alert(`❌ Maaf kijiye! '${code}' offer pehle hi claim ho chuka hai.`);
+    return;
+  }
+
+  if (subtotal < promo.minBill) {
+    alert(`❌ Yeh promo code kam se kam ₹${promo.minBill} ke order par hi valid hai.`);
+    return;
+  }
+
+  setCouponDiscount(promo.discount, code);
+}
+
+function setCouponDiscount(amount, code) {
+  appliedDiscount = amount;
   appliedPromoCode = code;
 
   const dRow = document.getElementById('discountRow');
   const bDisc = document.getElementById('billDiscount');
   if (dRow) dRow.style.display = 'flex';
-  if (bDisc) bDisc.innerText = `-₹${appliedDiscount}`;
+  if (bDisc) bDisc.innerText = `-₹${amount}`;
 
-  alert(`🎉 Promo Code '${code}' apply ho gaya: Flat ₹20 Discount!`);
+  alert(`🎉 Badhai ho! Promo Code '${code}' apply ho gaya: ₹${amount} Discount!`);
   updateCartBar();
   renderCartModalItems();
 }
 
-// ==================== 7. PLACE ORDER ====================
+// ==================== 7. PLACE ORDER & LIVE TRACKING REDIRECT ====================
 function placeOrder() {
   if (!isStoreOpen) {
     alert("Sorry, the restaurant is currently closed!");
@@ -951,9 +1080,38 @@ function placeOrder() {
     const utrInput = document.getElementById('upiUtrInput');
     utrVal = utrInput ? utrInput.value.trim() : '';
     if (!utrVal || utrVal.length < 10) {
-      alert("⚠️ Kripya payment karein aur 12-digit UTR daalein!");
+      alert("⚠️ Kripya pehle PAY NOW dabakar payment karein aur 12-digit UTR daalein!");
       if (utrInput) utrInput.focus();
       return;
+    }
+  }
+
+  if (currentOrderMode === 'delivery') {
+    try { localStorage.setItem("kd_cust_profile", JSON.stringify({ name, phone, address })); } catch(e) {}
+  }
+
+  if (coinsRedeemed) {
+    try { localStorage.setItem("kd_coins_used", "true"); } catch(e) {}
+  }
+
+  if (appliedPromoCode) {
+    const usedPromos = JSON.parse(localStorage.getItem("kd_used_promos") || "[]");
+    if (!usedPromos.includes(appliedPromoCode)) {
+      usedPromos.push(appliedPromoCode);
+      try { localStorage.setItem("kd_used_promos", JSON.stringify(usedPromos)); } catch(e) {}
+    }
+
+    if (typeof db !== 'undefined' && db) {
+      db.ref("promos/" + appliedPromoCode).transaction(promo => {
+        if (promo) {
+          if (typeof promo === 'object') {
+            promo.used = (promo.used || 0) + 1;
+          } else {
+            promo = { discount: Number(promo), used: 1, maxUses: 9999, minBill: 0 };
+          }
+        }
+        return promo;
+      });
     }
   }
 
@@ -988,9 +1146,6 @@ function placeOrder() {
     const newOrderRef = db.ref("orders").push();
     newOrderKey = newOrderRef.key;
     newOrderRef.set(orderPayload);
-
-    registerOrderForWheelEligibility(grandTotal, generatedId);
-
     if (phone !== "DINE-IN") {
       db.ref("customer_history/" + phone + "/" + newOrderKey).set(orderPayload);
     }
@@ -1028,10 +1183,12 @@ function placeOrder() {
 
   if (animModal) {
     animModal.style.display = "flex";
+  } else {
+    trackLiveOrder(newOrderKey, generatedId);
   }
 }
 
-// ==================== 8. LIVE ORDER TRACKING ====================
+// ==================== 8. LIVE ORDER TRACKING (CUSTOMER) ====================
 let trackingListener = null;
 
 function trackLiveOrder(orderKey, orderId) {
@@ -1055,6 +1212,8 @@ function trackLiveOrder(orderKey, orderId) {
       }
       renderLiveTrackerUI(ord, container);
     });
+  } else {
+    container.innerHTML = `<p style="text-align:center; color:#aaa; padding:20px;">Tracking offline.</p>`;
   }
 }
 
@@ -1062,6 +1221,7 @@ function renderLiveTrackerUI(ord, container) {
   const stage = Number(ord.stage !== undefined ? ord.stage : 1);
   const itemsText = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Food Items";
 
+  // AGAR ORDER CANCEL HO GAYA HO
   if (stage === 0 || ord.status === "Cancelled") {
     container.innerHTML = `
       <div style="background:#2d1215; border-radius:14px; padding:18px; border:1px solid #ef4444; margin-bottom:16px; text-align:center;">
@@ -1073,7 +1233,7 @@ function renderLiveTrackerUI(ord, container) {
             Maaf kijiye! ${ord.cancelReason || "Aapka chuna hua item kitchen mein out of stock ho chuka hai."}
           </p>
           <p style="color:#aaa; font-size:11px; margin-top:6px;">
-            Kripya waiter se baat karein ya koi doosra item order karein.
+            Kripya counter/waiter se sampark karein ya koi doosra item menu se order karein.
           </p>
         </div>
         <button onclick="closeModal('trackingModal')" style="background:#E21B24; color:#fff; border:none; padding:10px 20px; border-radius:8px; font-size:12px; font-weight:bold; cursor:pointer; width:100%;">
@@ -1102,10 +1262,37 @@ function renderLiveTrackerUI(ord, container) {
     <div style="background:#141416; border-radius:14px; padding:18px 16px; border:1px solid #222;">
       <h4 style="font-size:14px; color:#38bdf8; margin-bottom:18px;"><i class="fa-solid fa-clock-rotate-left"></i> Live Status Timeline</h4>
       
-      <div class="track-step ${s1Class}"><div class="track-icon"><i class="fa-solid fa-receipt"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">1. Order Confirmed</div><small style="color:#888; font-size:11px;">Restaurant received your order</small></div></div>
-      <div class="track-step ${s2Class}"><div class="track-icon"><i class="fa-solid fa-fire-burner"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">2. Preparing Your Food</div><small style="color:#888; font-size:11px;">Chef is cooking fresh & hot dishes</small></div></div>
-      <div class="track-step ${s3Class}"><div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">3. Serving / Out for Delivery</div><small style="color:#888; font-size:11px;">On the way to your table or doorstep</small></div></div>
-      <div class="track-step ${s4Class}"><div class="track-icon"><i class="fa-solid fa-circle-check"></i></div><div><div style="font-weight:700; font-size:13px; color:#fff;">4. Served / Delivered</div><small style="color:#888; font-size:11px;">Enjoy your meal!</small></div></div>
+      <div class="track-step ${s1Class}">
+        <div class="track-icon"><i class="fa-solid fa-receipt"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">1. Order Confirmed</div>
+          <small style="color:#888; font-size:11px;">Restaurant received your order</small>
+        </div>
+      </div>
+
+      <div class="track-step ${s2Class}">
+        <div class="track-icon"><i class="fa-solid fa-fire-burner"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">2. Preparing Your Food</div>
+          <small style="color:#888; font-size:11px;">Chef is cooking fresh & hot dishes</small>
+        </div>
+      </div>
+
+      <div class="track-step ${s3Class}">
+        <div class="track-icon"><i class="fa-solid fa-motorcycle"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">3. Out for Delivery / Table Serving</div>
+          <small style="color:#888; font-size:11px;">On the way to your doorstep or table</small>
+        </div>
+      </div>
+
+      <div class="track-step ${s4Class}">
+        <div class="track-icon"><i class="fa-solid fa-circle-check"></i></div>
+        <div>
+          <div style="font-weight:700; font-size:13px; color:#fff;">4. Delivered / Served</div>
+          <small style="color:#888; font-size:11px;">Enjoy your delicious meal!</small>
+        </div>
+      </div>
     </div>
 
     <button onclick="window.open('tel:8453270362')" style="width:100%; margin-top:16px; background:#1e293b; color:#38bdf8; border:1px solid #334155; padding:12px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer;">
@@ -1114,7 +1301,7 @@ function renderLiveTrackerUI(ord, container) {
   `;
 }
 
-// ==================== 9. ORDERS HISTORY ====================
+// ==================== 9. ORDERS HISTORY (CUSTOMER) ====================
 function openOrderHistoryModal() {
   const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
   const phone = profile.phone;
@@ -1125,7 +1312,7 @@ function openOrderHistoryModal() {
   container.innerHTML = '<p style="text-align:center; color:#888; margin-top:20px;">Fetching orders...</p>';
 
   if (!phone || !db) {
-    container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">Please enter phone number in Account tab to view order history.</p>`;
+    container.innerHTML = `<p style="font-size:13px; color:#aaa; text-align:center; padding:20px;">Please enter phone number in Account tab to sync order history.</p>`;
     return;
   }
 
@@ -1138,6 +1325,7 @@ function openOrderHistoryModal() {
     } else {
       Object.keys(data).reverse().forEach(key => {
         const ord = data[key];
+        const primaryImg = (ord.items && ord.items[0] && ord.items[0].img) ? ord.items[0].img : "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
         const itemsList = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Items";
 
         container.innerHTML += `
@@ -1146,11 +1334,16 @@ function openOrderHistoryModal() {
               <span style="font-size:12px; font-weight:700; color:#E21B24;">#${ord.orderId}</span>
               <span style="font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; background:#372213; color:#f97316;">${ord.status || 'Confirmed'}</span>
             </div>
-            <div style="font-size:13px; font-weight:700; color:#fff;">${itemsList}</div>
-            <div style="font-size:12px; font-weight:700; color:#E21B24; margin-top:2px;">₹${ord.grandTotal} (${ord.paymentMode})</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <img src="${primaryImg}" style="width:48px; height:48px; border-radius:8px; object-fit:cover;" />
+              <div style="flex:1;">
+                <div style="font-size:13px; font-weight:700; color:#fff;">${itemsList}</div>
+                <div style="font-size:12px; font-weight:700; color:#E21B24; margin-top:2px;">₹${ord.grandTotal} (${ord.paymentMode})</div>
+              </div>
+            </div>
             <div style="margin-top:10px; border-top:1px dashed #333; padding-top:8px; display:flex; justify-content:flex-end;">
               <button onclick="trackLiveOrder('${key}', '${ord.orderId}')" style="background:#E21B24; color:#fff; border:none; padding:6px 14px; border-radius:8px; font-size:11px; font-weight:bold; cursor:pointer;">
-                🛵 Track Status
+                🛵 Track Live Status
               </button>
             </div>
           </div>
@@ -1160,7 +1353,7 @@ function openOrderHistoryModal() {
   });
 }
 
-// ==================== 10. ADMIN DASHBOARD & KOT ====================
+// ==================== 10. ADMIN PANEL & LIVE ORDER KOT MANAGEMENT ====================
 function openAdminGateway() {
   openModal('adminModal');
   const lock = document.getElementById('adminLockScreen');
@@ -1222,10 +1415,11 @@ function loadAdminOrdersList() {
           <div style="font-size:12px; color:#10b981; font-weight:700;">₹${ord.grandTotal} | Pay: ${ord.paymentMode}</div>
           <div style="font-size:11px; color:#94a3b8; margin-top:2px;">📍 ${ord.address}</div>
 
+          <!-- ADMIN LIVE STAGE BUTTONS -->
           <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; margin:10px 0 6px;">
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 1, 'Order Confirmed')" style="background:${currentStage === 1 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">1. Confirmed</button>
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 2, 'Preparing Food')" style="background:${currentStage === 2 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">2. Kitchen</button>
-            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 3, 'Out for Delivery')" style="background:${currentStage === 3 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">3. Serving</button>
+            <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 3, 'Out for Delivery')" style="background:${currentStage === 3 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">3. Delivery</button>
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 4, 'Delivered')" style="background:${currentStage === 4 ? '#10b981' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">4. Done ✅</button>
             <button onclick="cancelOrderByAdmin('${k}', '${ord.orderId}', '${ord.phone}')" style="background:#ef4444; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">❌ Cancel</button>
           </div>
@@ -1264,7 +1458,6 @@ function cancelOrderByAdmin(key, orderId, phone) {
   stopAdminAlarm();
   const defaultReason = "Aapka chuna hua item kitchen mein out of stock ho chuka hai.";
   const reason = prompt("Cancel karne ka karan (Customer ke screen par dikhega):", defaultReason);
-  
   if (reason === null) return;
 
   const updates = {
@@ -1295,7 +1488,7 @@ function deleteAdminOrder(key) {
   }
 }
 
-// ==================== 11. FULL DISH MANAGEMENT & EDIT (RESTORED) ====================
+// ==================== 11. FULL DISH EDIT SYSTEM ====================
 let adminDishUploadBase64 = "";
 let editDishUploadBase64 = "";
 
@@ -1327,40 +1520,6 @@ function previewEditDishUpload(input) {
     };
     reader.readAsDataURL(input.files[0]);
   }
-}
-
-function adminSaveNewDish() {
-  const name = document.getElementById('newDishName')?.value.trim();
-  const price = Number(document.getElementById('newDishPrice')?.value);
-  const cat = document.getElementById('newDishCat')?.value || 'momos';
-  const urlImg = document.getElementById('newDishImgUrl')?.value.trim();
-  const finalImg = adminDishUploadBase64 || urlImg || "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
-
-  if (!name || !price) {
-    alert("Please enter dish name and price!");
-    return;
-  }
-
-  const newDish = {
-    id: "kd_" + Date.now(),
-    name: name,
-    price: price,
-    mrp: Math.round(price * 1.3),
-    cat: cat,
-    inStock: true,
-    img: finalImg
-  };
-
-  menuCatalog.unshift(newDish);
-  saveMenuToStorageAndCloud();
-
-  alert(`✅ "${name}" added to menu!`);
-  document.getElementById('newDishName').value = '';
-  document.getElementById('newDishPrice').value = '';
-  document.getElementById('newDishImgUrl').value = '';
-  adminDishUploadBase64 = "";
-  const prev = document.getElementById('adminDishPreview');
-  if (prev) prev.style.display = 'none';
 }
 
 function openFullDishEditor(id) {
@@ -1413,6 +1572,40 @@ function saveEditedDishDetails() {
   }
 }
 
+function adminSaveNewDish() {
+  const name = document.getElementById('newDishName')?.value.trim();
+  const price = Number(document.getElementById('newDishPrice')?.value);
+  const cat = document.getElementById('newDishCat')?.value || 'momos';
+  const urlImg = document.getElementById('newDishImgUrl')?.value.trim();
+  const finalImg = adminDishUploadBase64 || urlImg || "https://images.unsplash.com/photo-1625220194771-7ebdea0b70b9?w=500";
+
+  if (!name || !price) {
+    alert("Please enter dish name and price!");
+    return;
+  }
+
+  const newDish = {
+    id: "kd_" + Date.now(),
+    name: name,
+    price: price,
+    mrp: Math.round(price * 1.3),
+    cat: cat,
+    inStock: true,
+    img: finalImg
+  };
+
+  menuCatalog.unshift(newDish);
+  saveMenuToStorageAndCloud();
+
+  alert(`✅ "${name}" added to menu!`);
+  document.getElementById('newDishName').value = '';
+  document.getElementById('newDishPrice').value = '';
+  document.getElementById('newDishImgUrl').value = '';
+  adminDishUploadBase64 = "";
+  const prev = document.getElementById('adminDishPreview');
+  if (prev) prev.style.display = 'none';
+}
+
 function renderAdminMenuItems() {
   const container = document.getElementById('adminMenuItemsList');
   if (!container) return;
@@ -1447,7 +1640,7 @@ function toggleDishStock(id) {
 }
 
 function deleteDish(id) {
-  if (confirm("Are you sure you want to remove this dish?")) {
+  if (confirm("Are you sure you want to remove this dish from the menu?")) {
     menuCatalog = menuCatalog.filter(d => d.id !== id);
     saveMenuToStorageAndCloud();
   }
@@ -1456,10 +1649,12 @@ function deleteDish(id) {
 function adminCreateCoupon() {
   const code = document.getElementById('newCouponCode')?.value.trim().toUpperCase();
   const disc = Number(document.getElementById('newCouponDiscount')?.value);
+
   if (!code || !disc) {
     alert("Please enter both promo code and discount amount.");
     return;
   }
+
   if (db) {
     db.ref("promos/" + code).set({ discount: disc, minBill: 100, maxUses: 9999, used: 0 });
   }
@@ -1468,7 +1663,20 @@ function adminCreateCoupon() {
   document.getElementById('newCouponDiscount').value = '';
 }
 
-// ==================== 12. NAVIGATION & TABS ====================
+function assignVipBadge() {
+  const phone = document.getElementById('vipCustPhone')?.value.trim();
+  if (!phone) {
+    alert("Please enter customer phone number.");
+    return;
+  }
+  if (db) {
+    db.ref("vip_customers/" + phone).set(true);
+  }
+  alert(`VIP Gold Badge activated for ${phone}!`);
+  document.getElementById('vipCustPhone').value = '';
+}
+
+// ==================== 12. NAVIGATION & INITIALIZATION ====================
 function switchNavTab(tab) {
   document.querySelectorAll('.bottom-nav .nav-tab').forEach(t => t.classList.remove('active'));
 
@@ -1505,11 +1713,27 @@ function selectCakeWeight(weight, price, el) {
   if (el) el.classList.add('active');
 }
 
+let customCakePhotoBase64 = "";
+function previewCakeUpload(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      customCakePhotoBase64 = e.target.result;
+      const prev = document.getElementById('cakePhotoPreview');
+      if (prev) {
+        prev.src = customCakePhotoBase64;
+        prev.style.display = 'block';
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
 function addCustomCakeToCart() {
   const flavor = document.getElementById('cakeFlavorSelect')?.value || "Fresh Cream Cake";
   const text = document.getElementById('cakeCustomText')?.value.trim();
   const cakeTitle = `${flavor} (${selectedCakeWeight} Kg)${text ? ' - "' + text + '"' : ''}`;
-  const cakeImg = "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500";
+  const cakeImg = customCakePhotoBase64 || "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500";
 
   addToCart("cake_" + Date.now(), cakeTitle, selectedCakePrice, cakeImg);
   closeModal('cakeStudioModal');
@@ -1530,24 +1754,7 @@ function saveCustomerAccount() {
   closeModal('accountModal');
 }
 
-function shareReferralLink() {
-  const profile = JSON.parse(localStorage.getItem("kd_cust_profile") || "{}");
-  const custName = profile.name || "Aapke dost";
-  const appUrl = window.location.origin + window.location.pathname;
-  const shareText = `🍔 ${custName} ne aapko S&A FAMILY RESTAURANT par invite kiya hai!\n\n🎉 Use Promo Code: *KD20* to get Flat ₹20 OFF on your first order!\n\n👉 Abhi online order karein ya App install karein:\n${appUrl}`;
-
-  if (navigator.share) {
-    navigator.share({ title: "S&A Family Restaurant - Offer", text: shareText, url: appUrl }).catch(() => {});
-  } else {
-    navigator.clipboard.writeText(shareText).then(() => {
-      window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-    }).catch(() => {
-      window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-    });
-  }
-}
-
-// ==================== 13. SPIN THE WHEEL (₹100+ LOCK) ====================
+// ==================== 13. SPIN THE WHEEL (₹100+ ORDER LOCK & 10-MIN COOLDOWN) ====================
 const spinWheelRewards = [
   { text: "Better Luck Next Time 😢", type: "lose", gift: null },
   { text: "🍬 ₹5 Chhota Chocolate", type: "win", gift: "₹5 Chocolate" },
@@ -1587,14 +1794,14 @@ function openSpinWheelModal() {
 function createSpinWheelModalHtml() {
   const modalHtml = `
     <div id="spinWheelModal" class="modal">
-      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:18px; max-width:380px; width:100%; padding:20px; text-align:center; position:relative;">
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:18px; max-width:380px; width:100%; padding:20px; text-align:center; position:relative; box-shadow:0 8px 30px rgba(0,0,0,0.8);">
         <button onclick="closeModal('spinWheelModal')" class="close-btn">✕</button>
         <div style="display:inline-block; background:#10b981; color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; margin-bottom:6px;">ORDER UNLOCKED (₹100+ SPECIAL)</div>
         <h3 style="color:#f59e0b; margin:0 0 4px; font-size:18px;">🎡 Lucky Table Spin</h3>
         <p style="color:#a1a1aa; font-size:12px; margin:0 0 16px;">Har 10 minute mein spin karein aur counter se gift lein!</p>
         <div style="position:relative; width:220px; height:220px; margin:0 auto 16px;">
           <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-top:20px solid #ef4444; z-index:10;"></div>
-          <div id="luckyWheelPlate" style="width:100%; height:100%; border-radius:50%; border:6px solid #eab308; background:conic-gradient(#ef4444 0% 60%, #3b82f6 60% 120%, #10b981 120% 180%, #8b5cf6 180% 240%, #f97316 240% 300%, #14b8a6 300% 360%); transition:transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); display:flex; align-items:center; justify-content:center;">
+          <div id="luckyWheelPlate" style="width:100%; height:100%; border-radius:50%; border:6px solid #eab308; background:conic-gradient(#ef4444 0% 60%, #3b82f6 60% 120%, #10b981 120% 180%, #8b5cf6 180% 240%, #f97316 240% 300%, #14b8a6 300% 360%); transition:transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(234, 179, 8, 0.4);">
             <div style="width:65px; height:65px; background:#18181b; border-radius:50%; border:3px solid #eab308; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#f59e0b;">SPIN</div>
           </div>
         </div>
@@ -1605,12 +1812,12 @@ function createSpinWheelModalHtml() {
           <small style="color:#94a3b8; font-size:11px;">Agla Spin Available Hoga:</small>
           <div id="wheelLockTimerText" style="color:#38bdf8; font-size:18px; font-weight:800; margin-top:2px;">10:00</div>
         </div>
-        <div id="wheelClaimPassBox" style="display:none; background:#1e293b; border:1px dashed #10b981; border-radius:12px; padding:12px; margin-top:14px;">
+        <div id="wheelClaimPassBox" style="display:none; background:#1e293b; border:1px dashed #10b981; border-radius:12px; padding:12px; margin-top:14px; text-align:center;">
           <span style="font-size:24px;">🎉</span>
           <h4 id="wheelWinHeading" style="color:#10b981; margin:4px 0; font-size:14px;">Badhai Ho!</h4>
           <p id="wheelWinDesc" style="color:#fff; font-size:14px; font-weight:bold; margin:4px 0;"></p>
           <div id="wheelEligibleOrderTag" style="font-size:11px; color:#38bdf8; margin:4px 0;"></div>
-          <small style="color:#94a3b8; font-size:11px;">👉 Counter par dikha kar chocolate collect karein!</small>
+          <small style="color:#94a3b8; font-size:11px;">👉 Ye slip counter par dikha kar chocolate collect karein!</small>
         </div>
       </div>
     </div>
