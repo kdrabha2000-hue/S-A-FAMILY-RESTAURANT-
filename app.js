@@ -19,7 +19,7 @@ const adminRingerAudio = new Audio('https://assets.mixkit.co/active_storage/sfx/
 adminRingerAudio.loop = true;
 let isAudioUnlocked = false;
 let lastKnownOrdersCount = -1;
-let isAdminLoggedIn = false; // Sirf verified admin ke device par sound bajega
+let isAdminLoggedIn = false; // Sirf verified admin ke phone par ghanti bajegi
 
 document.addEventListener('click', () => {
   if (!isAudioUnlocked) {
@@ -32,7 +32,7 @@ document.addEventListener('click', () => {
 }, { once: true });
 
 function playAdminAlarm() {
-  if (!isAdminLoggedIn) return; // Customer phone par ringtone block
+  if (!isAdminLoggedIn) return; // Customer phone par ghanti band
   const stopBtn = document.getElementById('stopAlarmBtn');
   if (stopBtn) stopBtn.style.display = 'inline-block';
   adminRingerAudio.play().catch(() => {});
@@ -322,7 +322,7 @@ if (db) {
     }
   });
 
-  // Admin Realtime Order Ringer & Tracker Listener
+  // Admin Realtime Order Ringer & Tracker Listener (SIRF ADMIN PAR RINGER CHALEGA)
   db.ref("orders").on("value", snap => {
     const orders = snap.val();
     if (orders) {
@@ -1221,7 +1221,7 @@ function renderLiveTrackerUI(ord, container) {
   const stage = Number(ord.stage !== undefined ? ord.stage : 1);
   const itemsText = ord.items ? ord.items.map(i => `${i.name} (x${i.qty})`).join(", ") : "Food Items";
 
-  // AGAR ORDER CANCEL HO GAYA HO
+  // AGAR ADMIN NE ORDER CANCEL KAR DIYA TOH CUSTOMER KO POLITE MESSAGE DIKHEGA
   if (stage === 0 || ord.status === "Cancelled") {
     container.innerHTML = `
       <div style="background:#2d1215; border-radius:14px; padding:18px; border:1px solid #ef4444; margin-bottom:16px; text-align:center;">
@@ -1415,7 +1415,7 @@ function loadAdminOrdersList() {
           <div style="font-size:12px; color:#10b981; font-weight:700;">₹${ord.grandTotal} | Pay: ${ord.paymentMode}</div>
           <div style="font-size:11px; color:#94a3b8; margin-top:2px;">📍 ${ord.address}</div>
 
-          <!-- ADMIN LIVE STAGE BUTTONS -->
+          <!-- ADMIN LIVE STAGE BUTTONS + CANCEL OPTION -->
           <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:4px; margin:10px 0 6px;">
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 1, 'Order Confirmed')" style="background:${currentStage === 1 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">1. Confirmed</button>
             <button onclick="setAdminOrderStatus('${k}', '${ord.orderId}', '${ord.phone}', 2, 'Preparing Food')" style="background:${currentStage === 2 ? '#E21B24' : '#334155'}; color:#fff; border:none; padding:6px 2px; border-radius:6px; font-size:9px; font-weight:bold; cursor:pointer;">2. Kitchen</button>
@@ -1454,6 +1454,7 @@ function setAdminOrderStatus(key, orderId, phone, stage, statusText) {
   }
 }
 
+// CANCEL ORDER LOGIC (Out of stock hone par)
 function cancelOrderByAdmin(key, orderId, phone) {
   stopAdminAlarm();
   const defaultReason = "Aapka chuna hua item kitchen mein out of stock ho chuka hai.";
@@ -1754,178 +1755,9 @@ function saveCustomerAccount() {
   closeModal('accountModal');
 }
 
-// ==================== 13. SPIN THE WHEEL (₹100+ ORDER LOCK & 10-MIN COOLDOWN) ====================
-const spinWheelRewards = [
-  { text: "Better Luck Next Time 😢", type: "lose", gift: null },
-  { text: "🍬 ₹5 Chhota Chocolate", type: "win", gift: "₹5 Chocolate" },
-  { text: "Try After 10 Mins ⏳", type: "lose", gift: null },
-  { text: "🪙 Flat ₹5 OFF Coupon", type: "win", gift: "₹5 OFF Code: KD05" },
-  { text: "Hard Luck Today 🎯", type: "lose", gift: null },
-  { text: "🌟 2 SuperCoins Free", type: "win", gift: "2 SuperCoins" }
-];
-
-let isWheelSpinning = false;
-let wheelTimerInterval = null;
-
-function registerOrderForWheelEligibility(orderTotal, orderId) {
-  if (orderTotal >= 100) {
-    localStorage.setItem('kd_wheel_eligible_order', orderId);
-    localStorage.setItem('kd_wheel_eligible_amount', orderTotal.toString());
-  }
-}
-
-function openSpinWheelModal() {
-  const eligibleAmount = Number(localStorage.getItem('kd_wheel_eligible_amount') || 0);
-  const eligibleOrderId = localStorage.getItem('kd_wheel_eligible_order');
-
-  if (!eligibleOrderId || eligibleAmount < 100) {
-    alert("🔒 Lucky Wheel Locked Hai!\n\nYe game sirf minimum ₹100 ke confirmed order par unlock hota hai. Pehle ₹100 ya usse upar ka order karein aur exciting gifts paayein!");
-    return;
-  }
-
-  let modal = document.getElementById('spinWheelModal');
-  if (!modal) {
-    createSpinWheelModalHtml();
-  }
-  checkWheelTimerLock();
-  openModal('spinWheelModal');
-}
-
-function createSpinWheelModalHtml() {
-  const modalHtml = `
-    <div id="spinWheelModal" class="modal">
-      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:18px; max-width:380px; width:100%; padding:20px; text-align:center; position:relative; box-shadow:0 8px 30px rgba(0,0,0,0.8);">
-        <button onclick="closeModal('spinWheelModal')" class="close-btn">✕</button>
-        <div style="display:inline-block; background:#10b981; color:#000; font-size:10px; font-weight:800; padding:2px 8px; border-radius:20px; margin-bottom:6px;">ORDER UNLOCKED (₹100+ SPECIAL)</div>
-        <h3 style="color:#f59e0b; margin:0 0 4px; font-size:18px;">🎡 Lucky Table Spin</h3>
-        <p style="color:#a1a1aa; font-size:12px; margin:0 0 16px;">Har 10 minute mein spin karein aur counter se gift lein!</p>
-        <div style="position:relative; width:220px; height:220px; margin:0 auto 16px;">
-          <div style="position:absolute; top:-12px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-top:20px solid #ef4444; z-index:10;"></div>
-          <div id="luckyWheelPlate" style="width:100%; height:100%; border-radius:50%; border:6px solid #eab308; background:conic-gradient(#ef4444 0% 60%, #3b82f6 60% 120%, #10b981 120% 180%, #8b5cf6 180% 240%, #f97316 240% 300%, #14b8a6 300% 360%); transition:transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); display:flex; align-items:center; justify-content:center; box-shadow:0 0 20px rgba(234, 179, 8, 0.4);">
-            <div style="width:65px; height:65px; background:#18181b; border-radius:50%; border:3px solid #eab308; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#f59e0b;">SPIN</div>
-          </div>
-        </div>
-        <div id="wheelActionArea">
-          <button id="spinWheelBtn" onclick="triggerLuckySpin()" style="background:linear-gradient(135deg, #e11d48, #f59e0b); color:#fff; border:none; padding:12px 24px; border-radius:12px; font-size:14px; font-weight:800; cursor:pointer; width:100%;">🎰 SPIN NOW</button>
-        </div>
-        <div id="wheelLockCountdown" style="display:none; background:#27272a; border-radius:10px; padding:10px; margin-top:10px;">
-          <small style="color:#94a3b8; font-size:11px;">Agla Spin Available Hoga:</small>
-          <div id="wheelLockTimerText" style="color:#38bdf8; font-size:18px; font-weight:800; margin-top:2px;">10:00</div>
-        </div>
-        <div id="wheelClaimPassBox" style="display:none; background:#1e293b; border:1px dashed #10b981; border-radius:12px; padding:12px; margin-top:14px; text-align:center;">
-          <span style="font-size:24px;">🎉</span>
-          <h4 id="wheelWinHeading" style="color:#10b981; margin:4px 0; font-size:14px;">Badhai Ho!</h4>
-          <p id="wheelWinDesc" style="color:#fff; font-size:14px; font-weight:bold; margin:4px 0;"></p>
-          <div id="wheelEligibleOrderTag" style="font-size:11px; color:#38bdf8; margin:4px 0;"></div>
-          <small style="color:#94a3b8; font-size:11px;">👉 Ye slip counter par dikha kar chocolate collect karein!</small>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-function triggerLuckySpin() {
-  if (isWheelSpinning) return;
-  const lastSpinTime = Number(localStorage.getItem('kd_last_wheel_spin') || 0);
-  const now = Date.now();
-  const cooldown = 10 * 60 * 1000;
-
-  if (now - lastSpinTime < cooldown) {
-    alert("⏳ Agla spin 10 minute baad hi milega.");
-    return;
-  }
-
-  isWheelSpinning = true;
-  document.getElementById('spinWheelBtn').disabled = true;
-
-  const isWinner = Math.random() < 0.30; 
-  let chosenIndex = 0;
-
-  if (isWinner) {
-    chosenIndex = [1, 3, 5][Math.floor(Math.random() * 3)];
-  } else {
-    chosenIndex = [0, 2, 4][Math.floor(Math.random() * 3)];
-  }
-
-  const plate = document.getElementById('luckyWheelPlate');
-  const segmentDegrees = 60;
-  const baseRounds = 360 * 5;
-  const finalDegree = baseRounds + (chosenIndex * segmentDegrees) + 30;
-
-  plate.style.transform = `rotate(${finalDegree}deg)`;
-
-  setTimeout(() => {
-    isWheelSpinning = false;
-    localStorage.setItem('kd_last_wheel_spin', Date.now().toString());
-
-    const outcome = spinWheelRewards[chosenIndex];
-
-    if (outcome.type === 'win') {
-      const claimBox = document.getElementById('wheelClaimPassBox');
-      const orderId = localStorage.getItem('kd_wheel_eligible_order') || 'N/A';
-      document.getElementById('wheelWinHeading').innerText = "🎉 Mubarak Ho! Aap Jeet Gaye!";
-      document.getElementById('wheelWinDesc').innerText = `${outcome.gift}`;
-      document.getElementById('wheelEligibleOrderTag').innerText = `Verified Order #${orderId}`;
-      if (claimBox) claimBox.style.display = 'block';
-    } else {
-      alert(`😢 ${outcome.text}\n10 minute baad dobara koshish karein!`);
-    }
-
-    checkWheelTimerLock();
-  }, 4200);
-}
-
-function checkWheelTimerLock() {
-  const lastSpin = Number(localStorage.getItem('kd_last_wheel_spin') || 0);
-  const now = Date.now();
-  const cooldown = 10 * 60 * 1000;
-  const remaining = cooldown - (now - lastSpin);
-
-  const btn = document.getElementById('spinWheelBtn');
-  const countBox = document.getElementById('wheelLockCountdown');
-  const timerText = document.getElementById('wheelLockTimerText');
-
-  if (wheelTimerInterval) clearInterval(wheelTimerInterval);
-
-  if (remaining > 0) {
-    if (btn) btn.style.display = 'none';
-    if (countBox) countBox.style.display = 'block';
-
-    updateWheelCountdownDisplay(remaining, timerText);
-
-    let timeLeft = remaining;
-    wheelTimerInterval = setInterval(() => {
-      timeLeft -= 1000;
-      if (timeLeft <= 0) {
-        clearInterval(wheelTimerInterval);
-        if (btn) { btn.style.display = 'block'; btn.disabled = false; }
-        if (countBox) countBox.style.display = 'none';
-      } else {
-        updateWheelCountdownDisplay(timeLeft, timerText);
-      }
-    }, 1000);
-
-  } else {
-    if (btn) { btn.style.display = 'block'; btn.disabled = false; }
-    if (countBox) countBox.style.display = 'none';
-  }
-}
-
-function updateWheelCountdownDisplay(ms, el) {
-  if (!el) return;
-  const totalSecs = Math.floor(ms / 1000);
-  const mins = Math.floor(totalSecs / 60);
-  const secs = totalSecs % 60;
-  el.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// ==================== INITIALIZATION ====================
 window.addEventListener('DOMContentLoaded', () => {
   renderFoodItems(menuCatalog);
   detectTableFromUrl();
-  initCustomerNotificationPrompt();
-  startHeroBannerSlider();
   const splash = document.getElementById("custom-splash-screen");
   if (splash) splash.style.display = "none";
 });
